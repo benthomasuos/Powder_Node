@@ -1,0 +1,126 @@
+
+body {
+    padding: 10px;
+      padding-top: 70px;
+
+}
+
+
+.navitem{
+    float:left;
+    min-width: 60px;
+    height: 40px;
+    font-size: 1.2em;
+    border: solid gray 1px;
+    padding: 8px 4px;
+    margin: 0px 4px;
+    background-color: #99d;
+    color: #fff
+}
+
+.navitem:hover{
+    border: solid blue 1px;
+    background-color: #66a;
+    color: #fff
+}
+.navitem:active{
+    border: solid blue 1px;
+    background-color: #6a6;
+    color: #fff
+}
+
+.graphDiv{
+    min-width: 80%;
+    min-height: 400px;
+    max-height: 800px;
+    border: solid gray 1px;
+    padding: 10px;
+    margin: 4px;
+
+}
+
+.controls{
+}
+
+#tests{
+    float:right;
+
+}
+
+td + i.fa-trash:hover{
+    color: #777;
+}
+
+.plotted {
+    background-color: #d34;
+}
+
+.value {
+    width:60px;
+}
+
+
+#push{
+    height: 100px;
+}
+#footer {
+    height: 100px;
+    margin-bottom: 100px;
+    background-color: orange;
+    width: 100%;
+    overflow:hidden;
+}
+
+.graphDiv{
+
+}
+
+
+.graph_y_controls{
+
+}
+
+.graph_x_controls{
+
+}
+
+.graph_y_max{
+    float:left;
+    max-width: 60px;
+}
+
+.graph_y_min{
+    margin-top:500px;
+    float:left;
+    max-width: 60px;
+}
+
+.graph_x_max{
+    float:right;
+    max-width: 60px;
+}
+
+.graph_x_min{
+    margin-left: 100px;
+    float: left;
+    max-width: 60px;
+}
+
+#settingsDiv{
+
+
+
+}
+
+.wt_pc_input{
+    bottom: 0px;
+    width: 100%;
+    padding: 4px;
+
+}
+
+.page_header{
+    min-height: 60px;
+    border-bottom: solid 1pt #777;
+    margin-bottom: 10px;
+}

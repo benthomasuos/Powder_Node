@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" media="screen" href='/css/font-awesome.min.css'>
+    <link rel="stylesheet" media="screen" href='/css/metro-bootstrap.css'>
+    <link rel="stylesheet" href = "/css/style.css">
+    <link rel="stylesheet" href = "/css/nv.d3.css">
+    <link rel="manifest" href="manifest.json">
+    <script src='/js/jquery2_1_4.js' type='text/javascript'></script>
+    <script src='/js/bootstrap.min.js' type='text/javascript'></script>
+
+    <title> Flow Stress Fitting - Web app</title>
+
+</head>
+<body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/"><img src="/images/star_icon.png" width="26px" /> STAR Group</a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+              <li><a href="/powders"><i class="fa fa-chart"></i>  Powders</a></li>
+              <li><a href="/tests/tmc"><i class="fa fa-chart"></i>  TMC Tests</a></li>
+              <li><a href="/tests/aspshear"><i class="fa fa-chart"></i>  ASP Shear</a></li>
+              <li><a href="/tests/orthogonal"><i class="fa fa-chart"></i>  Orthogonal Cutting</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="/account" disabled><i class="fa fa-user-circle"></i> My account</a></li>
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+
+
+
+
+
+<div class="jumbotron">
+    <h1>STAR Group - Database</h1>
+    <h2>Experimental tests</h2>
+</div>
+
+
+
+
+<div class="container-fluid col-md-12">
+    <a href="/powders">
+        <div class="tile tile-large tile-red">
+            <h1>Powders</h1>
+        </div>
+    </a>
+    <a href="/tests/tmc">
+        <div class="tile tile-large tile-green">
+            <h1>TMC Compression tests</h1>
+        </div>
+    </a>
+    <a href="/tests/aspshear">
+        <div class="tile tile-large tile-blue">
+            <h1>ASP Powder Shear tests</h1>
+        </div>
+    </a>
+    <a href="/tests/orthogonal">
+        <div class="tile tile-large tile-yellow">
+            <h1>Orthogonal cut tests</h1>
+        </div>
+    </a>
+
+</div>
+
+
+
+
+
+</body>
+
+</html>

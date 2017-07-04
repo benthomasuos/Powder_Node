@@ -1,0 +1,14 @@
+{
+  "name": "powder_app",
+  "version": "1.0.0",
+  "description": "Web app to fit constituative equations to stress-strain data generated form the University of Sheffield Thermomechanical Compression Machine",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ben M Thomas",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.17.2"
+  }
+}
