@@ -185,8 +185,6 @@ $('#startYield').on('click', function(){
 $('#stopYield').on('click', function(){
     stopYieldCalculation()
 })
-
-
 function stopYieldCalculation(){
     $('#stopYield').attr("disabled", true)
     $('#startYield').attr("disabled", false)

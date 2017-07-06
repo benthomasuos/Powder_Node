@@ -1,41 +1,50 @@
-var currentPowdersTable = $('#currentPowdersTable');
-var tableBody = currentPowdersTable.find("tbody")
-var addNewPowder_btn = $("#addNewPowder_btn")
+var currentTestTable = $('#currentTests');
+var tableBody = currentTestTable.find("tbody")
+var addNewTest_btn = $("#addNewTest_btn")
+var test_start = $("#test_start")
+var test_start = $("#test_end")
+var uploaded_start = $("#uploaded_start")
+var uploaded_end = $("#uploaded_end")
 var samples = $("#samples")
 var temp_min = $("#temp_min")
 var temp_max = $("#temp_max")
 var sr_min = $("#sr_min")
 var sr_max = $("#sr_max")
-var newPowderForm = $("#newPowderForm")
-var data_load = $("#data_load")
 var sync_status = $("#sync_status")
-var loading_progress = data_load.find('progress')
+var powder_name = $("#powder_name")
+var powder_samples = $("#powder_samples")
+var matrix_chart = ""
 //setup the in-memory database to save the uploaded flow stress data and saved fitted parameters
-var local_powders = 0
-var remote_powders = 0
+
+
+var fast_db_local = new PouchDB('fast')
+fast_db_local.info().then(function (info) {
+  console.log(info);
+})
+
+var fast_db_remote = new PouchDB('http://143.167.48.53:5984/fast')
+fast_db_remote.info().then(function (info) {
+  console.log(info);
+})
 
 var powders_db_local = new PouchDB('powders')
 powders_db_local.info().then(function (info) {
   console.log(info);
-  local_powders = info.doc_count
 })
 
 var powders_db_remote = new PouchDB('http://143.167.48.53:5984/powders')
 powders_db_remote.info().then(function (info) {
   console.log(info);
-  remote_powders = info.doc_count
 })
 
 
-$(document).ready(function(){
-    if(local_powders != remote_powders){
-        console.log("Local and remote databases are out of sync. Please refresh page.")
-    }
 
+
+$(document).ready(function(){
 
     var sync_time = new Date()
     var time =  sync_time.getHours() + ":" + sync_time.getMinutes() + ":" + sync_time.getSeconds() +  " "+sync_time.getDate() + "-" + sync_time.getMonth() + "-" + sync_time.getFullYear()
-    powders_db_local.sync(powders_db_remote).on('complete', function () {
+    fast_db_local.sync(fast_db_remote).on('complete', function () {
 
             sync_status.html("Sync with remote database<br>Success @ " + time)
             sync_status.css("background-color", "#3d4")
@@ -47,14 +56,17 @@ $(document).ready(function(){
           console.log("Database sync between local and remote Failed @ " + time)
         });
 
-    initialiseSearch()
-    getAllPowders()
 
 
 
-    addNewPowder_btn.on('click',function(){
-        newPowderForm.show(200)
-    })
+
+
+        getAllTests()
+
+
+    /*initialiseSearch()
+
+
 
 
     $(".fa-caret-up").on('click', function(){
@@ -67,10 +79,15 @@ $(document).ready(function(){
         $(this).parent().closest(".panel").hide(200);
     })
 
-
     $("#searchBoxToggle").on('click', function(){
-        $('#powderSearchBox').toggle(500);
+        $('#testSearchBox').toggle(500);
     })
+
+*/
+    addNewTest_btn.on('click', function(){
+        newTestForm()
+    })
+
 
 
 
@@ -78,26 +95,26 @@ $(document).ready(function(){
 
 
 function initialiseSearch(){
-    samples.html("<option>Hello</option>");
-    powders_db_local.allDocs({
+    samples.find('option').remove();
+    fast_db_local.allDocs({
             include_docs : true
             })
             .then(function(result){
                 if(result.rows.length > 0){
-                    $('#powder_status').hide()
+
                     for(i=0; i<result.rows.length; i++){
                         var doc = result.rows[i].doc;
                             //console.log(doc);
                             var option = $("<option></option>");
                             option
-                                .html(doc.sample)
-                                .val(doc.sample)
+                                .html(doc.sample.name.user_defined)
+                                .val(doc.sample.name.user_defined)
                             samples.append(option)
                             }
 
                         }
                         else{
-                            $('#powder_status').show()
+                            $('#test_status').show()
 
                         }
 
@@ -108,63 +125,82 @@ function initialiseSearch(){
 
 }
 
-function getAllPowders(){
-    loading_progress.val(0)
+function getAllTests(){
+    powder_samples.find('option:selected').removeAttr("selected");
     var allTests = [];
     tableBody.html("");
 
-    //  Query the powders_db database
-    powders_db_local.allDocs({
+    //  Query the fast_db_local database
+    fast_db_local.allDocs({
                 include_docs : true
             })
             .then(function(result){
-
-                //console.log(result.rows)
-                        if(result.rows.length > 0){
-
-                            $('#num_powders').find('span').html(result.rows.length)
-
-
-                            for(i=0; i<result.rows.length; i++){
-                                loading_progress.val(  Math.ceil( i+1 / result.rows.length) * 100 )
-                                var doc = result.rows[i].doc;
-                                //console.log(doc)
-                                var powder_id = doc._id
-                                //console.log(doc)
+                console.log(result.rows)
+                if(result.rows.length > 0){
+                    $('#num_tests').find('span').html(result.rows.length)
+                    $('#test_status').hide()
+                    return result
+                    }
+                    else{
+                        $('#test_status').show()
+                    }
+                }).then(function(result){
+                    console.log(result)
+                        for(i=0; i<result.rows.length; i++){
+                            var doc = result.rows[i].doc
+                        var powder = powders_db_local.get( doc.powder_id )
+                                var powder_cell = $('<td></td>')
+                                console.log("Powder = " + JSON.stringify(powder))
+                                var test_id = doc._id
                                 var row = $('<tr></tr>')
-                                row.attr("name", powder_id)
-                                if(doc.name){
-                                    var sample_name = doc.name
-                                }else{
-                                    var sample_name = 'N/A'
-                                }
-                                var sample_cell = row.append( $('<td></td>').html(sample_name) )
-                                var type_cell = row.append( $('<td></td>').html(doc.type) )
-                                var metal_cell = row.append( $('<td></td>').html(doc.base_metal) )
-                                var alloy_cell = row.append( $('<td></td>').html(doc.alloy) )
+                                row.attr("name", test_id)
+                                console.log(doc.powder_id)
+                                //var id_cell = row.append( $('<td></td>').html(test_id) )
+                                powder_cell.html(powder.name)
+                                row.append( powder_cell )
+                                var mold_cell = row.append( $('<td></td>').html(doc.mold_diameter) )
+                                var load_cell = row.append( $('<td></td>').html(doc.load) )
+                                var temp_ramp_cell = row.append( $('<td></td>').html(doc.temperature_ramp_rate) )
+                                var hold_temp_cell = row.append( $('<td></td>').html(doc.hold_temperature) )
+                                var hold_time_cell = row.append( $('<td></td>').html(doc.hold_time) )
+                                var cooling_rate_cell = row.append( $('<td></td>').html(doc.cooling_rate) )
+                                var datafile_cell = row.append( $('<td></td>').html(doc.data_file) )
+                                var testdate_cell = row.append( $('<td></td>').html(doc.created) )
 
-                                var supplier_cell = row.append( $('<td></td>').html( doc.supplier ) )
-                                var psd_min_cell = row.append( $('<td></td>').html(doc.psd_min + " µm") )
-                                var psd_min_cell = row.append( $('<td></td>').html(doc.psd_max + " µm") )
-                                var date = new Date(doc.created)
-                                var creation_date = date.getDate() + "-" + date.getMonth() + "-" + date.getFullYear()
-                                var date = new Date(doc.modified)
-                                var modified_date = date.getDate() + "-" + date.getMonth() + "-" + date.getFullYear()
-                                var created_cell = row.append( $('<td></td>').html(creation_date) )
-                                var modified_cell = row.append( $('<td></td>').html(modified_date) )
-                                var edit_cell =  row.append($('<td></td>').html("<a href='/powders/edit?_id="+powder_id+"'><i class='fa fa-edit fa-2x'></i></a>"))
+
+
+
+                                //var analyse_cell =  $('<td></td>')
+                                //analyse_cell.html("<a href='/tests/fast/process?_id="+test_id+"'><i class='fa fa-table fa-2x'></i></a>")
+                                //row.append( analyse_cell )
+                                var edit_cell =  row.append($('<td></td>').html("<a href='/tests/fast/edit?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>"))
+
+                                /*
+                                if(doc.analysed == true){
+                                    analyse_cell.find('i').css('color', 'green')
+                                }
+                                else(
+                                    analyse_cell.find('i').css('color', 'red')
+                                )
+                                */
+
                                 var trash_cell = row.append( $('<td></td>').html("<i class='fa fa-trash fa-2x'></i>") )
                                 tableBody.append(row)
-                            }
 
-                        currentPowdersTable.DataTable();
+                        }
+                    }).then(function(){
+
+                        currentTestTable.DataTable()
+
+
+
                         tableBody.find("i.fa-trash").on('click', function(){
-                            var powder_id = $(this).closest('tr').attr('name');
-                            console.log("Deleting test " + powder_id)
+                            var test_id = $(this).closest('tr').attr('name');
+                            console.log("Deleting test " + test_id)
                             //var response = confirm("Are you sure you want to delete test: "+ test_id)
                             var response = true
                             if( response == true){
-                                removeTest(powder_id);
+                                removeTest(test_id);
                             }
                         })
 
@@ -185,7 +221,7 @@ function getAllPowders(){
                                     }
                                 }
                                 console.log(testString)
-                                $('#compareTests').html("<a href='/compare?"+ testString +"'><div class='btn btn-md btn-primary'>Compare tests</div>")
+                                $('#compareTests').html("<a href='/tests/fast/compare?"+ testString +"'><div class='btn btn-md btn-primary'>Compare tests</div>")
 
                                 //console.log("Tests to compare: " + tests_to_compare);
                             }
@@ -197,14 +233,10 @@ function getAllPowders(){
 
 
 
-                        $('#powder_status').hide()
-                        }
-                        else{
-                            $('#powder_status').show()
 
-                        }
+                            //initialiseSearch()
 
-            }).catch(
+                    }).catch(
                     console.log("Couldn't retrieve data from the database")
             ) //  End of query and response to query
 
@@ -226,7 +258,7 @@ function getSearchedTests(){
 
     }
 
-    powders_db_local.find(
+    fast_db_local.find(
         { selector: {
                         sample: { "$in": allSamples } ,
                         temperature: { "$gte" : temp_min.val() },
@@ -240,7 +272,7 @@ function getSearchedTests(){
                 var number_of_tests = result.docs.length
                     $('#num_tests').find('span').html(number_of_tests)
                         if(number_of_tests > 0){
-                            $('#powder_status').hide()
+                            $('#test_status').hide()
                             for(i=0; i<number_of_tests; i++){
                                 var doc = result.docs[i];
                                 var test_id = doc._id
@@ -262,9 +294,8 @@ function getSearchedTests(){
                                 var datapoints_cell = row.append( $('<td></td>').html(doc.measurements.length) )
                                 var testdate_cell = row.append( $('<td></td>').html(doc.testdate ) )
                                 var created_cell = row.append( $('<td></td>').html(doc.created) )
-                                var modified_cell = row.append( $('<td></td>').html(doc.modified) )
                                 var analyse_cell =  $('<td></td>')
-                                analyse_cell.html("<a href='/process?_id="+test_id+"'><i class='fa fa-table fa-2x'></i></a>")
+                                analyse_cell.html("<a href='/process/test?_id="+test_id+"'><i class='fa fa-table fa-2x'></i></a>")
                                 row.append( analyse_cell )
                                 var compareCell = $('<td></td>').append(checkbox)
                                 if( doc.analysed == true){
@@ -320,7 +351,7 @@ function getSearchedTests(){
 
                         }
                         else{
-                            $('#powder_status').show()
+                            $('#test_status').show()
 
                         }
 
@@ -336,75 +367,129 @@ function getSearchedTests(){
 
 
 
+function newTestForm(){
+    $('#newTestForm').show(500);
 
+    var allPowders = []
 
-
-function savePowder(){
-    var form = $('#powderForm');
-    var powder = {}
-    var label = form.find("#alert")
-
-    var inputs = form.find('input')
-
-    //console.log(inputs)
-    inputs.each(function(i){
-        var element = inputs[i]
-        var name = $(this).attr("type")
-        switch(name){
-            case "text" :
-                var value = $(this).val()
-                powder[ element.name ] = value
-                break;
-            case "number" :
-                var value = $(this).val()
-                powder[ element.name ] = value
-                break;
-            case "file" :
-                var value = null
-                break;
-            default:
-                var value = $(this).val()
-                powder[ element.name ] = value
-                break;
+    powders_db_local.allDocs({include_docs: true})
+        .then(function(result){
+            console.log(result)
+            if(result.rows.length > 0){
+                for(i=0; i<result.rows.length; i++){
+                    var powder = result.rows[i].doc;
+                    var option = $("<option></option>")
+                    option.val(powder._id)
+                    option.html(powder.name + " " + powder.morphology+ " " + powder.psd_min + "-" +powder.psd_max + "µm" + " "+powder.supplier  )
+                    powder_name.append(option)
+                    console.log(powder.name)
             }
+        }
+
+        }).catch(function(err){
+            console.log(err)
 
 
+        })
+
+
+    var fileupload = $('input[name="data_file"]')
+    fileupload.on("load", function(){
+        console.log(reader.result)
     })
-        powder.morphology = $("#morphology").val()
-        powder.type = $("#type").val()
 
-        //console.log(powder)
-        powder._id =  "powder_" + new Date().getTime()
+}
 
-        powder.created = new Date();
-        powder.modified = new Date();
 
-        powders_db_local.put( powder )
-            .then(function(result){
+
+
+
+
+function saveTest(){
+    $('#saveTest').addClass("btn-default")
+    $('#saveTest').attr('disabled', true).find('i').addClass("fa-spinner fa-spin")
+    var form = $('#testForm');
+    var test = {}
+    var label = form.find("#alert")
+    var data_file = form.find('input[name="data_file"]')[0].files[0];
+    console.log(data_file)
+    if(data_file){
+        var reader = new FileReader();
+        reader.readAsText(data_file);
+        var data = "";
+        reader.onloadend = function(event){
+            data = event.target.result
+            console.log(typeof(data))
+            test.testData = parseDatafile(data);
+
+            test.created = new Date();
+            test.modified = new Date();
+
+            var powder_id = form.find('#powder_name option:selected').val();
+            console.log(powder_id)
+            test.mold_diameter = $('input[name="mold_diameter"]').val();
+            test.load = $('input[name="load"]').val();
+            test.temperature_ramp_rate = $('input[name="temperature_ramp_rate"]').val();
+            test.cooling_rate = $('input[name="cooling_rate"]').val();
+            test.hold_temperature = $('input[name="hold_temperature"]').val();
+            test.hold_time = $('input[name="hold_time"]').val();
+
+
+
+            test.powder_id = powder_id
+            var file = {}
+            file.name = data_file.name
+            file.file = data
+            test.data_file = file
+            test.raw_num_samples = test.testData.length
+
+
+            console.log(test)
+
+            test._id = 'fast_' + new Date().getTime().toString()
+
+
+            fast_db_local.put( test )
+                .then(function(result){
+                    console.log(result)
                     label
                         .removeClass("alert-danger")
                         .addClass("alert-success")
-                        .html("Saved test with id: " + powder._id)
+                        .html("Saved test: <b> " + test._id + "</b>")
                         .show(200)
                         .delay(2000)
                         .hide(200)
-                        getAllPowders();
-                })
-                .catch(function(err){
-                    console.log(err)
-                    label
-                        .removeClass("alert-success")
-                        .addClass("alert-danger")
-                        .html("Error: "+ err.name)
-                        .show(200)
-                        .delay(2000)
-                        .hide(200);
-                })
 
+                        $('#saveTest').removeClass("btn-default")
+                        $('#saveTest').attr('disabled', false).find('i').removeClass("fa-spinner fa-spin")
+                        getAllTests();
+                    })
+                    .catch(function(err){
+                        console.log(err)
+                        label
+                            .removeClass("alert-success")
+                            .addClass("alert-danger")
+                            .html("Error: "+ err)
+                            .show(200)
+                            .delay(2000)
+                            .hide(200);
+                            $('#saveTest').removeClass("btn-default")
+                            $('#saveTest').attr('disabled', false).find('i').removeClass("fa-spinner fa-spin")
+                    })
 
-
-
-
+        }
+    }
+    else{
+        label
+            .removeClass("alert-success")
+            .addClass("alert-danger")
+            .html("Data missing")
+            .show(200)
+            .delay(2000)
+            .hide(200);
+            $('#saveTest').removeClass("btn-default")
+            $('#saveTest').attr('disabled', false).find('i').removeClass("fa-spinner fa-spin")
+    }
 
 }
 
@@ -413,12 +498,12 @@ function savePowder(){
 
 
 function removeTest(test_id){
-    powders_db_local.get( test_id )
+    fast_db_local.get( test_id )
             .then(function(doc){
-                return powders_db_local.remove( doc );
+                return fast_db_local.remove( doc );
             }).then(function(result){
                 console.log("Test removed: " + result)
-                getAllPowders();
+                getAllTests();
             }).catch(function(err){
                 console.log(err)
             })
@@ -426,8 +511,23 @@ function removeTest(test_id){
 
 
 
-function parsePSDfile(data){
-    console.log("Parsing PSD data")
-    console.log(data)
-
+function parseDatafile(data){
+    var testData = ""
+     Papa.parse( data ,  {
+                  complete: function(results) {
+                            console.log("File parsed successfully");
+                            testData = results.data;
+                        },
+                   error: function(err, file){
+                           console.log(err, file);
+                       },
+                   header: true,
+                   skipEmptyLines: true,
+                   dynamicTyping: true,
+                   delimiter: ",",
+                   encoding: "utf8"
+               } ); // end of Papa.parse()
+                console.log(testData)
+                testData = testData.slice(0)
+   return testData
 }

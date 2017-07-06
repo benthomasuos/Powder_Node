@@ -34,6 +34,27 @@ app.get('/tests/tmc/compare',function(req, res){
 
 
 
+app.get('/tests/fast',function(req, res){
+    res.sendFile(process.cwd() + '/fast.html')
+})
+app.get('/tests/fast/process',function(req, res){
+    console.log("Request to process FAST test: " + req.query._id);
+    res.sendFile(process.cwd() + '/fast_process.html')
+})
+app.get('/tests/fast/edit',function(req, res){
+    console.log("Request to edit FAST test: " + req.query._id);
+    res.sendFile(process.cwd() + '/tmc_edit.html')
+})
+app.get('/tests/fast/compare',function(req, res){
+    console.log("Request to compare FAST tests: " + req.query._id);
+    res.sendFile(process.cwd() + '/fast_compare.html')
+})
+
+
+
+
+
+
 app.get('/tests/aspshear',function(req, res){
     res.sendFile(process.cwd() + '/aspshear.html')
 })

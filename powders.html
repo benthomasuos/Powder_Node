@@ -34,6 +34,7 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
               <li><a href="/powders"><i class="fa fa-chart"></i>  Powders</a></li>
+              <li><a href="/tests/fast"><i class="fa fa-chart"></i>  FAST</a></li>
               <li><a href="/tests/tmc"><i class="fa fa-chart"></i>  TMC Tests</a></li>
               <li><a href="/tests/aspshear"><i class="fa fa-chart"></i>  ASP Shear</a></li>
               <li><a href="/tests/orthogonal"><i class="fa fa-chart"></i>  Orthogonal Cutting</a></li>
@@ -149,6 +150,15 @@
                             <form class="form" id="powderForm">
                                 <div class="form-group" name="sample">
                                     <h5>Powder</h5>
+                                    <div class="input-group" name="type">
+                                        <div class="input-group-addon">Type</div>
+                                        <select name="type" id="type" class="form-control">
+                                            <option value="metal">Metal</option>
+                                            <option value="ceramic">Ceramic</option>
+                                            <option value="polymer">Polymer</option>
+                                        </select>
+                                    </div>
+
                                     <div class="input-group" name="name">
                                         <div class="input-group-addon">Name</div>
                                         <input name="name" id="name" type="text" class="form-control"/>
@@ -169,7 +179,7 @@
 
                                 </div>
 
-                                <div class="form-group" name="musfile">
+                                <div class="form-group">
                                     <h5>Particles</h5>
                                     <div class="input-group">
                                         <div class="input-group-addon">Morphology class</div>
@@ -192,10 +202,6 @@
                                         <div class="input-group-addon">PSD max</div>
                                         <input name="psd_max" id="psd_max" type="number" class="form-control" />
                                         <div class="input-group-addon"> µm </div>
-                                    </div>
-                                    <div class="input-group">
-                                        <div class="input-group-addon">PSD data upload</div>
-                                        <input name="psd_file" id="psd_file" type="file" class="form-control"/>
                                     </div>
                                 </div>
                 <div class='input-group'>
@@ -243,7 +249,7 @@
 <div class="panel panel-primary">
     <div class="panel-heading">
         <h4>All available powders <i style="float:right" class="fa fa-caret-up" id="hideForm"></i> <div style="float:right; margin-right:100px;" id="addNewPowder_btn"><i class="fa fa-plus-circle" id="hideTable"></i> New Powder</div> </h4>
-        <div id="num_powders">Number of powder found: <span>0</span></div>
+        <div id="num_powders">Number of powders found: <span>0</span></div>
         <div id="data_loading"><progress value=0 max=100 ></progress></div>
     </div>
         <div id="powder_status" class="alert alert-warning">No powders available to show</div>
@@ -251,6 +257,7 @@
         <table id="currentPowdersTable" class="table table-condensed table-hover">
             <thead>
                 <th>Name</th>
+                <th>Type</th>
                 <th>Base metal</th>
                 <th>Alloy</th>
                 <th>Supplier</th>

@@ -17,7 +17,7 @@ var load_offset = $('#load_offset');
 var load_offset_range = $('#load_offset_range');
 var zero_offset = $('#zero_offset');
 var load_offset = $('#load_offset');
-var export_SS = $("#export_SS");
+var export_Data = $("#export_Data");
 
 var chart_load = "";
 var chart_angle = "";
@@ -88,11 +88,15 @@ $(document).ready(function(){
     if(currentTest){
         console.log("Processing test: "+ currentTest)
         getSingleTest()
+
     }else{
         console.log("No test chosen")
         getAllTests()
 
     }
+
+
+
 
 
 
@@ -121,7 +125,7 @@ $(document).ready(function(){
     })
 
 
-
+/*
     $(window).scroll(function(){
 
         if($(window).scrollTop() >= '10'){
@@ -135,7 +139,7 @@ $(document).ready(function(){
         }
     });
 
-
+*/
 
 
     $(".fa-caret-up").on('click', function(){
@@ -214,7 +218,23 @@ function startYieldCalculation(){
 
 
 
+function prepareDownload(){
 
+    var data = []
+    data[0] = "Time (s), Zero-corrected displacement (mm), Axial load (kN), Zero-corrected angle (deg), Torque (Nm)\r\n"
+    for(var i=0; i<currentTest.trimmedData.length; i++){
+        var point = currentTest.trimmedData[i]
+        data.push(point.time + "," + point.displacement_inst + "," + point.axial_load_inst + ',' + point.angle_inst + ',' + point.torque_inst + "\r\n")
+    }
+    //console.log(data)
+    data.join()
+
+    var blob = new Blob(data, {type: "text/.csv"});
+    var url = URL.createObjectURL(blob);
+    export_Data.attr('href', url )
+    export_Data.attr('download', currentTest._id + "_trimmed_data.csv" )
+
+}
 
 
 
@@ -297,8 +317,12 @@ function getSingleTest(){
 
                 if(currentTest.trimmedData){
                             processData(currentTest.trimmedData)
+                            prepareDownload()
+                            export_Data.show()
+
                 }else{
                             processData(currentTest.rawData)
+                            export_Data.hide()
                 }
             }).catch(function(err){
                                         console.log(err)
@@ -482,30 +506,6 @@ function processData(data) {
     //callback()
 
 
-
-}
-
-
-
-function prepareDownload(){
-    var dataPoints = chart_4.options.data[2].dataPoints
-    //console.log(dataPoints)
-    var data = []
-    data[0] = "True Strain (mm), True Iso Stress (MPa)\r\n"
-    for(var i=0; i<dataPoints.length; i++){
-        var point = dataPoints[i]
-        if(point.x && point.y ){
-            data.push(point.x + "," + point.y + "\r\n")
-    //        console.log(point)
-        }
-    }
-    //console.log(data)
-    data.join()
-
-    var blob = new Blob(data, {type: "text/.txt"});
-    var url = URL.createObjectURL(blob);
-    export_SS.attr('href', url )
-    export_SS.attr('download', currentTest._id + "_isoStress_Strain.txt" )
 
 }
 
@@ -1203,6 +1203,7 @@ function parseData(data, x_name, y_name, label){
 
 
 $('#resetDataBtn').on('click', function(){
+    export_Data.hide(500)
     processData(currentTest.rawData)
 })
 
@@ -1257,6 +1258,8 @@ $('#trimDataBtn').on('click', function(){
                 return d
             })
             currentTest.analysed = true
+            prepareDownload()
+            export_Data.show(500)
             processData( currentTest.trimmedData )
         }
 
