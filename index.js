@@ -33,6 +33,18 @@ app.get('/tests/tmc/compare',function(req, res){
 })
 
 
+app.get('/tests/conform',function(req, res){
+    res.sendFile(process.cwd() + '/conform.html')
+})
+app.get('/tests/conform/process',function(req, res){
+    console.log("Request to process Conform trial: " + req.query._id);
+    res.sendFile(process.cwd() + '/conform_process.html')
+})
+app.get('/tests/conform/edit',function(req, res){
+    console.log("Request to edit Conform trial: " + req.query._id);
+    res.sendFile(process.cwd() + '/conform_edit.html')
+})
+
 
 app.get('/tests/fast',function(req, res){
     res.sendFile(process.cwd() + '/fast.html')
