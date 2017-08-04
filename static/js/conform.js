@@ -5,6 +5,7 @@ var test_start = $("#test_start")
 var test_end = $("#test_end")
 var uploaded_start = $("#uploaded_start")
 var uploaded_end = $("#uploaded_end")
+var trial_id = $("#trial_id")
 var samples = $("#samples")
 var feedstock = $("#feedstock")
 var machine = $("#machine")
@@ -116,8 +117,7 @@ function initialiseSearch(){
 function getAllTests(){
     //powder_samples.find('option:selected').removeAttr("selected");
     var allTests = [];
-    tableBody.html("");
-
+    tableBody.append("<div></div>").html("<i class='fa fa-spinner fa-pulse fa-3x fa-fw'> ").css('margin-left','45%')
     //  Query the test_db database
     test_db.allDocs({
                 include_docs : true
@@ -132,48 +132,44 @@ function getAllTests(){
                     }
                     else{
                         $('#test_status').show()
+                        tableBody.find("i.fa-spinner").remove()
                     }
                 }).then(function(result){
+
+
                     console.log(result)
                         for(i=0; i<result.rows.length; i++){
                             var doc = result.rows[i].doc
-                            var powder = powders_db.get( doc.powder_id )
-                                var powder_cell = $('<td></td>')
-                                console.log(doc)
-                                var test_id = doc._id
-                                var row = $('<tr></tr>')
-                                row.attr("name", test_id)
-                                console.log(doc.powder_id)
-                                var id_cell = row.append( $('<td></td>').html(test_id) )
-                                powder_cell.html(powder.name)
-                                row.append( powder_cell )
-                                var load_cell = row.append( $('<td></td>').html(doc.load) )
-                                var ang_vel_cell = row.append( $('<td></td>').html(doc.angular_velocity) )
-                                var datapoints_cell = row.append( $('<td></td>').html(doc.raw_num_samples) )
-                                var testdate_cell = row.append( $('<td></td>').html(doc.testdate ) )
-                                var file_cell = row.append( $('<td></td>').html(doc.data_file.name) )
-                                var analyse_cell =  $('<td></td>')
-                                analyse_cell.html("<a href='/tests/conform/process?_id="+test_id+"'><i class='fa fa-table fa-2x'></i></a>")
-                                row.append( analyse_cell )
-                                var edit_cell =  row.append($('<td></td>').html("<a href='/tests/conform/edit?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>"))
-                                var checkbox = $('<input class="form-control" type="checkbox" />').attr('name', test_id ).attr('id', test_id)
-                                var compareCell = $('<td></td>').append(checkbox)
-                                if(doc.analysed == true){
-                                    analyse_cell.find('i').css('color', 'green')
-                                }
-                                else(
-                                    analyse_cell.find('i').css('color', 'red')
-                                )
-                                row.append( compareCell )
-                                var trash_cell = row.append( $('<td></td>').html("<i class='fa fa-trash fa-2x'></i>") )
-                                tableBody.append(row)
+                            console.log(doc)
+                            var test_id = doc._id
+                            var row = $('<tr></tr>')
+                            row.attr("name", test_id)
+
+                            row.append( $('<td></td>').html(test_id) )
+                            row.append( $('<td></td>').html(doc.machine.name) )
+                            row.append( $('<td></td>').html(doc.feedstock.type) )
+                            row.append( $('<td></td>').html(doc.feedstock.name) )
+                            row.append( $('<td></td>').html( Math.ceil(doc.rawData.length/60) + " mins") )
+                            row.append( $('<td></td>').html(doc.toolset.name ) )
+                            row.append( $('<td></td>').html(doc.testdate ) )
+
+                            var analyse_cell =  $('<td></td>').html("<a href='/tests/conform/process?_id="+test_id+"' disabled><i class='fa fa-table fa-2x'></i></a>")
+                            row.append(analyse_cell)
+                            var edit_cell = row.append($('<td></td>').html("<a href='/tests/conform/edit?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>"))
+                            row.append(edit_cell)
+                            if(doc.analysed == true){
+                                analyse_cell.find('i').css('color', 'green')
+                            }
+                            else(
+                                analyse_cell.find('i').css('color', 'red')
+                            )
+                            var trash_cell = row.append( $('<td></td>').html("<i class='fa fa-trash fa-2x'></i>") )
+                            row.append(trash_cell)
+                            tableBody.append(row)
 
                         }
                     }).then(function(){
-
-                        currentTestTable.DataTable()
-
-
+                        tableBody.find("i.fa-spinner").remove()
 
                         tableBody.find("i.fa-trash").on('click', function(){
                             var test_id = $(this).closest('tr').attr('name');
@@ -185,37 +181,13 @@ function getAllTests(){
                             }
                         })
 
-                        tableBody.find('input[type="checkbox"]').on('change', function(){
-                            var tests_to_compare = [];
-                            tableBody.find('input[type="checkbox"]').each(function(){
-                                if( $(this)[0].checked ){
-                                    tests_to_compare.push( $(this).attr('name') );
-                                }
-                            })
-
-                            if( tests_to_compare.length >= 2 ){
-                                var testString = ""
-                                for(var i=0;i<tests_to_compare.length;i++){
-                                    testString += "_id_"+ i+ "=" + tests_to_compare[i]
-                                    if(i<tests_to_compare.length-1){
-                                        testString += "&";
-                                    }
-                                }
-                                console.log(testString)
-                                $('#compareTests').html("<a href='/tests/conform/compare?"+ testString +"'><div class='btn btn-md btn-primary'>Compare tests</div>")
-
-                                //console.log("Tests to compare: " + tests_to_compare);
-                            }
-                            else{
-                                $('#compareTests').html("")
-                                console.log("Need two or more tests to compare" );
-                            }
-                        })
-
-
-
-
                             //initialiseSearch()
+
+                    })
+                    .then(function(){
+
+                            currentTestTable.DataTable()
+
 
                     }).catch(
                     console.log("Couldn't retrieve data from the database")
@@ -467,25 +439,26 @@ function saveTest(){
 
             test.feedstock = {}
             test.feedstock.type = form.find('#feedstock_type option:selected').val();
+
             test.feedstock.id = form.find('#feedstock option:selected').val();
+
             test.feedstock.name = form.find('#feedstock option:selected').text();
+
             test.toolset = {}
             test.toolset.id = form.find('#toolset option:selected').val();
             test.toolset.name = form.find('#toolset option:selected').text();
+
             test.machine = {}
             test.machine.id = form.find('#machine option:selected').val();
             test.machine.name = form.find('#machine option:selected').text();
 
-            var file = {}
-            file.name = data_file.name
-            file.file = data
-            test.data_file = file
-            test.raw_num_samples = test.rawData.length
+
+            test.data_file = data_file.name
 
 
             console.log(test)
 
-            test._id = new Date().getTime().toString()
+            test._id = trial_id.val().replace(/\s/g,"_")
 
 
             test_db.put( test )
@@ -555,7 +528,7 @@ function parseDatafile(data){
       data = data.split("\n")
       var test_date = new Date(data[1].split(",")[0])
       console.log("Test date = "+ test_date)
-      testData.testdate = test_date
+      testData.testdate = new Date(test_date)
 
       var headers = data[0].split(',')
       for(i=0;i<headers.length;i++){

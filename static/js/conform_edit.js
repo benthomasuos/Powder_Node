@@ -345,7 +345,7 @@ function plotData() {
         animationEnabled: true,
         zoomEnabled: true,
         height: 600,
-        zoomType: "x",
+        zoomType: "xy",
         toolTipContent: "x: {x}, y: {y[0]} ",
         exportEnabled: true,
         exportFileName: "graph",

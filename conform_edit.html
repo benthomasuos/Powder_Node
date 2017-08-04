@@ -49,7 +49,7 @@
 
 
 <div class="page-header">
-    <h1>Editing test: <div></div></h1>
+    <h1>Editing test: <span></span></h1>
 </div>
 
 
@@ -57,73 +57,7 @@
 
 <div class="container-fluid col-md-12">
 
-<div class="container-fluid col-md-6">
-<div class="panel panel-primary">
-    <div class="panel-heading">
-        <h4>Test data<i style="float:right" class="fa fa-caret-up" id="hideTable"></i></h4>
-    </div>
-        <div id="test_status" class="alert alert-warning">No test data available to show</div>
-    <div class="panel-body">
-        <table id="currentTests" class="table table-condensed">
-            <thead>
-                <th>Test #</th>
-                <th>Sample</th>
-                <th>Temperature (ºC)</th>
-                <th>Strain Rate (s<sup>-1</sup>)</th>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
-</div>
-</div>
 
-
-
-
-
-
-
-
-<div class="container-fluid col-md-6">
-    <div id="dataInput" class="panel panel-primary">
-        <div class="panel-heading">
-            <h4>Upload images <i style="float:right" class="fa fa-times"></i></h4>
-        </div>
-        <div class="panel-body">
-            <form id="imagesForm">
-                <div class="form-group">
-                    <input class="form-control" name="imageUpload" id="imageUpload" type="file" accept="image/*" multiple/>
-                </div>
-            </form>
-            <div class="well" id="uploadImagesPreview" >
-
-            </div>
-            <div class="container-fluid col-md-6">
-                <div class="btn-group">
-                    <div id="resetForm" class="btn btn-md btn-primary" onclick="resetImagePreview()">Reset</div>
-                    <div id="uploadImages" class="btn btn-md btn-success" >Upload images</div>
-            </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-<div class="container-fluid col-md-6">
-    <div class="panel panel-primary">
-        <div class="panel-heading">
-            <h4>Images <i style="float:right" class="fa fa-times"></i></h4>
-        </div>
-        <div class="panel-body">
-            <div class="well" id="testImages" >
-
-            </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 
 
@@ -271,6 +205,54 @@
     </div>
 
  </div>
+
+
+
+
+
+ <div class="container-fluid col-md-6">
+     <div id="dataInput" class="panel panel-primary">
+         <div class="panel-heading">
+             <h4>Upload images <i style="float:right" class="fa fa-times"></i></h4>
+         </div>
+         <div class="panel-body">
+             <form id="imagesForm">
+                 <div class="form-group">
+                     <input class="form-control" name="imageUpload" id="imageUpload" type="file" accept="image/*" multiple/>
+                 </div>
+             </form>
+             <div class="well" id="uploadImagesPreview" >
+
+             </div>
+             <div class="container-fluid col-md-6">
+                 <div class="btn-group">
+                     <div id="resetForm" class="btn btn-md btn-primary" onclick="resetImagePreview()">Reset</div>
+                     <div id="uploadImages" class="btn btn-md btn-success" >Upload images</div>
+             </div>
+             </div>
+         </div>
+     </div>
+ </div>
+
+
+
+ <div class="container-fluid col-md-6">
+     <div class="panel panel-primary">
+         <div class="panel-heading">
+             <h4>Images <i style="float:right" class="fa fa-times"></i></h4>
+         </div>
+         <div class="panel-body">
+             <div class="well" id="testImages" >
+
+             </div>
+             </div>
+         </div>
+     </div>
+ </div>
+
+
+
+
 
 
 
