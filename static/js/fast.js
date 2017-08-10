@@ -13,7 +13,11 @@ var sr_max = $("#sr_max")
 var sync_status = $("#sync_status")
 var powder_name = $("#powder_name")
 var powder_samples = $("#powder_samples")
-var matrix_chart = ""
+var pressure = $("#pressure")
+var load = $("#load")
+var mould_diameter = $("#mould_diameter")
+
+
 //setup the in-memory database to save the uploaded flow stress data and saved fitted parameters
 
 
@@ -57,7 +61,12 @@ $(document).ready(function(){
         });
 
 
-
+        $("#mould_diameter").on('input', function(){
+            calculatePressure()
+        })
+        $("#load").on('input', function(){
+            calculatePressure()
+        })
 
 
 
@@ -92,6 +101,14 @@ $(document).ready(function(){
 
 
 })
+
+
+function calculatePressure(){
+    var area =  Math.PI * ( mould_diameter.val() / 2 ) ** 2
+    var stress = (load.val() * 1000 / area)
+    pressure.val(stress.toFixed(1))
+
+}
 
 
 function initialiseSearch(){
@@ -158,7 +175,7 @@ function getAllTests(){
                                 //var id_cell = row.append( $('<td></td>').html(test_id) )
                                 powder_cell.html(powder.name)
                                 row.append( powder_cell )
-                                var mold_cell = row.append( $('<td></td>').html(doc.mold_diameter) )
+                                var mould_cell = row.append( $('<td></td>').html(doc.mould_diameter) )
                                 var load_cell = row.append( $('<td></td>').html(doc.load) )
                                 var temp_ramp_cell = row.append( $('<td></td>').html(doc.temperature_ramp_rate) )
                                 var hold_temp_cell = row.append( $('<td></td>').html(doc.hold_temperature) )
@@ -425,9 +442,10 @@ function saveTest(){
             test.created = new Date();
             test.modified = new Date();
 
+            test.machine = form.find('#machine option:selected').val();
             var powder_id = form.find('#powder_name option:selected').val();
             console.log(powder_id)
-            test.mold_diameter = $('input[name="mold_diameter"]').val();
+            test.mould_diameter = $('input[name="mould_diameter"]').val();
             test.load = $('input[name="load"]').val();
             test.temperature_ramp_rate = $('input[name="temperature_ramp_rate"]').val();
             test.cooling_rate = $('input[name="cooling_rate"]').val();
@@ -512,11 +530,11 @@ function removeTest(test_id){
 
 
 function parseDatafile(data){
-    var testData = ""
+     var testData = ""
      Papa.parse( data ,  {
                   complete: function(results) {
                             console.log("File parsed successfully");
-                            testData = results.data;
+                            testData = results.data.splice(1);
                         },
                    error: function(err, file){
                            console.log(err, file);

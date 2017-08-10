@@ -38,6 +38,7 @@
               <li><a href="/tests/tmc"><i class="fa fa-chart"></i>  TMC Tests</a></li>
               <li><a href="/tests/aspshear"><i class="fa fa-chart"></i>  ASP Shear</a></li>
               <li><a href="/tests/orthogonal"><i class="fa fa-chart"></i>  Orthogonal Cutting</a></li>
+              <li><a href="/tests/conform"><i class="fa fa-chart"></i>  Conform</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li><a href="/account" disabled><i class="fa fa-user-circle"></i> My account</a></li>
@@ -142,32 +143,41 @@
             <div class="panel-body">
                                 <form id='testForm'>
                                         <div class='form-group'>
+                                            <div class='input-group col-md-12' id='sampleDiv'>
+                                                <label for='machine'>Machine</label>
+                                                <select class='form-control' id='machine' name='machine'>
+                                                    <option value="Sheffield">Sheffield - small</option>
+                                                    <option value="Kennametal">Kennametal - large</option>
+                                                </select>
+                                            </div>
                                                 <div class='input-group col-md-12' id='sampleDiv'>
                                                     <label for='powder_name'>Sample</label>
                                                     <select class='form-control' id='powder_name' name='powder_name'></select>
                                                 </div>
-                                                <label for='mold_diameter'>Mold diameter</label>
+                                                <label for='mould_diameter'>Mould diameter</label>
                                                 <div class='input-group'>
-                                                    <input type='number' class='form-control' name='mold_diameter' id='mold_diameter' />
+                                                    <input type='number' class='form-control' name='mould_diameter' id='mould_diameter' min=0.0/>
                                                     <span class="input-group-addon">mm</span>
                                                 </div>
-                                                <label for='load'>Loads</label>
+                                                <label for='load'>Load</label>
                                                 <div class='input-group'>
                                                     <input type='number' class='form-control' name='load' id='load' placeholder="Vertical load (kN)"/>
                                                     <span class="input-group-addon">kN</span>
+                                                    <input type='number' class='form-control' name='pressure' id='pressure' min=0.0  placeholder="Pressure" disabled/>
+                                                    <span class="input-group-addon">MPa</span>
                                                 </div>
                                                 <label for='temp_ramp_rate'>Ramp rates</label>
                                                 <div class='input-group'>
-                                                    <input type='number' class='form-control' name='temp_ramp_rate' id='temp_ramp_rate'  placeholder="Heating (ºC/min)"/>
+                                                    <input type='number' class='form-control' name='temp_ramp_rate' id='temp_ramp_rate' min=0.0 placeholder="Heating (ºC/min)"/>
                                                     <span class="input-group-addon">ºC/min</span>
-                                                    <input type='number' class='form-control' name='cooling_rate' id='cooling_rate'  placeholder="Cooling (ºC/min)"/>
+                                                    <input type='number' class='form-control' name='cooling_rate' id='cooling_rate' min=0.0  placeholder="Cooling (ºC/min)"/>
                                                     <span class="input-group-addon">ºC/min</span>
                                                 </div>
                                                 <label for='hold_temperature'>Hold</label>
                                                 <div class='input-group'>
-                                                    <input type='number' class='form-control' name='hold_temperature' id='hold_temperature' placeholder="Temperature (ºC)"/>
+                                                    <input type='number' class='form-control' name='hold_temperature' id='hold_temperature' min=0.0 placeholder="Temperature (ºC)"/>
                                                     <span class="input-group-addon">ºC</span>
-                                                    <input type='number' class='form-control' name='hold_time' id='hold_time' placeholder="Time (min)"/>
+                                                    <input type='number' class='form-control' name='hold_time' id='hold_time' min=0.0 placeholder="Time (min)"/>
                                                     <span class="input-group-addon">min</span>
                                                 </div>
 

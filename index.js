@@ -55,7 +55,7 @@ app.get('/tests/fast/process',function(req, res){
 })
 app.get('/tests/fast/edit',function(req, res){
     console.log("Request to edit FAST test: " + req.query._id);
-    res.sendFile(process.cwd() + '/tmc_edit.html')
+    res.sendFile(process.cwd() + '/fast_edit.html')
 })
 app.get('/tests/fast/compare',function(req, res){
     console.log("Request to compare FAST tests: " + req.query._id);

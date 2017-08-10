@@ -9,34 +9,26 @@ var plotAllTests = $('#plotAll');
 var currentTestTable = $('#currentTests');
 var tableBody = currentTestTable.find("tbody")
 
-var chart_LS = ""
-var chart_TS = ""
-var chart_VS = ""
-var chart_SRS = ""
-var chart_SS = ""
-
+var chart_main = ""
+var chart_groove = ""
+var chart_abut = ""
 
 var previewBox = $('#uploadImagesPreview')
 var imageUpload = $('#imageUpload')
 var testImages = $('#testImages');
-var NH_K_slider = $('#NH_K_slider');
-var NH_n_slider = $('#NH_n_slider');
-var NH_m_slider = $('#NH_m_slider');
-var NH_beta_slider = $('#NH_beta_slider');
-var NH_temps = $('#NH_temperature');
-var NH_strainrates = $('#NH_strainrate');
-
+var noteModal = $('#noteModal');
 var currentTest = ""
-var originalMusfile = ""
+var originalDatafile = ""
 
 var form_groupDiv = $("<div class='form-group'></div>")
 var input_groupDiv = $("<div class='input-group'></div>")
 var formDiv = $("<form class='form'></form>")
 
+ var trialNote = $("#trialNote")
 
 
 //setup the in-browser database to save the uploaded flow stress data and saved fitted parameters
-var pouchdb = new PouchDB('flowstress')
+var pouchdb = new PouchDB('fast')
 pouchdb.info().then(function (info) {
   console.log(info);
 })
@@ -61,7 +53,6 @@ $(document).ready(function(){
 
         console.log("Processing test: "+ currentTest)
         getSingleTest()
-        plotSingleTest(currentTest)
 
 
     }else{
@@ -91,40 +82,6 @@ $(document).ready(function(){
     })
 
 
-
-    $("#NH_controls input[type='range']").on('input', function(){
-        var value = $(this).val()
-        $(this).siblings('.value').html( value )
-        plotNHEq()
-    })
-
-    $("#NH_controls select").on('change', function(){
-        plotNHEq()
-    })
-
-/*
-
-    $("body").on("contextmenu","img", function(e) {
-        console.log(e)
-        $contextMenu.show()
-            $contextMenu.css({
-              display: "block",
-              left: e.pageX,
-              top: e.pageY
-            });
-            return false;
-    });
-
-
-    $("body").on('click', function(){
-        $contextMenu.hide()
-    })
-
-    $contextMenu.on("click", "a", function() {
-        $contextMenu.show();
-    });
-
-*/
 
 
 
@@ -285,12 +242,13 @@ function getSingleTest(){
     testImages.html("");
     pouchdb.get( currentTest , { attachments : true } )
             .then(function(doc){
-                populateTestForm(doc)
+                currentTest = doc
+                console.log(currentTest.testData)
+                populateTestForm(currentTest)
+                plotData()
 
-                console.log(doc)
                 tableBody.append("<tr name='"+ doc._id +"'><td>"+ doc._id  +"</td><td name='sample'>"+ doc.sample.name.user_defined +"</td><td name='temperature'>"+ doc.temperature +"</td><td name='strainrate'>"+ doc.strainrate +"</td></tr>")
 
-                //loadData(doc);
                 var images = doc._attachments
                     for( var key in images ){
                             console.log(key + " -> " + images[key]);
@@ -324,35 +282,14 @@ function getSingleTest(){
 
 
 
-
-
-
-function plotSingleTest(test_id){
-
-
-    pouchdb.get( test_id )
-            .then(function(result){
-                var data = result.measurements
-                plotData(data)
-
-
-            }).catch(function(err){
-                console.log(err)
-
-            })
-
-
-}
-
-
-function populateTestForm(doc){
+function populateTestForm(currentTest){
 
     var form = $('#testForm');
     var inputs = form.find('input');
     var segmentsDiv = $('div[name="segments"]')
 
-    console.log(doc)
-
+    //console.log(currentTest)
+/*
     $("input[name='user_defined']").val(doc.sample.name.user_defined)
     $("input[name='musfile_defined']").val(doc.sample.name.musfile_defined)
     $("input[name='material']").val(doc.sample.material)
@@ -370,22 +307,13 @@ function populateTestForm(doc){
     $("input[name='testdate']").val( new Date(doc.testdate).toISOString().split('T')[0] )
     $("input[name='testtime']").val( doc.testdate.split(' ')[3] )
 
-    $.each(doc.segments, function(i, val){
-        var segment = $('<div class="input-group"></div>')
-        var segment_num = $('<div class="input-group-addon"></div>')
-        var segment_text = $('<textarea class="form-control" rows=10 disabled></textarea>')
-        segment_num.html("<h5>" + i +"</h5>")
-        console.log(val)
 
-        segment_text.val( JSON.stringify(val, null, 3) )
-        segment.append(segment_num).append(segment_text)
-        segmentsDiv.append(segment)
-    });
 
     var blob = new Blob([doc.musfile.file], {type: "text/.tsv"});
     var url = URL.createObjectURL(blob);
     $("#exportMusfile").attr('href', url )
     $("#exportMusfile").attr('download', currentTest + ".MUS" )
+    */
 }
 
 
@@ -407,140 +335,35 @@ $(".panel-heading").on('click', function(){
 
 })
 
-/*
-function plot_LS(data){
-    var plotData = []
 
-  console.log(data)
-
-    var graphDiv = d3.select('#graphLS').append('svg');
-
-    var margin = {top:"40", bottom:"40", left:"40", right:"40"}
-    var width = 600;
-        width = width - margin.left - margin.right
-    var height = 400;
-
-    graphDiv
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    var legendRectSize = 12;
-    var legendSpacing = 4;
-
-    var legend = graphDiv.selectAll('.legend')
-                  .data([data])
-                  .enter()
-                  .append('g')
-                  .attr('class', 'legend')
-                  .attr('transform', function(d, i) {
-                    var height = legendRectSize + legendSpacing;
-                    var offset =  height * 1 / 2;
-                    var horz = -2 * legendRectSize;
-                    var vert = i * height - offset;
-                    return 'translate(' + (width - 100) + ',' + 10 + ')';
-                  });
-    legend.append('rect')
-                .attr('width', legendRectSize)
-                .attr('height', legendRectSize)
-                .style('fill', 'steelblue')
-                .style('stroke', 'steelblue');
-    legend.append('text')
-              .attr('x', legendRectSize + legendSpacing)
-              .attr('y', legendRectSize - legendSpacing)
-              .text( currentTest );
-
-    var xScale = d3.scaleLinear().domain(d3.extent(data, function(d) { return d.sample_thickness; })).range([0, width])
-    var yScale = d3.scaleLinear().domain(d3.extent(data, function(d) { return d.load })).range([0, height])
-
-    var xAxis = d3.axisBottom(xScale).ticks(10)
-
-    var yAxis = d3.axisLeft(yScale).ticks(10)
-
-
-    var line = d3.line()
-        .curve(d3.curveBasis)
-        .x(function(d) { return xScale(d.sample_thickness); })
-        .y(function(d) { return yScale(d.load); });
-
-    var toolTip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
-
-
-    graphDiv.append("path")
-                  .data([data])
-                  .attr("d", line)
-                  .attr("fill", "none")
-                  .attr("stroke", "steelblue")
-                  .attr("transform", "translate( 50 ,0 )")
-                  .on("mouseover", function(d) {
-                           toolTip.transition()
-                               .duration(100)
-                               .style("opacity", .9);
-                           toolTip.html( d.displacement + " (mm) - "  + d.sample_thickness + " (kN)")
-                               .style("left", (d3.event.pageX) + "px")
-                               .style("top", (d3.event.pageY - 28) + "px");
-                           })
-                       .on("mouseout", function(d) {
-                           toolTip.transition()
-                               .duration(200)
-                               .style("opacity", 0);
-                       });;
-
-
-
-    graphDiv.append("g")
-                      .attr("transform", "translate(50," + height + ")")
-                      .call(xAxis);
-    graphDiv.append("g")
-                      .attr("transform", "translate( 50, 0 )")
-                      .call(yAxis);
-
-
-      graphDiv.append('text')
-                .attr("transform", "translate(" + (width / 2) + " ," + (height + 35) + ")")
-                .style("text-anchor", "middle")
-                .text("Displacement (mm)");
-
-      graphDiv.append("text")
-              .attr("transform", "rotate(-90)")
-              .attr("y", 4)
-              .attr("x", 0 - (height / 2))
-              .attr("dy", "1em")
-              .style("text-anchor", "middle")
-              .text("Load (kN)");
-
-
-}
-*/
-
-
-
-function plotData(data) {
+function plotData() {
     console.log('Plotting graphs for test');
 
-     chart_LS = new CanvasJS.Chart("graphLS",
+
+     chart_main = new CanvasJS.Chart("mainGraph",
     {
         animationEnabled: true,
         zoomEnabled: true,
+        height: 600,
         zoomType: "xy",
+        toolTipContent: "x: {x}, y: {y[0]} ",
         exportEnabled: true,
         exportFileName: "graph",
+        rangeChanged: syncHandler,
         toolTip: {
                 enabled: true,
                 shared: true,
         },
         title: {
-            text: "Load - Stroke",
-            fontColor: "#000",
+            text: "Trial data",
+            fontColor: "#008B8B",
             fontfamily: "Arial",
             fontSize: 20,
             padding: 8
         },
     axisX:{
-            title: "Sample height (mm)",
+            title: "Time",
+            valueFormatString: "HH:mm:ss",
             fontColor: "#000",
             fontfamily: "Arial",
             titleFontSize: 20,
@@ -549,12 +372,11 @@ function plotData(data) {
             tickColor: "#000",
             labelFontColor: "#000",
             titleFontColor: "#000",
-            lineThickness: 1,
-            reversed:  true
+            lineThickness: 1
     },
-    axisY:
+    axisY: [
        {
-         title: "Load (kN)",
+         title: "Temperature (ºC)",
          fontfamily: "Arial",
          titleFontSize: 20,
          labelFontSize: 12,
@@ -562,53 +384,33 @@ function plotData(data) {
          tickColor: "#000",
          labelFontColor: "#000",
          titleFontColor: "#000",
-         lineThickness: 1,
-         reversed:  true
-     },
-        data:[
-        {
-            type: "line",
-            toolTipContent: "Height: {x} mm, Load: {y} kN",
-            dataPoints: parseData(data, "displacement", "load", "")
-        }]
-    });
-
-    chart_LS.render();
-
-    chart_TS = new CanvasJS.Chart("graphTS",
-   {
-       animationEnabled: true,
-       zoomEnabled: true,
-       zoomType: "xy",
-       exportEnabled: true,
-       exportFileName: "graph",
-       toolTip: {
-               enabled: true,
-               shared: true,
-       },
-       title: {
-           text: "Temperature - Stroke",
-           fontColor: "#000",
-           fontfamily: "Arial",
-           fontSize: 20,
-           padding: 8
-       },
-   axisX:{
-           title: "Sample height (mm)",
-           fontColor: "#000",
-           fontfamily: "Arial",
-           titleFontSize: 20,
-           labelFontSize: 12,
-           lineColor: "#000",
-           tickColor: "#000",
-           labelFontColor: "#000",
-           titleFontColor: "#000",
-           lineThickness: 1,
-           reversed:  true
-   },
-   axisY:
+         lineThickness: 1
+      },
       {
-        title: "Temperature (ºC)",
+         title: "Stress (MPa)",
+         fontfamily: "Arial",
+         titleFontSize: 20,
+         labelFontSize: 12,
+         lineColor: "#000",
+         tickColor: "#000",
+         labelFontColor: "#000",
+         titleFontColor: "#000",
+         lineThickness: 1
+     }],
+     axisY2:[
+      {
+         title: "Wheel Speed (RPM)",
+         fontfamily: "Arial",
+         titleFontSize: 20,
+         labelFontSize: 12,
+         lineColor: "#000",
+         tickColor: "#000",
+         labelFontColor: "#000",
+         titleFontColor: "#000",
+         lineThickness: 1
+     },
+     {
+        title: "Position (mm)",
         fontfamily: "Arial",
         titleFontSize: 20,
         labelFontSize: 12,
@@ -617,209 +419,398 @@ function plotData(data) {
         labelFontColor: "#000",
         titleFontColor: "#000",
         lineThickness: 1
+    }],
+    legend: {
+        cursor: "pointer",
+        horizontalAlign: "center", // "center" , "right"
+        verticalAlign: "top",  // "top" , "bottom"
+        fontfamily: "Arial",
+        fontSize: 16,
+        itemclick: function(e){
+            //console.log(e.dataSeries)
+            if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                    e.dataSeries.visible = false;
+                } else {
+                    e.dataSeries.visible = true;
+                }
+            e.chart.render();
+            //alert( "Legend item clicked with type : " + e.dataSeries);
+        }
+
+    },
+        data: [
+        {
+          type: "line",
+          showInLegend: true,
+          name: "Av Pyro",
+          legendText: "Av Pyro",
+          axisYIndex: 0,
+          dataPoints: parseData( currentTest.testData, "P. Time", "Av Pyro"),
+          click: function(e){
+                  addNote(e)
+          }
+          },
+          {
+            type: "line",
+            showInLegend: true,
+            name: "Wheel Temp 1",
+            legendText: "Wheel Temp 1",
+            axisYIndex: 0,
+            dataPoints: parseData( currentTest.testData, "timestamp", "wheel_temperature_1_"),
+            click: function(e){
+                    addNote(e)
+            }
+          },
+          {
+            type: "line",
+            showInLegend: true,
+            name: "Wheel Temp 2",
+            legendText: "Wheel Temp 2",
+            axisYIndex: 0,
+            dataPoints: parseData( currentTest.testData, "timestamp", "wheel_temperature_2_"),
+            click: function(e){
+                    addNote(e)
+            }
+          },
+        {
+          type: "line",
+          showInLegend: true,
+          name: "Wheel speed",
+          legendText: "Wheel speed",
+          axisYIndex: 0,
+          dataPoints: parseData( currentTest.testData, "timestamp", "conform_wheel_speed_"),
+          click: function(e){
+                  addNote(e)
+          }
+      },
+      {
+        type: "line",
+        showInLegend: true,
+        name: "Motor current",
+        legendText: "Motor current",
+        axisYIndex: 0,
+        dataPoints: parseData( currentTest.testData, "timestamp", "conform_motor_current_"),
+        click: function(e){
+                addNote(e)
+        }
+    },
+    {
+      type: "scatter",
+      showInLegend: true,
+      name: "Notes",
+      legendText: "Notes",
+      dataPoints:  currentTest.testData.map(function(d){
+          if( d["note"] ){
+              return {"x": new Date(d["timestamp"])  , "y": 100, "label": d["note"] }
+          }
+          else{
+              return {"x": new Date(currentTest.testData[0].timestamp), "y": null}
+          }
+      }),
+      mouseover: function(e){
+              showNote(e)
+      }
+    }
+
+        ]
+    });
+
+    chart_main.render();
+/*
+    chart_groove = new CanvasJS.Chart("grooveGraph",
+    {
+     animationEnabled: true,
+     zoomEnabled: true,
+     zoomType: "x",
+     toolTipContent: "x: {x}, y: {y} ",
+     exportEnabled: true,
+     exportFileName: "graph",
+     rangeChanged: syncHandler,
+     toolTip: {
+             enabled: true,
+             shared: true,
      },
-       data:[
+     title: {
+         text: "Wheel groove data",
+         fontColor: "#008B8B",
+         fontfamily: "Arial",
+         fontSize: 20,
+         padding: 8
+     },
+    axisX:{
+         title: "Time",
+         fontColor: "#000",
+         fontfamily: "Arial",
+         titleFontSize: 20,
+         labelFontSize: 12,
+         lineColor: "#000",
+         tickColor: "#000",
+         labelFontColor: "#000",
+         titleFontColor: "#000",
+         lineThickness: 1
+    },
+    axisY:
+        {
+              title: "Groove depth and width (mm)",
+              fontfamily: "Arial",
+              titleFontSize: 20,
+              labelFontSize: 12,
+              lineColor: "#000",
+              tickColor: "#000",
+              labelFontColor: "#000",
+              titleFontColor: "#000",
+              lineThickness: 1
+          },
+    axisY2:
+    {
+      title: "Groove CSA (mm^2)",
+      fontfamily: "Arial",
+      titleFontSize: 20,
+      labelFontSize: 12,
+      lineColor: "#000",
+      tickColor: "#000",
+      labelFontColor: "#000",
+      titleFontColor: "#000",
+      lineThickness: 1
+    },
+    legend: {
+     cursor: "pointer",
+     horizontalAlign: "center", // "center" , "right"
+     verticalAlign: "top",  // "top" , "bottom"
+     fontfamily: "Arial",
+     fontSize: 16,
+     itemclick: function(e){
+         console.log(e.dataSeries)
+         if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                 e.dataSeries.visible = false;
+             } else {
+                 e.dataSeries.visible = true;
+             }
+         e.chart.render();
+         //alert( "Legend item clicked with type : " + e.dataSeries);
+     }
+
+    },
+     data: [
+     {
+       type: "line",
+       showInLegend: true,
+       name: "grooveWidth",
+       legendText: "Groove Width",
+       axisYIndex: 0,
+       dataPoints: parseData(data, "time", "grooveWidth", "Groove Width")
+       },
        {
          type: "line",
-         toolTipContent: "Height: {x} mm, Temp: {y} ºC",
-         dataPoints: parseData(data, "displacement", "sample_temp_2_centre", "")
+         showInLegend: true,
+         name: "grooveDepth",
+         legendText: "Groove Depth",
+         axisYIndex: 0,
+         dataPoints: parseData(data, "time", "grooveDepth", "Groove Depth")
+       },
+       {
+         type: "line",
+         showInLegend: true,
+         name: "grooveCSA",
+         legendText: "Groove CSA",
+         axisYType: "secondary",
+         axisYIndex: 0,
+         dataPoints: parseData(data, "time", "grooveCSA", "Groove CSA")
      }]
-   });
+    });
 
 
 
 
-
-chart_TS.render();
-
+chart_groove.render();
 
 
-chart_VS = new CanvasJS.Chart("graphVS",
+chart_abut = new CanvasJS.Chart("abutGraph",
 {
-   animationEnabled: true,
-   zoomEnabled: true,
-   zoomType: "xy",
-   toolTipContent: "x: {x}, y: {y[0]} ",
-   exportEnabled: true,
-   exportFileName: "graph",
-   toolTip: {
-           enabled: true,
-           shared: true,
-   },
-   title: {
-       text: "Velocity - Stroke",
-       fontColor: "#000",
-       fontfamily: "Arial",
-       fontSize: 20,
-       padding: 8
-   },
+ animationEnabled: true,
+ zoomEnabled: true,
+ height: 600,
+ width: 600,
+ zoomType: "x",
+ toolTipContent: "x: {x}, y: {y} ",
+ exportEnabled: true,
+ exportFileName: "graph",
+ rangeChanged: syncHandler,
+ toolTip: {
+         enabled: true,
+         shared: true,
+ },
+ title: {
+     text: "Abutment Stress data",
+     fontColor: "#008B8B",
+     fontfamily: "Arial",
+     fontSize: 20,
+     padding: 8
+ },
 axisX:{
-       title: "Sample height (mm)",
-       fontColor: "#000",
-       fontfamily: "Arial",
-       titleFontSize: 20,
-       labelFontSize: 12,
-       lineColor: "#000",
-       tickColor: "#000",
-       labelFontColor: "#000",
-       titleFontColor: "#000",
-       lineThickness: 1,
-       reversed:  true
+     title: "Wheel Speed (RPM)",
+     fontColor: "#000",
+     fontfamily: "Arial",
+     titleFontSize: 20,
+     labelFontSize: 12,
+     lineColor: "#000",
+     tickColor: "#000",
+     labelFontColor: "#000",
+     titleFontColor: "#000",
+     lineThickness: 1
 },
 axisY:
-  {
-    title: "Velocity (mm/s)",
-    fontfamily: "Arial",
-    titleFontSize: 20,
-    labelFontSize: 12,
-    lineColor: "#000",
-    tickColor: "#000",
-    labelFontColor: "#000",
-    titleFontColor: "#000",
-    lineThickness: 1
- },
-   data:[
-   {
-     type: "line",
-     toolTipContent: "Height: {x} mm, Velocity: {y} mm/s",
-     dataPoints: parseData(data, "displacement", "velocity_", "")
- }]
-});
-
-
-chart_VS.render();
-
-
-chart_SRS = new CanvasJS.Chart("graphSRS",
-{
-   animationEnabled: true,
-   zoomEnabled: true,
-   zoomType: "xy",
-   toolTipContent: "x: {x}, y: {y[0]} ",
-   exportEnabled: true,
-   exportFileName: "graph",
-   toolTip: {
-           enabled: true,
-           shared: true,
-   },
-   title: {
-       text: "Strain rate",
-       fontColor: "#000",
-       fontfamily: "Arial",
-       fontSize: 20,
-       padding: 8
-   },
-axisX:{
-       title: "Sample height (mm)",
-       fontColor: "#000",
-       fontfamily: "Arial",
-       titleFontSize: 20,
-       labelFontSize: 12,
-       lineColor: "#000",
-       tickColor: "#000",
-       labelFontColor: "#000",
-       titleFontColor: "#000",
-       lineThickness: 1,
-       reversed:  true
-},
-axisY:
-  {
-    title: "Strain rate (/s)",
-    fontfamily: "Arial",
-    titleFontSize: 20,
-    labelFontSize: 12,
-    lineColor: "#000",
-    tickColor: "#000",
-    labelFontColor: "#000",
-    titleFontColor: "#000",
-    lineThickness: 1
- },
-   data:[
-   {
-     type: "line",
-     toolTipContent: "Strain: {x}, Stress: {y} MPa",
-     dataPoints: parseData(data, "displacement", "strain_rate", "")
- }]
+    {
+          title: "Abutment Stress (MPa)",
+          fontfamily: "Arial",
+          titleFontSize: 20,
+          labelFontSize: 12,
+          lineColor: "#000",
+          tickColor: "#000",
+          labelFontColor: "#000",
+          titleFontColor: "#000",
+          lineThickness: 1
+      },
+ data: [
+     {
+       type: "scatter",
+       markerSize: 10,
+       markerColor: "rgba(0,0,0,0.3)",
+       showInLegend: true,
+       dataPoints: parseData(data, "wheelSpeed", "abutStress", "Abutment Stress")
+   }]
 });
 
 
 
 
+chart_abut.render();
 
-chart_SRS.render();
-
-
-chart_SS = new CanvasJS.Chart("graphSS",
-{
-   animationEnabled: true,
-   zoomEnabled: true,
-   zoomType: "xy",
-   toolTipContent: "x: {x}, y: {y[0]} ",
-   exportEnabled: true,
-   exportFileName: "graph",
-   toolTip: {
-           enabled: true,
-           shared: true,
-   },
-   title: {
-       text: "True stress - true strain",
-       fontColor: "#000",
-       fontfamily: "Arial",
-       fontSize: 20,
-       padding: 8
-   },
-axisX:{
-       title: "True strain (mm/mm)",
-       fontColor: "#000",
-       fontfamily: "Arial",
-       titleFontSize: 20,
-       labelFontSize: 12,
-       lineColor: "#000",
-       tickColor: "#000",
-       labelFontColor: "#000",
-       titleFontColor: "#000",
-       lineThickness: 1,
-       reversed:  true
-},
-axisY:
-  {
-    title: "True stress (MPa)",
-    fontfamily: "Arial",
-    titleFontSize: 20,
-    labelFontSize: 12,
-    lineColor: "#000",
-    tickColor: "#000",
-    labelFontColor: "#000",
-    titleFontColor: "#000",
-    lineThickness: 1
- },
-   data:[
-   {
-     type: "line",
-     toolTipContent: "Strain: {x}, Stress: {y} MPa",
-     dataPoints: parseData(data, "strain", "isoStress", "")
- }]
-});
-
-
-
-
-
-chart_SS.render();
-
-
-
-
+*/
 
    }
 
 
 
-   function parseData(data, x_name, y_name, label){
-        //console.log(label)
+   function parseData(data, x_name, y_name){
            var parsed_data = data.map(function(d){
-               return {"x": d[x_name]  , "y": d[y_name], "label": label }
+               return {"x": new Date(d[x_name])  , "y": d[y_name] }
            })
            //console.log(parsed_data)
            return parsed_data
    }
+
+
+
+   function syncHandler(e) {
+       var charts = [chart_main, chart_groove]
+       console.log(charts)
+       for (var i = 0; i < charts.length; i++) {
+           var chart = charts[i];
+
+           if (!chart.options.axisX)
+   	    chart.options.axisX = {};
+
+           if (!chart.options.axisY)
+               chart.options.axisY = {};
+
+           if (e.trigger === "reset") {
+
+               chart.options.axisX.viewportMinimum = chart.options.axisX.viewportMaximum = null;
+               chart.options.axisY.viewportMinimum = chart.options.axisY.viewportMaximum = null;
+
+               chart.render();
+
+           } else if (chart !== e.chart) {
+
+               chart.options.axisX.viewportMinimum = e.axisX.viewportMinimum;
+               chart.options.axisX.viewportMaximum = e.axisX.viewportMaximum;
+
+               chart.options.axisY.viewportMinimum = e.axisY.viewportMinimum;
+               chart.options.axisY.viewportMaximum = e.axisY.viewportMaximum;
+
+               chart.render();
+
+           }
+       }
+   }
+
+
+ function addNote(e){
+     //console.log(e)
+     noteModal.show(200)
+     noteModal.find(".btn").hide()
+     var index = e.dataPointIndex
+     var note_position = noteModal.find('p')
+     note_position.html("<b>Data series:</b> " + e.dataSeries.name + "<br><b>Time: </b>" + e.dataPoint.x +" <br><b>Value: </b>" + e.dataPoint.y )
+     var index = e.dataPointIndex
+
+     trialNote.on('input', function(){
+         if(trialNote.val().length > 0){
+             noteModal.find(".btn-success").show(200)
+         }
+         else{
+              noteModal.find(".btn-success").hide()
+          }
+     })
+
+     noteModal.find(".btn").on('click', function(){
+         currentTest.testData[index].note = trialNote.val()
+         trialNote.val("")
+         noteModal.hide()
+         // Save notes into the data base
+         pouchdb.get( currentTest._id ).then(function(doc) {
+             currentTest._rev = doc._rev
+           return pouchdb.put( currentTest );
+             }).then(function(response) {
+                 console.log(response);
+             }).catch(function (err) {
+                 console.log(err);
+             });
+
+         plotData()
+         console.log(currentTest.testData[index])
+     })
+ }
+
+ function showNote(e){
+     //console.log(e)
+     noteModal.show(200)
+     noteModal.find(".btn-success").show()
+     noteModal.find(".btn-danger").show()
+     var index = e.dataPointIndex
+     var note_position = noteModal.find('p')
+     note_position.html("<b>Data series:</b> " + e.dataSeries.name + "<br><b>Time: </b>" + e.dataPoint.x +" <br><b>Value: </b>" + e.dataPoint.y )
+     var index = e.dataPointIndex
+
+     trialNote.val(currentTest.testData[index].note)
+
+     trialNote.on('input', function(){
+         if(trialNote.val().length > 0){
+             noteModal.find(".btn").show(200)
+         }
+         else{
+              noteModal.find(".btn").hide()
+          }
+     })
+
+     noteModal.find(".btn").on('click', function(){
+         currentTest.testData[index].note = trialNote.val()
+         trialNote.val("")
+         noteModal.hide()
+         // Save notes into the database
+         pouchdb.get( currentTest._id ).then(function(doc) {
+             currentTest._rev = doc._rev
+           return pouchdb.put( currentTest );
+             }).then(function(response) {
+                 console.log(response);
+             }).catch(function (err) {
+                 console.log(err);
+             });
+
+         plotData()
+         console.log(currentTest.testData[index])
+     })
+
+
+ }

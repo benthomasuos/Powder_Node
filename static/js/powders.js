@@ -142,7 +142,7 @@ function getAllPowders(){
                                 var type_cell = row.append( $('<td></td>').html(doc.type) )
                                 var metal_cell = row.append( $('<td></td>').html(doc.base_metal) )
                                 var alloy_cell = row.append( $('<td></td>').html(doc.alloy) )
-
+                                var morph_cell = row.append( $('<td></td>').html(doc.morphology) )
                                 var supplier_cell = row.append( $('<td></td>').html( doc.supplier ) )
                                 var psd_min_cell = row.append( $('<td></td>').html(doc.psd_min + " µm") )
                                 var psd_min_cell = row.append( $('<td></td>').html(doc.psd_max + " µm") )
@@ -155,62 +155,62 @@ function getAllPowders(){
                                 var edit_cell =  row.append($('<td></td>').html("<a href='/powders/edit?_id="+powder_id+"'><i class='fa fa-edit fa-2x'></i></a>"))
                                 var trash_cell = row.append( $('<td></td>').html("<i class='fa fa-trash fa-2x'></i>") )
                                 tableBody.append(row)
-                            }
+                                }
 
-                        currentPowdersTable.DataTable();
-                        tableBody.find("i.fa-trash").on('click', function(){
-                            var powder_id = $(this).closest('tr').attr('name');
-                            console.log("Deleting test " + powder_id)
-                            //var response = confirm("Are you sure you want to delete test: "+ test_id)
-                            var response = true
-                            if( response == true){
-                                removeTest(powder_id);
-                            }
-                        })
-
-                        tableBody.find('input[type="checkbox"]').on('change', function(){
-                            var tests_to_compare = [];
-                            tableBody.find('input[type="checkbox"]').each(function(){
-                                if( $(this)[0].checked ){
-                                    tests_to_compare.push( $(this).attr('name') );
+                            currentPowdersTable.DataTable();
+                            tableBody.find("i.fa-trash").on('click', function(){
+                                var powder_id = $(this).closest('tr').attr('name');
+                                console.log("Deleting test " + powder_id)
+                                //var response = confirm("Are you sure you want to delete test: "+ test_id)
+                                var response = true
+                                if( response == true){
+                                    removeTest(powder_id);
                                 }
                             })
 
-                            if( tests_to_compare.length >= 2 ){
-                                var testString = ""
-                                for(var i=0;i<tests_to_compare.length;i++){
-                                    testString += "_id_"+ i+ "=" + tests_to_compare[i]
-                                    if(i<tests_to_compare.length-1){
-                                        testString += "&";
+                            tableBody.find('input[type="checkbox"]').on('change', function(){
+                                var tests_to_compare = [];
+                                tableBody.find('input[type="checkbox"]').each(function(){
+                                    if( $(this)[0].checked ){
+                                        tests_to_compare.push( $(this).attr('name') );
                                     }
-                                }
-                                console.log(testString)
-                                $('#compareTests').html("<a href='/compare?"+ testString +"'><div class='btn btn-md btn-primary'>Compare tests</div>")
+                                })
 
-                                //console.log("Tests to compare: " + tests_to_compare);
+                                if( tests_to_compare.length >= 2 ){
+                                    var testString = ""
+                                    for(var i=0;i<tests_to_compare.length;i++){
+                                        testString += "_id_"+ i+ "=" + tests_to_compare[i]
+                                        if(i<tests_to_compare.length-1){
+                                            testString += "&";
+                                        }
+                                    }
+                                    console.log(testString)
+                                    $('#compareTests').html("<a href='/compare?"+ testString +"'><div class='btn btn-md btn-primary'>Compare tests</div>")
+
+                                    //console.log("Tests to compare: " + tests_to_compare);
+                                }
+                                else{
+                                    $('#compareTests').html("")
+                                    console.log("Need two or more tests to compare" );
+                                }
+                            })
+
+
+
+                            $('#powder_status').hide()
                             }
                             else{
-                                $('#compareTests').html("")
-                                console.log("Need two or more tests to compare" );
+                                $('#powder_status').show()
+
                             }
-                        })
+
+                }).catch(
+                        console.log("Couldn't retrieve data from the database")
+                ) //  End of query and response to query
 
 
 
-                        $('#powder_status').hide()
-                        }
-                        else{
-                            $('#powder_status').show()
-
-                        }
-
-            }).catch(
-                    console.log("Couldn't retrieve data from the database")
-            ) //  End of query and response to query
-
-
-
-}
+    }
 
 
 function getSearchedTests(){
