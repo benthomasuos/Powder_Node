@@ -35,10 +35,9 @@ a.disabled {
 .graphDiv{
     min-width: 80%;
     min-height: 400px;
-    max-height: 800px;
     border: solid gray 1px;
     padding: 10px;
-    margin: 4px;
+    margin: 10px;
 
 }
 
@@ -74,9 +73,6 @@ td + i.fa-trash:hover{
     overflow:hidden;
 }
 
-.graphDiv{
-
-}
 
 
 .graph_y_controls{

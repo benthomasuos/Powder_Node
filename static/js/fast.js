@@ -531,6 +531,26 @@ function removeTest(test_id){
 
 function parseDatafile(data){
      var testData = ""
+     var testData = data.split('\r\n')
+     var headerLine = testData[0]
+     var headers = headerLine.split(',')
+
+     for(i=0;i< headers.length;i++){
+          var name = headers[i].toString()
+          headers[i] = name.replace(/\s/g, "")
+                              .replace(/\./g, "")
+                              .toLowerCase()
+                              .toString()
+        console.log(headers[i])
+    }
+    var headerLine = headers.join(",")
+    console.log(headerLine)
+    testData[0] = headerLine
+
+    data = testData.join('\r\n')
+
+
+
      Papa.parse( data ,  {
                   complete: function(results) {
                             console.log("File parsed successfully");
@@ -541,9 +561,7 @@ function parseDatafile(data){
                        },
                    header: true,
                    skipEmptyLines: true,
-                   dynamicTyping: true,
-                   delimiter: ",",
-                   encoding: "utf8"
+                   dynamicTyping: true
                } ); // end of Papa.parse()
                 console.log(testData)
                 testData = testData.slice(0)

@@ -6,12 +6,12 @@
 var allGraphDivs = $('.graphDiv');
 var allControls = $('.controls');
 var plotAllTests = $('#plotAll');
-var currentTestTable = $('#currentTests');
-var tableBody = currentTestTable.find("tbody")
+var recipe_table = $('#recipe_table');
 
 var chart_main = ""
-var chart_groove = ""
-var chart_abut = ""
+var chart_resistance = ""
+var chart_density = ""
+var chart_consolidation = ""
 
 var previewBox = $('#uploadImagesPreview')
 var imageUpload = $('#imageUpload')
@@ -180,65 +180,8 @@ function uploadImages(test_id){
 
 
 
-function getAllTests(){
-    //var allTests = tests_coll.find({});
-    var allTests = [];
-    tableBody.html("");
-    testImages.html("");
-    pouchdb.allDocs({
-                include_docs : true
-            })
-            .then(function(result){
-                //console.log(result.rows)
-                        if(result.rows.length > 0){
-                            $('#test_status').hide()
-                            for(i=0; i<result.rows.length; i++){
-                                var doc = result.rows[i].doc;
-                                console.log(doc)
-                                tableBody.append("<tr name='"+ result.rows[i].id +"'><td>"+ result.rows[i].id  +"</td><td name='sample'>"+ doc.sample +"</td><td name='temperature'>"+ doc.data.temperature +"</td><td name='strainrate'>"+ doc.data.strainrate +"</td><td><i class='fa fa-trash fa-2x' ></i></td></tr>")
-                            }
-
-                        tableBody.find("tr td:not(:last-child)").on("click", function(){
-                                    var row = $(this).closest('tr');
-                                    var test_id = row.attr("name");
-                                    var color = "#d33";
-                                    if(!row.hasClass("plotted")){
-                                        row.addClass("plotted");
-                                        plotSingleTest(test_id);
-                                    }
-                                    else{
-                                        row.removeClass("plotted")
-                                        removePlot(test_id);
-                                    }
-                                })
-
-                        tableBody.find("i.fa-trash").on('click', function(){
-                            var test_id = $(this).closest('tr').attr('name');
-                            console.log("Deleting test " + test_id)
-                            removeTest(test_id);
-                        })
-
-
-
-
-
-                        }
-                        else{
-                            $('#test_status').show()
-
-                        }
-
-            }).catch(
-                    console.log("Couldn't retrieve data from the database")
-            )
-
-    //console.log(allTests);
-
-
-}
 
 function getSingleTest(){
-    tableBody.html("");
     testImages.html("");
     pouchdb.get( currentTest , { attachments : true } )
             .then(function(doc){
@@ -246,8 +189,6 @@ function getSingleTest(){
                 console.log(currentTest.testData)
                 populateTestForm(currentTest)
                 plotData()
-
-                tableBody.append("<tr name='"+ doc._id +"'><td>"+ doc._id  +"</td><td name='sample'>"+ doc.sample.name.user_defined +"</td><td name='temperature'>"+ doc.temperature +"</td><td name='strainrate'>"+ doc.strainrate +"</td></tr>")
 
                 var images = doc._attachments
                     for( var key in images ){
@@ -344,7 +285,6 @@ function plotData() {
     {
         animationEnabled: true,
         zoomEnabled: true,
-        height: 600,
         zoomType: "xy",
         toolTipContent: "x: {x}, y: {y[0]} ",
         exportEnabled: true,
@@ -355,7 +295,7 @@ function plotData() {
                 shared: true,
         },
         title: {
-            text: "Trial data",
+            text: "RAW FAST machine data",
             fontColor: "#008B8B",
             fontfamily: "Arial",
             fontSize: 20,
@@ -387,19 +327,7 @@ function plotData() {
          lineThickness: 1
       },
       {
-         title: "Stress (MPa)",
-         fontfamily: "Arial",
-         titleFontSize: 20,
-         labelFontSize: 12,
-         lineColor: "#000",
-         tickColor: "#000",
-         labelFontColor: "#000",
-         titleFontColor: "#000",
-         lineThickness: 1
-     }],
-     axisY2:[
-      {
-         title: "Wheel Speed (RPM)",
+         title: "Force (kN)",
          fontfamily: "Arial",
          titleFontSize: 20,
          labelFontSize: 12,
@@ -410,7 +338,7 @@ function plotData() {
          lineThickness: 1
      },
      {
-        title: "Position (mm)",
+        title: "Relative Velocity (mm/min)",
         fontfamily: "Arial",
         titleFontSize: 20,
         labelFontSize: 12,
@@ -419,7 +347,53 @@ function plotData() {
         labelFontColor: "#000",
         titleFontColor: "#000",
         lineThickness: 1
-    }],
+    },
+    {
+       title: "Relative Position (mm)",
+       fontfamily: "Arial",
+       titleFontSize: 20,
+       labelFontSize: 12,
+       lineColor: "#000",
+       tickColor: "#000",
+       labelFontColor: "#000",
+       titleFontColor: "#000",
+       lineThickness: 1
+   },
+    {
+       title: "Current RMS (kA)",
+       fontfamily: "Arial",
+       titleFontSize: 20,
+       labelFontSize: 12,
+       lineColor: "#000",
+       tickColor: "#000",
+       labelFontColor: "#000",
+       titleFontColor: "#000",
+       lineThickness: 1
+   },
+   {
+      title: "Voltage RMS (V)",
+      fontfamily: "Arial",
+      titleFontSize: 20,
+      labelFontSize: 12,
+      lineColor: "#000",
+      tickColor: "#000",
+      labelFontColor: "#000",
+      titleFontColor: "#000",
+      lineThickness: 1
+  },
+  {
+    title: "Resistance (Ohms)",
+    fontfamily: "Arial",
+    titleFontSize: 20,
+    labelFontSize: 12,
+    lineColor: "#000",
+    tickColor: "#000",
+    labelFontColor: "#000",
+    titleFontColor: "#000",
+    lineThickness: 1
+ }
+
+      ],
     legend: {
         cursor: "pointer",
         horizontalAlign: "center", // "center" , "right"
@@ -441,83 +415,79 @@ function plotData() {
         data: [
         {
           type: "line",
+          xValueType: "dateTime",
           showInLegend: true,
           name: "Av Pyro",
           legendText: "Av Pyro",
           axisYIndex: 0,
-          dataPoints: parseData( currentTest.testData, "P. Time", "Av Pyro"),
-          click: function(e){
-                  addNote(e)
-          }
+          dataPoints: parseData( currentTest.testData, "ptime", "avpyrometer")
+
           },
           {
             type: "line",
+            xValueType: "dateTime",
             showInLegend: true,
-            name: "Wheel Temp 1",
-            legendText: "Wheel Temp 1",
-            axisYIndex: 0,
-            dataPoints: parseData( currentTest.testData, "timestamp", "wheel_temperature_1_"),
-            click: function(e){
-                    addNote(e)
-            }
-          },
-          {
-            type: "line",
-            showInLegend: true,
-            name: "Wheel Temp 2",
-            legendText: "Wheel Temp 2",
-            axisYIndex: 0,
-            dataPoints: parseData( currentTest.testData, "timestamp", "wheel_temperature_2_"),
-            click: function(e){
-                    addNote(e)
-            }
-          },
+            name: "AV Force",
+            legendText: "AV Force",
+            axisYIndex: 1,
+            dataPoints: parseData( currentTest.testData, "ptime", "avforce")
+        },
         {
           type: "line",
+          xValueType: "dateTime",
           showInLegend: true,
-          name: "Wheel speed",
-          legendText: "Wheel speed",
-          axisYIndex: 0,
-          dataPoints: parseData( currentTest.testData, "timestamp", "conform_wheel_speed_"),
-          click: function(e){
-                  addNote(e)
-          }
-      },
-      {
-        type: "line",
-        showInLegend: true,
-        name: "Motor current",
-        legendText: "Motor current",
-        axisYIndex: 0,
-        dataPoints: parseData( currentTest.testData, "timestamp", "conform_motor_current_"),
-        click: function(e){
-                addNote(e)
-        }
-    },
-    {
-      type: "scatter",
-      showInLegend: true,
-      name: "Notes",
-      legendText: "Notes",
-      dataPoints:  currentTest.testData.map(function(d){
-          if( d["note"] ){
-              return {"x": new Date(d["timestamp"])  , "y": 100, "label": d["note"] }
-          }
-          else{
-              return {"x": new Date(currentTest.testData[0].timestamp), "y": null}
-          }
-      }),
-      mouseover: function(e){
-              showNote(e)
-      }
-    }
+          name: "Av Rel. Piston Travel",
+          legendText: "Av Rel. Piston Travel",
+          axisYIndex: 3,
+          dataPoints: parseData( currentTest.testData, "ptime", "avrelpistont")
 
+          },
+          {
+            type: "line",
+            xValueType: "dateTime",
+            showInLegend: true,
+            name: "AV Speed",
+            legendText: "AV Speed",
+            axisYIndex: 2,
+            dataPoints: parseData( currentTest.testData, "ptime", "avspeed")
+        },
+        {
+          type: "line",
+          xValueType: "dateTime",
+          showInLegend: true,
+          name: "I RMS",
+          legendText: "I RMS",
+          axisYIndex: 4,
+          dataPoints: parseData( currentTest.testData, "ptime", "irms")
+
+          },
+          {
+            type: "line",
+            xValueType: "dateTime",
+            showInLegend: true,
+            name: "U RMS",
+            legendText: "U RMS",
+            axisYIndex: 5,
+            dataPoints: parseData( currentTest.testData, "ptime", "urms")
+        },
+        {
+          type: "line",
+          xValueType: "dateTime",
+          showInLegend: true,
+          name: "Resistance",
+          legendText: "Resistance",
+          axisYIndex: 6,
+          dataPoints: currentTest.testData.map(function(d){
+              console.log(d["urms"]  / (d["irms"]* 1000))
+              return {"x": moment( d["ptime"], "HH:mm:ss"  ).toDate(), "y": d["urms"]  / (d["irms"]* 1000)}
+          })
+        }
         ]
     });
 
     chart_main.render();
-/*
-    chart_groove = new CanvasJS.Chart("grooveGraph",
+
+    chart_resistance = new CanvasJS.Chart("resistanceGraph",
     {
      animationEnabled: true,
      zoomEnabled: true,
@@ -531,14 +501,14 @@ function plotData() {
              shared: true,
      },
      title: {
-         text: "Wheel groove data",
+         text: "Process resistance",
          fontColor: "#008B8B",
          fontfamily: "Arial",
          fontSize: 20,
          padding: 8
      },
     axisX:{
-         title: "Time",
+         title: "Temperature (ºC)",
          fontColor: "#000",
          fontfamily: "Arial",
          titleFontSize: 20,
@@ -551,7 +521,7 @@ function plotData() {
     },
     axisY:
         {
-              title: "Groove depth and width (mm)",
+              title: "Resistance (Ohms)",
               fontfamily: "Arial",
               titleFontSize: 20,
               labelFontSize: 12,
@@ -561,18 +531,6 @@ function plotData() {
               titleFontColor: "#000",
               lineThickness: 1
           },
-    axisY2:
-    {
-      title: "Groove CSA (mm^2)",
-      fontfamily: "Arial",
-      titleFontSize: 20,
-      labelFontSize: 12,
-      lineColor: "#000",
-      tickColor: "#000",
-      labelFontColor: "#000",
-      titleFontColor: "#000",
-      lineThickness: 1
-    },
     legend: {
      cursor: "pointer",
      horizontalAlign: "center", // "center" , "right"
@@ -595,42 +553,22 @@ function plotData() {
      {
        type: "line",
        showInLegend: true,
-       name: "grooveWidth",
-       legendText: "Groove Width",
+       name: "Resistance",
+       legendText: "Resistance",
        axisYIndex: 0,
-       dataPoints: parseData(data, "time", "grooveWidth", "Groove Width")
-       },
-       {
-         type: "line",
-         showInLegend: true,
-         name: "grooveDepth",
-         legendText: "Groove Depth",
-         axisYIndex: 0,
-         dataPoints: parseData(data, "time", "grooveDepth", "Groove Depth")
-       },
-       {
-         type: "line",
-         showInLegend: true,
-         name: "grooveCSA",
-         legendText: "Groove CSA",
-         axisYType: "secondary",
-         axisYIndex: 0,
-         dataPoints: parseData(data, "time", "grooveCSA", "Groove CSA")
-     }]
+       dataPoints: currentTest.testData.map(function(d){
+           console.log(d["urms"]  / (d["irms"]* 1000))
+           return {"x": d["avpyrometer"], "y": d["urms"]  / (d["irms"]* 1000)}
+       })
+       }]
     });
 
+chart_resistance.render();
 
-
-
-chart_groove.render();
-
-
-chart_abut = new CanvasJS.Chart("abutGraph",
+chart_density = new CanvasJS.Chart("densityGraph",
 {
  animationEnabled: true,
  zoomEnabled: true,
- height: 600,
- width: 600,
  zoomType: "x",
  toolTipContent: "x: {x}, y: {y} ",
  exportEnabled: true,
@@ -641,14 +579,14 @@ chart_abut = new CanvasJS.Chart("abutGraph",
          shared: true,
  },
  title: {
-     text: "Abutment Stress data",
+     text: "Density",
      fontColor: "#008B8B",
      fontfamily: "Arial",
      fontSize: 20,
      padding: 8
  },
 axisX:{
-     title: "Wheel Speed (RPM)",
+     title: "Temperature (ºC)",
      fontColor: "#000",
      fontfamily: "Arial",
      titleFontSize: 20,
@@ -661,7 +599,7 @@ axisX:{
 },
 axisY:
     {
-          title: "Abutment Stress (MPa)",
+          title: "Relative Density",
           fontfamily: "Arial",
           titleFontSize: 20,
           labelFontSize: 12,
@@ -671,22 +609,134 @@ axisY:
           titleFontColor: "#000",
           lineThickness: 1
       },
+legend: {
+ cursor: "pointer",
+ horizontalAlign: "center", // "center" , "right"
+ verticalAlign: "top",  // "top" , "bottom"
+ fontfamily: "Arial",
+ fontSize: 16,
+ itemclick: function(e){
+     console.log(e.dataSeries)
+     if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+             e.dataSeries.visible = false;
+         } else {
+             e.dataSeries.visible = true;
+         }
+     e.chart.render();
+     //alert( "Legend item clicked with type : " + e.dataSeries);
+ }
+
+},
  data: [
-     {
-       type: "scatter",
-       markerSize: 10,
-       markerColor: "rgba(0,0,0,0.3)",
-       showInLegend: true,
-       dataPoints: parseData(data, "wheelSpeed", "abutStress", "Abutment Stress")
+ {
+   type: "line",
+   showInLegend: true,
+   name: "Resistance",
+   legendText: "Resistance",
+   axisYIndex: 0,
+   dataPoints: currentTest.testData.map(function(d){
+       console.log(d["urms"]  / (d["irms"]* 1000))
+       var density = Math.PI * 10 * 10 * d["avrelpistont"]
+
+       return {"x": d["avpyrometer"], "y": density }
+   })
    }]
 });
 
+chart_density.render();
 
 
 
-chart_abut.render();
+chart_consolidation = new CanvasJS.Chart("consolidationGraph",
+{
+ animationEnabled: true,
+ zoomEnabled: true,
+ zoomType: "x",
+ toolTipContent: "x: {x}, y: {y} ",
+ exportEnabled: true,
+ exportFileName: "graph",
+ rangeChanged: syncHandler,
+ toolTip: {
+         enabled: true,
+         shared: true,
+ },
+ title: {
+     text: "Consolidation Rate",
+     fontColor: "#008B8B",
+     fontfamily: "Arial",
+     fontSize: 20,
+     padding: 8
+ },
+axisX:{
+     title: "Temperature (ºC)",
+     fontColor: "#000",
+     fontfamily: "Arial",
+     titleFontSize: 20,
+     labelFontSize: 12,
+     lineColor: "#000",
+     tickColor: "#000",
+     labelFontColor: "#000",
+     titleFontColor: "#000",
+     lineThickness: 1
+},
+axisY:
+    {
+          title: "Consolidation Rate (mm/s)",
+          fontfamily: "Arial",
+          titleFontSize: 20,
+          labelFontSize: 12,
+          lineColor: "#000",
+          tickColor: "#000",
+          labelFontColor: "#000",
+          titleFontColor: "#000",
+          lineThickness: 1
+      },
+legend: {
+ cursor: "pointer",
+ horizontalAlign: "center", // "center" , "right"
+ verticalAlign: "top",  // "top" , "bottom"
+ fontfamily: "Arial",
+ fontSize: 16,
+ itemclick: function(e){
+     console.log(e.dataSeries)
+     if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+             e.dataSeries.visible = false;
+         } else {
+             e.dataSeries.visible = true;
+         }
+     e.chart.render();
+     //alert( "Legend item clicked with type : " + e.dataSeries);
+ }
 
-*/
+},
+ data: [
+ {
+   type: "line",
+   showInLegend: true,
+   name: "Resistance",
+   legendText: "Resistance",
+   axisYIndex: 0,
+   dataPoints: currentTest.testData.map(function(d){
+       return {"x": d["avpyrometer"], "y": d["avspeed"] }
+   })
+   }]
+});
+
+chart_consolidation.render();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
    }
 
@@ -694,9 +744,9 @@ chart_abut.render();
 
    function parseData(data, x_name, y_name){
            var parsed_data = data.map(function(d){
-               return {"x": new Date(d[x_name])  , "y": d[y_name] }
+               //console.log(moment( d[x_name], "HH:mm:ss" ).toDate(), d[y_name] )
+               return {"x": moment( d[x_name], "HH:mm:ss"  ).toDate(), "y": d[ y_name ] }
            })
-           //console.log(parsed_data)
            return parsed_data
    }
 
@@ -704,7 +754,7 @@ chart_abut.render();
 
    function syncHandler(e) {
        var charts = [chart_main, chart_groove]
-       console.log(charts)
+       //console.log(charts)
        for (var i = 0; i < charts.length; i++) {
            var chart = charts[i];
 
@@ -734,83 +784,3 @@ chart_abut.render();
            }
        }
    }
-
-
- function addNote(e){
-     //console.log(e)
-     noteModal.show(200)
-     noteModal.find(".btn").hide()
-     var index = e.dataPointIndex
-     var note_position = noteModal.find('p')
-     note_position.html("<b>Data series:</b> " + e.dataSeries.name + "<br><b>Time: </b>" + e.dataPoint.x +" <br><b>Value: </b>" + e.dataPoint.y )
-     var index = e.dataPointIndex
-
-     trialNote.on('input', function(){
-         if(trialNote.val().length > 0){
-             noteModal.find(".btn-success").show(200)
-         }
-         else{
-              noteModal.find(".btn-success").hide()
-          }
-     })
-
-     noteModal.find(".btn").on('click', function(){
-         currentTest.testData[index].note = trialNote.val()
-         trialNote.val("")
-         noteModal.hide()
-         // Save notes into the data base
-         pouchdb.get( currentTest._id ).then(function(doc) {
-             currentTest._rev = doc._rev
-           return pouchdb.put( currentTest );
-             }).then(function(response) {
-                 console.log(response);
-             }).catch(function (err) {
-                 console.log(err);
-             });
-
-         plotData()
-         console.log(currentTest.testData[index])
-     })
- }
-
- function showNote(e){
-     //console.log(e)
-     noteModal.show(200)
-     noteModal.find(".btn-success").show()
-     noteModal.find(".btn-danger").show()
-     var index = e.dataPointIndex
-     var note_position = noteModal.find('p')
-     note_position.html("<b>Data series:</b> " + e.dataSeries.name + "<br><b>Time: </b>" + e.dataPoint.x +" <br><b>Value: </b>" + e.dataPoint.y )
-     var index = e.dataPointIndex
-
-     trialNote.val(currentTest.testData[index].note)
-
-     trialNote.on('input', function(){
-         if(trialNote.val().length > 0){
-             noteModal.find(".btn").show(200)
-         }
-         else{
-              noteModal.find(".btn").hide()
-          }
-     })
-
-     noteModal.find(".btn").on('click', function(){
-         currentTest.testData[index].note = trialNote.val()
-         trialNote.val("")
-         noteModal.hide()
-         // Save notes into the database
-         pouchdb.get( currentTest._id ).then(function(doc) {
-             currentTest._rev = doc._rev
-           return pouchdb.put( currentTest );
-             }).then(function(response) {
-                 console.log(response);
-             }).catch(function (err) {
-                 console.log(err);
-             });
-
-         plotData()
-         console.log(currentTest.testData[index])
-     })
-
-
- }
