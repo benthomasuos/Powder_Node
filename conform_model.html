@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" media="screen" href='/css/font-awesome.min.css'>
+    <link rel="stylesheet" media="screen" href='/css/metro-bootstrap.css'>
+    <link rel="stylesheet" href = "/css/style.css">
+    <link rel="stylesheet" href = "/css/nv.d3.css">
+    <link rel="manifest" href="manifest.json">
+    <script src='/js/jquery2_1_4.js' type='text/javascript'></script>
+    <script src='/js/bootstrap.min.js' type='text/javascript'></script>
+
+    <title> Flow Stress Fitting - Web app</title>
+
+</head>
+<body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/"><img src="/images/mapp_logo.png" width="60px" /></a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+              <li><a href="/powders"><i class="fa fa-chart"></i>  Powders</a></li>
+              <li><a href="/tests/fast"><i class="fa fa-chart"></i>  FAST</a></li>
+              <li><a href="/tests/tmc"><i class="fa fa-chart"></i>  TMC Tests</a></li>
+              <li><a href="/tests/aspshear"><i class="fa fa-chart"></i>  ASP Shear</a></li>
+              <li><a href="/tests/orthogonal"><i class="fa fa-chart"></i>  Orthogonal Cutting</a></li>
+              <li><a href="/tests/conform"><i class="fa fa-chart"></i>  Conform</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="/account" disabled><i class="fa fa-user-circle"></i> My account</a></li>
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+
+
+
+
+<div class="page-header">
+    <h1>Conform process model</h1>
+</div>
+
+
+
+<div class="container-fluid col-md-12">
+
+    <div class="container-fluid col-md-3">
+        <div class="container-fluid col-md-12">
+            <div class='container-fluid'>
+                <h3>Die Chamber</h3>
+                <div class="form-group">
+                    <h4>Port dimensions</h4>
+                    <div class="input-group">
+                        <span class="input-group-addon">Width</span>
+                        <input class="form-control" name="port_width" id="port_width" type="number" min=0 max=20 step=0.01 value=10 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Height</span>
+                        <input class="form-control" name="port_height" id="port_height" type="number" min=0 max=20 step=0.01 value=10 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Area</span>
+                        <input class="form-control" name="port_area" id="port_area" type="number" disabled/>
+                        <span class="input-group-addon">mm<sup>2</sup></span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Aspect ratio</span>
+                        <input class="form-control" name="aspect_ratio" id="aspect_ratio" type="number" disabled/>
+                        <span class="input-group-addon"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <h4>Other</h4>
+                    <div class="input-group">
+                        <span class="input-group-addon">Width</span>
+                        <input class="form-control" name="port_width" id="port_width" type="number" min=0 max=20 step=0.01 value=10 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Height</span>
+                        <input class="form-control" name="port_height" id="port_height" type="number" min=0 max=20 step=0.01 value=10 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                </div>
+
+            </div>
+            <div class='container-fluid'>
+                <h3>Die</h3>
+
+            </div>
+            <div class='container-fluid'>
+                <h3>Wheel</h3>
+
+            </div>
+            <div class='container-fluid'>
+                <h3>Material data</h3>
+
+            </div>
+            <div class='container-fluid'>
+                <h3>Process</h3>
+
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="container-fluid col-md-9">
+        Hello
+    </div>
+
+
+
+</div>
+
+
+
+
+
+<div class="container-fluid col-md-12">
+    <div class="container-fluid">
+    </div>
+</div>
+
+
+<div class="container-fluid col-md-12">
+
+</div>
+
+
+<div class="container-fluid col-md-12">
+
+</div>
+
+
+
+
+
+<script src="/js/everpolate.min.js" type="text/javascript"></script>
+<script src="/js/canvasjs.min.js" type="text/javascript"></script>
+<script src="//cdn.jsdelivr.net/pouchdb/6.2.0/pouchdb.min.js"></script>
+<script src="/js/conform_model.js" type="text/javascript"></script>
+</body>
+
+</html>

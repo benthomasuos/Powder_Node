@@ -45,6 +45,10 @@ app.get('/tests/conform/edit',function(req, res){
     res.sendFile(process.cwd() + '/conform_edit.html')
 })
 
+app.get('/models/conform',function(req, res){
+    res.sendFile(process.cwd() + '/conform_model.html')
+})
+
 
 app.get('/tests/fast',function(req, res){
     res.sendFile(process.cwd() + '/fast.html')
@@ -58,7 +62,6 @@ app.get('/tests/fast/edit',function(req, res){
     res.sendFile(process.cwd() + '/fast_edit.html')
 })
 app.get('/tests/fast/compare',function(req, res){
-    console.log("Request to compare FAST tests: " + req.query._id);
     res.sendFile(process.cwd() + '/fast_compare.html')
 })
 
