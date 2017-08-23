@@ -325,7 +325,7 @@ function saveTest(){
     var test = {}
     var label = form.find("#alert")
     var data_file = form.find('input[name="data_file"]')[0].files[0];
-    var audio_file = form.find('input[name="audio_file"]')[0].files[0];
+    //var audio_file = form.find('input[name="audio_file"]')[0].files[0];
     console.log(data_file)
     if(data_file){
         var reader_1 = new FileReader();
@@ -370,12 +370,8 @@ function saveTest(){
                         console.log(test)
                         console.log(result)
                         var reader_2 = new FileReader();
-                        reader_2.readAsText(audio_file);
+
                         var data = "";
-                        reader_2.onloadend = function(event){
-                            audio_data = event.target.result
-                            var audioData = parseAudiofile(audio_data, test);
-                            test.audioData = audioData
 
                             test._id = result.id
                             test._rev = result.rev
@@ -395,8 +391,7 @@ function saveTest(){
                                 $('#saveTest').removeClass("btn-default")
                                 $('#saveTest').attr('disabled', false).find('i').removeClass("fa-spinner fa-spin")
                                 getAllTests();
-                        }
-
+                        
 
 
 

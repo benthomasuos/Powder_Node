@@ -5,10 +5,10 @@ var currentTestTable = $('#currentTests');
 var tableBody = currentTestTable.find("tbody");
 var graph = $('#graph');
 var graph_Parent = $('#graph_Parent');
-var graph_SS = $('#graph_SS');
+var graph_load = $('#graph_load');
 var graph_SS_Parent = $('#graph_SS_Parent');
 var graph_sr_Parent = $('#graph_sr_Parent');
-
+var export_load = $('#export_load');
 var settingsDiv = $('#settingsDiv');
 
 var displacement_offset = $('#displacement_offset');
@@ -134,17 +134,6 @@ $(document).ready(function(){
 
 
 
-    $("#NH_controls input[type='range']").on('input', function(){
-        var value = $(this).val()
-        $(this).siblings('.value').html( value )
-        plotNHEq()
-    })
-
-    $("#NH_controls select").on('change', function(){
-        plotNHEq()
-    })
-
-
 
     var $sidebar   = $("#settingsDiv"),
        $window    = $(window),
@@ -169,36 +158,6 @@ $(document).ready(function(){
 })
 
 
-$('#startYield').on('click', function(){
-    console.log("Started yield calculation")
-    $(this).attr("disabled", true)
-    startYieldCalculation()
-})
-
-$('#stopYield').on('click', function(){
-    $('#startYield').attr("disabled", false)
-    chart_4.options.data[0].set("click") = null
-    chart_4.options.axisX[0].set("viewportMinimum", 0.0 )
-    chart_4.options.axisX[0].set("viewportMaximum", 0.1 )
-})
-
-function startYieldCalculation(){
-    console.log(chart_4)
-    var chart_options = chart_4.options;
-    var ss_points = chart_options.data[0].dataPoints;
-
-    chart_options.data[0] = {}
-    chart_options.axisX[0].set("viewportMinimum", 0.0 )
-    chart_options.axisX[0].set("viewportMaximum", 0.1 )
-    chart_options.data[0].set("click" ,function(e){
-        console.log(e)
-    alert(  e.dataSeries.type + ", dataPoint { x:" + e.dataPoint.x + ", y: "+ e.dataPoint.y + " }" );
-})
-
-
-
-
-}
 
 
 
@@ -207,61 +166,12 @@ function startYieldCalculation(){
 
 
 
-/*
-function getAllTests(){
-    //var allTests = tests_coll.find({});
-    var allTests = [];
-    tableBody.html("");
-
-    pouchdb.allDocs({
-            include_docs : true
-            })
-            .then(function(result){
-                //console.log(result.rows)
-                        if(result.rows.length > 0){
-                            $('#test_status').hide()
-                            for(i=0; i<result.rows.length; i++){
-                                var doc = result.rows[i].doc;
-                                console.log(doc)
-                                tableBody.append("<tr name='"+ result.rows[i].id +"'><td>"+ result.rows[i].id  +"</td><td name='sample'>"+ doc.sample +"</td><td name='temperature'>"+ doc.data.temperature +"</td><td name='strainrate'>"+ doc.data.strainrate +"</td><td><i class='fa fa-trash fa-2x' ></i></td></tr>")
-                            }
-
-                        tableBody.find("tr td:not(:last-child)").on("click", function(){
-                                    var row = $(this).closest('tr');
-                                    var test_id = row.attr("name");
-                                    var color = "#d33";
-                                    if(!row.hasClass("plotted")){
-                                        row.addClass("plotted");
-                                        plotSingleTest(test_id);
-                                    }
-                                    else{
-                                        row.removeClass("plotted")
-                                        removePlot(test_id);
-                                    }
-                                })
-
-                        tableBody.find("i.fa-trash").on('click', function(){
-                            var test_id = $(this).closest('tr').attr('name');
-                            console.log("Deleting test " + test_id)
-                            removeTest(test_id);
-                        })
 
 
 
 
 
-                        }
-                        else{
-                            $('#test_status').show()
 
-                        }
-
-            }).catch(
-                    console.log("Couldn't retrieve data from the database")
-            )
-    //console.log(allTests);
-}
-*/
 
 function getSingleTest(){
     tableBody.html("");
@@ -277,7 +187,7 @@ function getSingleTest(){
 
         })
             .then(function(){
-                                        processData(currentTest)
+                                        processData(currentTest.rawData)
             }).catch(function(err){
                                         console.log(err)
                                         $('#test_status').show()
@@ -324,7 +234,7 @@ function saveData(){
                n();
            })
            console.log("Processing data after saving it")
-           //processData(prepareDownload)
+           processData(prepareDownload)
     }).catch(function (err) {
       console.log(err);
     });
@@ -447,54 +357,12 @@ $("input[name^='d_mid_'").on('input', function(){
 
 
 
-$("#sampling_rate").on('input', function(){
-
-
-})
-
-
-
-
-
-$('#audio_upload').on('click touchstart' , function(){
-    $(this).val('');
-});
-
-
-//Trigger now when you have selected any file
-$('#audio_upload').on('change', function() {
-    console.log('this')
-    console.log($(this))
-    var file = this.files[0];
-    console.log(file)
-
-     var test_audio = new p5.SoundFile(file, function(audio){
-
-
-                var fft = new p5.FFT()
-                audio.connect(fft)
-                audio.processPeaks( function(d){console.log(d)})
-                fft.analyze()
-                fft.getEnergy('treble')
-                console.log(fft.getEnergy('treble'))
-
-     })
-
-
-
-
-})
 
 
 
 
 
 
-
-
-$('#iso_period').on('input change', function(){
-    $('#iso_period_value').html( $(this).val() )
-})
 
 $('#analysed').on('click', function(){
         currentTest.analysed = true
@@ -509,14 +377,14 @@ function processData(data, rate) {
 
 
 function prepareDownload(){
-    var dataPoints = chart_4.options.data[2].dataPoints
+    var dataPoints = currentTest.trimmedData
     //console.log(dataPoints)
     var data = []
-    data[0] = "True Strain (mm), True Iso Stress (MPa)\r\n"
+    data[0] = "Time(s),Displacement(mm),Load(kN),Torque(Nm)\r\n"
     for(var i=0; i<dataPoints.length; i++){
         var point = dataPoints[i]
-        if(point.x && point.y ){
-            data.push(point.x + "," + point.y + "\r\n")
+        if(point.time && point.displacement_inst && point.axial_load_inst && point.torque_inst ){
+            data.push(point.time +","+ point.displacement_inst +","+ point.axial_load_inst +","+ point.torque_inst +  "\r\n")
     //        console.log(point)
         }
     }
@@ -525,43 +393,10 @@ function prepareDownload(){
 
     var blob = new Blob(data, {type: "text/.txt"});
     var url = URL.createObjectURL(blob);
-    export_SS.attr('href', url )
-    export_SS.attr('download', currentTest._id + "_isoStress_Strain.txt" )
+    export_load.attr('href', url )
+    export_load.attr('download', currentTest.data_file.name + "_trimmed.txt" )
+    export_load.show(200)
 
-}
-
-
-function calcOffset(value){
-    var dataPoints = chart_2.options.data[0].dataPoints
-    chart_2.options.data[1].dataPoints = dataPoints.map(function(d){
-        return { "x": d.x - currentTest.zero_offset, "y": d.y - currentTest.load_offset , "label": d.label}
-    })
-    chart_2.render()
-}
-
-
-function calcStrain(){
-    var heights = chart_2.options.data[1].dataPoints
-    chart_3.options.data[0].dataPoints = heights.map(function(d){
-        var strain = -Math.log(parseFloat(currentTest.sample.dimensions.av_h_initial - d.x ) / currentTest.sample.dimensions.av_h_initial )
-        if(isNaN(strain)){
-            strain = 0.0
-        }
-        return { "x": strain, "y": d.y, "label": "Strain"}
-    })
-    chart_3.render()
-}
-
-function calcStrainRate(){
-    var heights = chart_2.options.data[0].dataPoints
-    chart_sr.options.data[0].dataPoints = heights.map(function(d, i){
-        var height =  currentTest.sample.dimensions.av_h_initial - d.x
-        var velocity = currentTest.measurements[i].velocity_
-        var strainrate = velocity / height
-        return { "x": height, "y": strainrate, "label": "Strain rate"}
-    })
-    graph_sr_Parent.show()
-    chart_sr.render()
 }
 
 
@@ -603,54 +438,7 @@ function calcFricCorrStress(){
     chart_4.render()
 }
 
-function calcIsoStress(){
-    var fric_corr_stress = chart_4.options.data[1].dataPoints
-    var temps = currentTest.measurements
 
-    var factors = []
-
-
-    var factors = fric_corr_stress.map(function(d, i){
-        return { "T": temps[i].sample_temp_2_centre, "fric_corr_stress": d.y, "strain": d.x}
-    })
-
-
-    chart_4.options.data[2].dataPoints = factors.map(function(d, i ){
-        var period = Math.round( $('#iso_period').val())
-        if(i < factors.length - period ){
-            var slice = factors.slice(i,i+period)
-            //console.log(temp_slice)
-            var sum_T=0.0
-            var sum_S=0.0
-            for( var j = 0; j < slice.length; j++ ){
-                 sum_T += parseInt( slice[j].T );
-                 sum_T += parseInt( slice[j].fric_corr_stress );
-            }
-
-            var avg_T = sum_T/slice.length;
-            var avg_S = sum_S/slice.length;
-            //console.log(avg_T)
-            var delta_T = avg_T - currentTest.temperature
-            var d_T = slice[slice.length-1].T - slice[0].T
-            var d_S = slice[slice.length-1].fric_corr_stress - slice[0].fric_corr_stress
-            var d_S_d_T = d_S / d_T
-            var corr_factor = d_T * d_S_d_T
-
-            var iso_stress = d.fric_corr_stress + corr_factor
-            return { "x": factors[i+period].strain, "y": iso_stress, "label": "Isothermal Stress"}
-        }
-        else {
-            return { "x": factors[i].strain, "y": null, "label": "Isothermal Stress"}
-        }
-    })
-
-
-
-
-
-
-    chart_4.render()
-}
 
 
 
@@ -747,7 +535,7 @@ function plot_raw(data) {
             name: "Load",
             color: "#333",
             toolTipContent: "Time: {x} s, Load: {y} kN",
-            dataPoints: data.rawData.map(function(d, i){
+            dataPoints: data.map(function(d, i){
                 return { x: d.time , y: -d.axial_load_inst}
             })
         }
@@ -908,7 +696,7 @@ function plot_raw(data) {
             name: "Raw Data",
             color: "#333",
             toolTipContent: "Time: {x} s, Displacement: {y} mm",
-            dataPoints: data.rawData.map(function(d){
+            dataPoints: data.map(function(d){
                     //var displacement = Math.abs(d.displacement_inst - currentTest.rawData[0].displacement_inst)
                 return { x : d.time , y : d.displacement_inst }
             })
@@ -987,106 +775,15 @@ function plot_raw(data) {
            name: "Raw Data",
            color: "#333",
            toolTipContent: "Time: {x} s, Torque: {y} Nm",
-           dataPoints: data.rawData.map(function(d){
+           dataPoints: data.map(function(d){
                return { x : d.time , y : d.torque_inst }
            })
        }
    ]
    });
 
-/*
-   chart_audio = new CanvasJS.Chart("graph_audio",
-  {
-      animationEnabled: true,
-      zoomEnabled: true,
-      zoomType: "x",
-      exportEnabled: true,
-      exportFileName: "graph",
-      rangeChanged: function(e){
 
-          rescalePlots(e)
 
-      },
-      toolTip: {
-              enabled: true,
-              shared: true,
-      },
-      title: {
-          text: "Audio levels",
-          fontColor: "#000",
-          fontfamily: "Arial",
-          fontSize: 20,
-          padding: 8
-      },
-      legend: {
-                 horizontalAlign: "right", // left, center ,right
-                 verticalAlign: "top",  // top, center, bottom
-                  cursor: "pointer",
-                  itemclick: function (e) {
-                      //console.log("legend click: " + e.dataPointIndex);
-                      //console.log(e);
-                      if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-                          e.dataSeries.visible = false;
-                      } else {
-                          e.dataSeries.visible = true;
-                      }
-
-                      e.chart.render();
-          }
-      },
-  axisX:{
-          title: "Displacement (mm)",
-          fontColor: "#000",
-          fontfamily: "Arial",
-          titleFontSize: 20,
-          labelFontSize: 12,
-          lineColor: "#000",
-          tickColor: "#000",
-          labelFontColor: "#000",
-          titleFontColor: "#000",
-          lineThickness: 1
-  },
-  axisY:
-     {
-       title: "Intensity (dBV)",
-       fontfamily: "Arial",
-       titleFontSize: 20,
-       labelFontSize: 12,
-       lineColor: "#000",
-       tickColor: "#000",
-       labelFontColor: "#000",
-       titleFontColor: "#000",
-       lineThickness: 1
-   },
-      data:[
-      {
-          connectNullData: false,
-          type: "line",
-          showInLegend: true,
-          name: "Channel 1",
-          color: "#f33",
-          toolTipContent: "Time: {x} s, Intensity: {y} dB",
-          dataPoints: data.audioData.map(function(d){
-              var time = d["0"]/1000
-              return { x : time , y : d["1"] }
-          })
-      },
-      {
-          connectNullData: false,
-          type: "line",
-          showInLegend: true,
-          name: "Channel 2",
-          color: "#33f",
-          toolTipContent: "Time: {x} s, Intensity: {y} dB",
-          dataPoints: data.audioData.map(function(d){
-              var time = d["0"]/1000
-              return { x : time , y : d["2"] }
-          })
-      }
-  ]
-  });
-
-*/
 
     chart_load.render();
     //chart_audio.render();
@@ -1141,6 +838,7 @@ $('#resetDataBtn').on('click', function(){
 
 
 $('#trimDataBtn').on('click', function(){
+    alert("Use the Axial Load graph to pick:\n1) Start of test\n2) End of test\nSelect points by clicking on the graph line at the relevant points")
     currentTest.trimmedData = []
     $(this).attr('disabled', true)
     var statusMsg = $(this).after("<span></span>")
@@ -1148,36 +846,48 @@ $('#trimDataBtn').on('click', function(){
     var num_clicks = 0;
     var firstPoint = ""
     var secondPoint = ""
-    chart_angle.options.data[0].click = function(e){
+    chart_load.options.data[0].click = function(e){
         num_clicks += 1;
         statusMsg.html("Pick point at start of the test")
         if(num_clicks == 1){
             firstPoint = e.dataPointIndex
             console.log("First point picked")
             //console.log(chart_angle.options.data[0].dataPoints)
-            chart_angle.options.data[0].dataPoints[firstPoint].markerColor = "red"
-            chart_angle.options.data[0].dataPoints[firstPoint].markerSize = 20
+            chart_load.options.data[0].dataPoints[firstPoint].markerColor = "light-green"
+            chart_load.options.data[0].dataPoints[firstPoint].markerSize = 10
+            chart_load.render()
             statusMsg.html("Pick point at end of the test")
         }
         else if(num_clicks == 2){
             secondPoint = e.dataPointIndex
             console.log("Second point picked")
-            chart_angle.options.data[0].dataPoints[secondPoint].markerColor = "red"
-            chart_angle.options.data[0].dataPoints[firstPoint].markerSize = 20
-
+            chart_load.options.data[0].dataPoints[secondPoint].markerColor = "red"
+            chart_load.options.data[0].dataPoints[firstPoint].markerSize = 10
+            chart_load.render()
             for(var i=0; i<currentTest.rawData.length; i++){
-                if( i > firstPoint && i < secondPoint ){
+                if( i >= firstPoint && i <= secondPoint ){
+
                     currentTest.trimmedData.push(currentTest.rawData[i])
                 }
 
-                statusMsg.html("Data trimmed")
-            }
-            console.log("Trimming finished")
-            chart_angle.options.data[0].click  = null
 
+            }
+            statusMsg.html("Data trimmed")
+            alert("Data trimmed")
+            console.log("Trimming finished")
+
+            chart_load.options.data[0].click  = null
             processData( currentTest.trimmedData )
+            prepareDownload()
         }
 
         }
 
     })
+
+
+$("#graph_load").on("contextmenu",function(){
+    console.log("OPened contect menits")
+
+
+})

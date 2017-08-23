@@ -101,16 +101,12 @@
     <div class="container-fluid col-md-12">
         <div class="btn btn-lg btn-primary" id="trimDataBtn"><i class="fa fa-scissors"></i>  Trim data</div>
         <div class="btn btn-lg btn-primary" id="resetDataBtn" hidden><i class="fa fa-refresh"></i>  Reset to raw data</div>
+        <div class="btn btn-lg btn-success" hidden><a id="export_load" href="#"><i class="fa fa-download"></i>  Export test data</a></div>
     </div>
-
 </div>
 
 
     <div class="container-fluid col-md-12">
-    <div class="well col-md-6">
-            <input type="range" class="form-control" id="sampling_rate" min=1 max=100 step=1 />
-            <span id="sampling_rate_value"></span>
-    </div>
 
     <div class="container-fluid col-md-6" id="graph_load_Parent" style="float:left;">
         <div class="graphDiv" id="graph_load" style="height: 600px"></div>
@@ -123,16 +119,11 @@
     <div class="container-fluid col-md-6" id="graph_torque_Parent" style="float:left;">
         <div class="graphDiv" id="graph_torque" style="height: 600px"></div>
     </div>
-    <div class="container-fluid col-md-6" id="audio_Graph" style="float:left;">
 
-        <div class="graphDiv" id="graph_audio" style="height: 600px"></div>
-
-        <input type="file" class="form-control" id="audio_upload" accept="audio/*"/>
-        <input type="range" class="form-control" id="audio_shift" />
-    </div>
     <div class="container-fluid col-md-6" id="graph_4_Parent" style="float:left;">
         <div class="graphDiv" id="graph_4" style="height: 600px"></div>
     </div>
+
     <div class="container-fluid col-md-6" id="graph_temp_Parent" style="float:left;">
         <div class="graphDiv" id="graph_temp" style="height: 600px"></div>
     </div>
