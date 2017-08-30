@@ -107,8 +107,7 @@ function getAllTests(){
 
     //  Query the test_db database
     test_db.allDocs({
-                include_docs : true,
-                fields:['_id', 'powder_id','load', 'angular_velocity', 'raw_num_samples' ]
+                include_docs: true
             })
             .then(function(result){
                 //console.log(result.rows)

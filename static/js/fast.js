@@ -165,24 +165,24 @@ function getAllTests(){
                     console.log(result)
                         for(i=0; i<result.rows.length; i++){
                             var doc = result.rows[i].doc
-                        var powder = powders_db_local.get( doc.powder_id )
-                                var powder_cell = $('<td></td>')
-                                console.log("Powder = " + JSON.stringify(powder))
-                                var test_id = doc._id
-                                var row = $('<tr></tr>')
-                                row.attr("name", test_id)
-                                console.log(doc.powder_id)
-                                //var id_cell = row.append( $('<td></td>').html(test_id) )
-                                powder_cell.html(powder.name)
-                                row.append( powder_cell )
-                                var mould_cell = row.append( $('<td></td>').html(doc.mould_diameter) )
-                                var load_cell = row.append( $('<td></td>').html(doc.load) )
-                                var temp_ramp_cell = row.append( $('<td></td>').html(doc.temperature_ramp_rate) )
-                                var hold_temp_cell = row.append( $('<td></td>').html(doc.hold_temperature) )
-                                var hold_time_cell = row.append( $('<td></td>').html(doc.hold_time) )
-                                var cooling_rate_cell = row.append( $('<td></td>').html(doc.cooling_rate) )
-                                var datafile_cell = row.append( $('<td></td>').html(doc.data_file) )
-                                var testdate_cell = row.append( $('<td></td>').html(doc.created) )
+                            var powder = powders_db_local.get( doc.powder_id )
+                            var powder_cell = $('<td></td>')
+                            console.log("Powder = " + JSON.stringify(powder))
+                            var test_id = doc._id
+                            var row = $('<tr></tr>')
+                            row.attr("name", test_id)
+                            console.log(doc.powder_id)
+                            //var id_cell = row.append( $('<td></td>').html(test_id) )
+                            powder_cell.html(powder.name)
+                            row.append( powder_cell )
+                            var mould_cell = row.append( $('<td></td>').html(doc.mould_diameter) )
+                            var load_cell = row.append( $('<td></td>').html(doc.load) )
+                            var temp_ramp_cell = row.append( $('<td></td>').html(doc.temperature_ramp_rate) )
+                            var hold_temp_cell = row.append( $('<td></td>').html(doc.hold_temperature) )
+                            var hold_time_cell = row.append( $('<td></td>').html(doc.hold_time) )
+                            var cooling_rate_cell = row.append( $('<td></td>').html(doc.cooling_rate) )
+                            var datafile_cell = row.append( $('<td></td>').html(doc.data_file) )
+                            var testdate_cell = row.append( $('<td></td>').html(doc.created) )
 
 
 
@@ -445,6 +445,7 @@ function saveTest(){
             test.machine = form.find('#machine option:selected').val();
             var powder_id = form.find('#powder_name option:selected').val();
             console.log(powder_id)
+            test.sample_mass = $('input[name="sample_mass"]').val();
             test.mould_diameter = $('input[name="mould_diameter"]').val();
             test.load = $('input[name="load"]').val();
             test.temperature_ramp_rate = $('input[name="temperature_ramp_rate"]').val();

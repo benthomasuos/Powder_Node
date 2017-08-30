@@ -24,8 +24,9 @@ var form_groupDiv = $("<div class='form-group'></div>")
 var input_groupDiv = $("<div class='input-group'></div>")
 var formDiv = $("<form class='form'></form>")
 
- var trialNote = $("#trialNote")
+var trialNote = $("#trialNote")
 
+var sample = ""
 
 //setup the in-browser database to save the uploaded flow stress data and saved fitted parameters
 var pouchdb = new PouchDB('fast')
@@ -33,7 +34,10 @@ pouchdb.info().then(function (info) {
   console.log(info);
 })
 
-
+var powderdb = new PouchDB('powders')
+powderdb.info().then(function (info) {
+  console.log(info);
+})
 
 
 
@@ -187,38 +191,23 @@ function getSingleTest(){
             .then(function(doc){
                 currentTest = doc
                 console.log(currentTest.testData)
-                populateTestForm(currentTest)
-                plotData()
+                powderdb.get( currentTest.powder_id )
+                        .then(function(powder){
+                            console.log(powder)
+                            sample = powder
+                            populateTestForm(currentTest)
+                            plotData()
 
-                var images = doc._attachments
-                    for( var key in images ){
-                            console.log(key + " -> " + images[key]);
-
-                            pouchdb.getAttachment(doc._id, key )
-                                    .then(function(blob){
-                                        var div = $('<div class="container-fluid col-md-12">'+ key +'</div>')
-                                        var posDiv = $('<div class="container-fluid col-md-6">'+ images[key] +'</div>')
-                                        var strainDiv = $('<div class="container-fluid col-md-6"></div>')
-                                            var img = $('<img />')
-                                            img.width('50%')
-                                            img.addClass('img-thumbnail')
-                                                img[0].src = URL.createObjectURL(blob)
-                                                //console.log(img[0].src)
-                                                div.append(img)
-                                                div.append(posDiv)
-                                                div.append(strainDiv)
-                                                testImages.append(div)
-                                            })
-                        }
-                    }).catch(function(err){
-                    console.log(err)
-                    $('#test_status').show()
-            })
+                        })
 
 
 
+                    })
+    .catch(function(err){
+        console.log(err)
+        $('#test_status').show()
+    })
 }
-
 
 
 
@@ -478,7 +467,7 @@ function plotData() {
           legendText: "Resistance",
           axisYIndex: 6,
           dataPoints: currentTest.testData.map(function(d){
-              console.log(d["urms"]  / (d["irms"]* 1000))
+              //console.log(d["urms"]  / (d["irms"]* 1000))
               return {"x": moment( d["ptime"], "HH:mm:ss"  ).toDate(), "y": d["urms"]  / (d["irms"]* 1000)}
           })
         }
@@ -557,7 +546,7 @@ function plotData() {
        legendText: "Resistance",
        axisYIndex: 0,
        dataPoints: currentTest.testData.map(function(d){
-           console.log(d["urms"]  / (d["irms"]* 1000))
+           //console.log(d["urms"]  / (d["irms"]* 1000))
            return {"x": d["avpyrometer"], "y": d["urms"]  / (d["irms"]* 1000)}
        })
        }]
@@ -631,14 +620,14 @@ legend: {
  {
    type: "line",
    showInLegend: true,
-   name: "Resistance",
-   legendText: "Resistance",
+   name: "Relative density",
+   legendText: "Relative density",
    axisYIndex: 0,
    dataPoints: currentTest.testData.map(function(d){
-       console.log(d["urms"]  / (d["irms"]* 1000))
-       var density = Math.PI * 10 * 10 * d["avrelpistont"]
-
-       return {"x": d["avpyrometer"], "y": density }
+       //console.log(d["urms"]  / (d["irms"]* 1000))
+       var volume = Math.PI * (currentTest.mould_diameter / 2) * (currentTest.mould_diameter / 2) * d["avrelpistont"]
+       var density = currentTest.sample_mass * 1000 / ( volume * sample.density.solid )
+       return {"x": d["avpyrometer"], "y":  density }
    })
    }]
 });
