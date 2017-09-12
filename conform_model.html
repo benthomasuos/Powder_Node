@@ -267,33 +267,58 @@
 
 
 
-        <div class="container-fluid col-md-12">
-                <div class="container-fluid col-lg-6 col-md-4 col-sm-6 ">
-                <h3>Material data</h3>
-
+        <<div class="container-fluid well col-md-12">
+                <div class="container-fluid well col-lg-6 col-md-4 col-sm-6 ">
+            <h3>Material data</h3>
+            <div class="form-group">
+                <h4>Flow stress - Norton Hoff</h4>
+                <div class="input-group">
+                    <span class="input-group-addon">K</span>
+                    <input class="form-control" name="nh_K" id="nh_K" type="number" />
                 </div>
-
-                <div class="container-fluid col-lg-6 col-md-8 col-sm-6 tool_drawing" id="material_drawing">
-                    <h1>Material data graphs</h1>
+                <div class="input-group">
+                    <span class="input-group-addon">n</span>
+                    <input class="form-control" name="nh_n" id="nh_n" type="number" />
                 </div>
+                <div class="input-group">
+                    <span class="input-group-addon">m</span>
+                    <input class="form-control" name="nh_" id="nh_" type="number" />
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon">&beta;</span>
+                    <input class="form-control" name="nh_beta" id="nh_beta" type="number" />
+                </div>
+            </div>
+            <div class="form-group">
+                <h4>Powder compaction</h4>
 
-
-
-
+                <div class="input-group">
+                    <span class="input-group-addon">Bulk density</span>
+                    <input class="form-control" name="bulk_density" id="bulk_density" type="number" />
+                    <span class="input-group-btn"><div class="btn btn-md btn-primary" id="load_powder">Load real powder...</div></span>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon">A</span>
+                    <input class="form-control" name="pow_compact_A" id="pow_compact_A" type="number" />
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon">B</span>
+                    <input class="form-control" name="pow_compact_B" id="pow_compact_B" type="number" />
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid col-lg-6 col-md-8 col-sm-6 tool_drawing" id="groove_drawing">
+            <h1>Material data graphs</h1>
+            <div class="container-fluid" id="flow_stress_graph"></div>
+            <div class="container-fluid" id="powder_compression_graph"></div>
         </div>
 
-
-
-
-
-
-
-
+    </div>
 
 
     </div>
 
-</div>
+
 
 
     <div class="container-fluid col-lg-6 col-md-8 col-sm-6">
@@ -302,24 +327,9 @@
 
 
 
-</div>
 
 
-
-
-
-<div class="container-fluid col-md-12">
-    <div class="container-fluid">
-    </div>
-</div>
-
-
-<div class="container-fluid col-md-12">
-
-</div>
-
-
-<div class="container-fluid footer col-md-12 col-xs-12 " id="results_box" hidden>
+<div class="container-fluid footer col-md-12 col-xs-12 " id="results_box">
     <h2>Results</h2>
         <div class="form-group col-md-4 col-xs-6">
             <div class="input-group">

@@ -127,7 +127,7 @@
 
     <div class="panel panel-default" id="sampleData">
         <div class="panel-heading">
-            <h4>Sample data<i style="float:right" class="fa fa-caret-up"></i></h4>
+            <h4>1.   Sample data<i style="float:right" class="fa fa-caret-up"></i></h4>
         </div>
         <div class="panel-body">
 
@@ -276,7 +276,7 @@
 
     <div class="panel panel-default" id="origin_corr">
         <div class="panel-heading">
-            <h4>Origin correction<i style="float:right" class="fa fa-caret-down"></i></h4>
+            <h4>2.   Origin correction<i style="float:right" class="fa fa-caret-down"></i></h4>
         </div>
         <div class="panel-body" hidden>
             <form class="form" id="origin_corr_form">
@@ -315,7 +315,7 @@
 
     <div class="panel panel-default" id="fric_correction">
         <div class="panel-heading">
-            <h4>Friction correction<i style="float:right" class="fa fa-caret-down"></i></h4>
+            <h4>3.   Friction correction<i style="float:right" class="fa fa-caret-down"></i></h4>
         </div>
         <div class="panel-body" hidden>
             <form class="form" id="fric_correction_form">
@@ -339,7 +339,7 @@
 
     <div class="panel panel-default" id="iso_correction">
         <div class="panel-heading">
-            <h4>Isothermal correction<i style="float:right" class="fa fa-caret-down"></i></h4>
+            <h4>4.   Isothermal correction (not finished)<i style="float:right" class="fa fa-caret-down"></i></h4>
         </div>
         <div class="panel-body" hidden>
             <form class="form" id="iso_correction_form">
@@ -356,22 +356,15 @@
 
         <div class="panel panel-default" id="origin_correction">
             <div class="panel-heading">
-                <h4>Yield point<i style="float:right" class="fa fa-caret-down"></i></h4>
+                <h4>5.   Yield point<i style="float:right" class="fa fa-caret-down"></i></h4>
             </div>
-            <div class="panel-body" >
+            <div class="panel-body" hidden>
                 <div id="startYield" class="btn btn-md btn-success">Start yield calculation</div>
                 <div id="stopYield" class="btn btn-md btn-danger" hidden>Stop</div>
             </div>
         </div>
 
 
-
-        <div class="well well-sm" >
-                <div id="plotData" class="btn btn-md btn-primary" onclick="plotData()">Plot Data</div>
-                <div id="saveData" class="btn btn-md btn-primary" onclick="saveData()">Save data</div>
-                <div id="analysed" class="btn btn-md btn-warning">Set test as ANALYSED</div>
-                <a id="export_SS" hidden><div class="btn btn-md btn-success"><i class="fa fa-download"></i> Download final data </div></a>
-        </div>
 
 
     </div>
@@ -385,17 +378,13 @@
 
 
 
-
-
-
-
-
-
-
-
-<div class="container-fluid col-md-12">
-
+<div id="buttonFooter" >
+        <div id="plotData" class="btn btn-md btn-primary" onclick="plotData()"><i class="fa fa-refresh"></i> Refresh Plots</div>
+        <div id="saveData" class="btn btn-md btn-primary" onclick="saveData()"><i class="fa fa-save"></i> Save data</div>
+        <div id="analysed" class="btn btn-md btn-warning">Set test as ANALYSED</div>
+        <a id="export_SS" hidden><div class="btn btn-md btn-success"><i class="fa fa-download"></i> Download final data </div></a>
 </div>
+
 
 
 

@@ -25,12 +25,6 @@ var chart_3 = "";
 var chart_4 = "";
 var chart_sr = "";
 
-var NH_K_slider = $('#NH_K_slider');
-var NH_n_slider = $('#NH_n_slider');
-var NH_m_slider = $('#NH_m_slider');
-var NH_beta_slider = $('#NH_beta_slider');
-var NH_temps = $('#NH_temperature');
-var NH_strainrates = $('#NH_strainrate');
 
 var currentTest = "";
 var vol_cold = 0.0;
@@ -92,66 +86,6 @@ $(document).ready(function(){
 
 
 
-
-    $('#const_Eq').on("change", function(){
-        allControls.hide();
-        var equations = $(this).find("option:selected");
-        equations.each(function(){
-            var equation = $(this).val();
-            switch(equation){
-                case "NH":
-                    $('#NH_controls').show(200);
-                break;
-                case "JC":
-                    $('#JC_controls').show(200);
-                break;
-                case "BB":
-                    $('#BB_controls').show(200);
-                break;
-                default:
-                    allControls.hide();
-                break;
-            }
-        })
-
-    })
-
-
-
-    $(window).scroll(function(){
-
-        if($(window).scrollTop() >= '10'){
-            $('.settingsDiv').removeClass('floating');
-            $('.settingsDiv').addClass('fixed');
-        }
-
-        else{
-            $('.settingsDiv').addClass('floating');
-            $('.settingsDiv').removeClass('fixed');
-        }
-    });
-
-
-
-
-    $(".fa-caret-up").on('click', function(){
-
-        $(this).closest(".panel").find(".panel-body").toggle();
-        $(this).toggleClass("fa-caret-up");
-        $(this).toggleClass("fa-caret-down");
-    })
-
-
-
-    $("#NH_controls input[type='range']").on('input', function(){
-        var value = $(this).val()
-        $(this).siblings('.value').html( value )
-        plotNHEq()
-    })
-
-    $("#NH_controls select").on('change', function(){
-        plotNHEq()
-    })
 
 
 
@@ -262,65 +196,6 @@ function startTrim(){
 
 
 
-/*
-function getAllTests(){
-    //var allTests = tests_coll.find({});
-    var allTests = [];
-    tableBody.html("");
-
-    pouchdb.allDocs({
-            include_docs : true
-            })
-            .then(function(result){
-                //console.log(result.rows)
-                        if(result.rows.length > 0){
-                            $('#test_status').hide()
-                            for(i=0; i<result.rows.length; i++){
-                                var doc = result.rows[i].doc;
-                                console.log(doc)
-                                tableBody.append("<tr name='"+ result.rows[i].id +"'><td>"+ result.rows[i].id  +"</td><td name='sample'>"+ doc.sample +"</td><td name='temperature'>"+ doc.data.temperature +"</td><td name='strainrate'>"+ doc.data.strainrate +"</td><td><i class='fa fa-trash fa-2x' ></i></td></tr>")
-                            }
-
-                        tableBody.find("tr td:not(:last-child)").on("click", function(){
-                                    var row = $(this).closest('tr');
-                                    var test_id = row.attr("name");
-                                    var color = "#d33";
-                                    if(!row.hasClass("plotted")){
-                                        row.addClass("plotted");
-                                        plotSingleTest(test_id);
-                                    }
-                                    else{
-                                        row.removeClass("plotted")
-                                        removePlot(test_id);
-                                    }
-                                })
-
-                        tableBody.find("i.fa-trash").on('click', function(){
-                            var test_id = $(this).closest('tr').attr('name');
-                            console.log("Deleting test " + test_id)
-                            removeTest(test_id);
-                        })
-
-
-
-
-
-                        }
-                        else{
-                            $('#test_status').show()
-
-                        }
-
-            }).catch(
-                    console.log("Couldn't retrieve data from the database")
-            )
-
-    //console.log(allTests);
-
-
-}
-
-*/
 
 function getSingleTest(){
     tableBody.html("");
@@ -790,16 +665,18 @@ function calcIsoStress(){
 
 $(".panel-heading").on('click', function(){
     var panel = $(this).parent()
+    /*
     panel.parent().find(".panel").each(function(){
-        var panel_body = $(this).find(".panel-body").hide();
+        var panel_body = $(this).find(".panel-body").hide(50);
         var panel_heading = $(this).find(".panel-heading i.fa")
         panel_heading.addClass("fa-caret-down");
         panel_heading.removeClass("fa-caret-up");
     })
+    */
     var body = panel.find('.panel-body');
     //console.log(body)
-    body.show()
-    panel.find('panel-heading i.fa').addClass("fa-caret-up");
+    body.toggle(50)
+    //panel.find('panel-heading i.fa').addClass("fa-caret-up");
 
 })
 
