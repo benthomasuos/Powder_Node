@@ -145,8 +145,8 @@ function getAllTests(){
                         tableBody.find("i.fa-trash").on('click', function(){
                             var test_id = $(this).closest('tr').attr('name');
                             console.log("Deleting test " + test_id)
-                            //var response = confirm("Are you sure you want to delete test: "+ test_id)
-                            var response = true
+                            var response = confirm("Are you sure you want to delete test: "+ test_id)
+                            //var response = true
                             if( response == true){
                                 removeTest(test_id);
                             }

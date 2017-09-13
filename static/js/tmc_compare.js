@@ -236,8 +236,6 @@ function plotAllExpTests(test_ids){
 
 
 
-
-
 function plotSingleTest(test_id){
     initialiseGraphs()
     pouchdb.get( test_id )
@@ -275,21 +273,21 @@ function plotData(data) {
                       showInLegend: true,
                       name: data.temperature + " ºC - " + data.strainrate +" /s",
                       toolTipContent: "Height: {x} mm, Temp: {y} ºC",
-                      dataPoints: parseData(data.measurements, "displacement", "sample_temp_2_centre", "")
+                      dataPoints: parseData(data.measurements, "stroke", "sample_temp_2_centre", "")
                   })
     chart_VS.options.data.push({
                       type: "line",
                       showInLegend: true,
                       name: data.temperature + " ºC - " + data.strainrate +" /s",
                       toolTipContent: "Height: {x} mm, Velocity: {y} mm/s",
-                      dataPoints: parseData(data.measurements, "displacement", "velocity_", "")
+                      dataPoints: parseData(data.measurements, "stroke", "velocity_", "")
                   })
     chart_SRS.options.data.push({
                       type: "line",
                       showInLegend: true,
                       name: data.temperature + " ºC - " + data.strainrate +" /s",
                       toolTipContent: "Height: {x} mm, Strain rate: {y} /s",
-                      dataPoints: parseData(data.measurements, "displacement", "strainrate", "")
+                      dataPoints: parseData(data.measurements, "stroke", "strainrate", "")
                   })
     chart_SS.options.data.push({
                       type: "line",

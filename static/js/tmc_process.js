@@ -124,14 +124,21 @@ $('#stopYield').on('click', function(){
 function stopYieldCalculation(){
     $('#stopYield').attr("disabled", true)
     $('#startYield').attr("disabled", false)
+    $('#yieldCalcMsg').html('Yield calculation finished');
     processData(currentTest.measurements, prepareDownload)
 
 }
 
 
+
+
+
 function startYieldCalculation(){
+
+
     $('#stopYield').attr("disabled", false)
     $('#startYield').attr("disabled", true)
+    $('#yieldCalcMsg').html('Click at end of elastic region on <span style="color:lightgreen">green</span> line');
     console.log(chart_4)
     var chart_options = chart_4.options;
     var ss_points = chart_options.data[0].dataPoints;
@@ -161,12 +168,13 @@ function startYieldCalculation(){
         chart_options.data[4].dataPoints.push( { "x": x , "y": y})
 
         chart_4.render()
-
+        $('#yieldCalcMsg').html('Click at the point the <span style="color:lightblue">blue</span> line crosses the <span style="color:lightgreen">green</span> line');
         chart_options.data[1].click  = function(e){
             console.log("Yield Stress = " + e.dataPoint.y + " MPa" )
             currentTest.yield_strength_02_mpa = e.dataPoint.y.toFixed(2)
             chart_options.data[1].click  = null
             stopYieldCalculation()
+            $('#yieldCalcMsg').html('Yield calculation finished<br>Youngs Modulus:  ' + (m / 1000.0).toFixed(2) + ' GPa<br>Yield stress:  ' + (e.dataPoint.y).toFixed(2) + ' MPa')
         }
 
 
@@ -204,8 +212,12 @@ function getSingleTest(){
                 currentTest = doc;
                 //populateTestForm(doc)
                 loadData()
-                //console.log(doc)
+                console.log(doc)
                 tableBody.append("<tr name='"+ doc._id +"'><td>"+ doc._id  +"</td><td name='sample'>"+ doc.sample.name.user_defined +"</td><td name='temperature'>"+ doc.temperature +"</td><td name='strainrate'>"+ doc.strainrate +"</td></tr>")
+                if(doc.yield_strength_02_mpa && doc.young_mod_gpa){
+                    $('#yieldCalcMsg').html('Yield calculation already completed.<br>Click START to recalculate.<br><br><b>Youngs Modulus</b>:  ' + doc.yield_strength_02_mpa + ' GPa<br><b>Yield stress:</b>  ' + doc.young_mod_gpa + ' MPa')
+                }
+
                 $("#test_status").hide()
                 console.log(currentTest)
             }).then(function(){
@@ -519,21 +531,6 @@ function smoothRawData(period){
     processData(currentTest.sampling, prepareDownload)
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
