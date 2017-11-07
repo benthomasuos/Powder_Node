@@ -156,18 +156,23 @@ function getAllTests(){
                 if(result.rows.length > 0){
                     $('#num_tests').find('span').html(result.rows.length)
                     $('#test_status').hide()
+
                     return result
+
                     }
                     else{
                         $('#test_status').show()
                     }
+
                 }).then(function(result){
                     console.log(result)
                         for(i=0; i<result.rows.length; i++){
                             var doc = result.rows[i].doc
+
                             var powder = powders_db_local.get( doc.powder_id )
+
                             var powder_cell = $('<td></td>')
-                            console.log("Powder = " + JSON.stringify(powder))
+                            console.log(powder)
                             var test_id = doc._id
                             var row = $('<tr></tr>')
                             row.attr("name", test_id)
@@ -181,7 +186,7 @@ function getAllTests(){
                             var hold_temp_cell = row.append( $('<td></td>').html(doc.hold_temperature) )
                             var hold_time_cell = row.append( $('<td></td>').html(doc.hold_time) )
                             var cooling_rate_cell = row.append( $('<td></td>').html(doc.cooling_rate) )
-                            var datafile_cell = row.append( $('<td></td>').html(doc.data_file) )
+                            var datafile_cell = row.append( $('<td></td>').html(doc.data_file.name) )
                             var testdate_cell = row.append( $('<td></td>').html(doc.created) )
 
 
@@ -214,8 +219,8 @@ function getAllTests(){
                         tableBody.find("i.fa-trash").on('click', function(){
                             var test_id = $(this).closest('tr').attr('name');
                             console.log("Deleting test " + test_id)
-                            //var response = confirm("Are you sure you want to delete test: "+ test_id)
-                            var response = true
+                            var response = confirm("Are you sure you want to delete test: "+ test_id)
+                            //var response = true
                             if( response == true){
                                 removeTest(test_id);
                             }
@@ -316,7 +321,7 @@ function getSearchedTests(){
                                 row.append( analyse_cell )
                                 var compareCell = $('<td></td>').append(checkbox)
                                 if( doc.analysed == true){
-                                    var checkbox = $('<input class="form-control" type="checkbox" />').attr('name', test_id ).attr('id', test_id)
+                                    var checkbox = $('<input class="form-control checkbox-md" type="checkbox" />').attr('name', test_id ).attr('id', test_id)
                                     var compareCell = $('<td></td>').append(checkbox)
 
                                 }
@@ -439,8 +444,9 @@ function saveTest(){
             console.log(typeof(data))
             test.testData = parseDatafile(data);
 
-            test.created = new Date();
-            test.modified = new Date();
+            test.created = moment().format("HH:mm:ss DD/MM/YYYY");
+            test.modified = moment().format("HH:mm:ss DD/MM/YYYY");
+
 
             test.machine = form.find('#machine option:selected').val();
             var powder_id = form.find('#powder_name option:selected').val();
@@ -448,7 +454,7 @@ function saveTest(){
             test.sample_mass = $('input[name="sample_mass"]').val();
             test.mould_diameter = $('input[name="mould_diameter"]').val();
             test.load = $('input[name="load"]').val();
-            test.temperature_ramp_rate = $('input[name="temperature_ramp_rate"]').val();
+            test.temperature_ramp_rate = $('input[name="temp_ramp_rate"]').val();
             test.cooling_rate = $('input[name="cooling_rate"]').val();
             test.hold_temperature = $('input[name="hold_temperature"]').val();
             test.hold_time = $('input[name="hold_time"]').val();

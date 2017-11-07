@@ -121,6 +121,11 @@ $('#stopYield').on('click', function(){
 })
 
 
+$('#mu_0').on('change', function(){
+        console.log("Replotting friction correction")
+        processData(currentTest.measurements, prepareDownload)
+})
+
 function stopYieldCalculation(){
     $('#stopYield').attr("disabled", true)
     $('#startYield').attr("disabled", false)
@@ -294,8 +299,9 @@ return d
 }
 
 function loadData(){
+
     $('input').each(function(){
-        if($(this).attr('name')){
+        if(!$(this).val() && $(this).attr('name')){
             var name = $(this).attr('name')
             if( name.includes("h_") || name.includes("d_") && !name.includes("load")){
                 $(this).val(currentTest.sample.dimensions[name]);
@@ -304,13 +310,12 @@ function loadData(){
             }
 
         }
+
     })
     vol_cold = currentTest.sample.dimensions.av_h_initial * Math.PI * (currentTest.sample.dimensions.av_d_initial/2) **2
     currentTest.sample.dimensions.vol_initial_cold = vol_cold
 
     console.log("Loaded data")
-    console.log("Initial sample volume (cold): "+ currentTest.sample.dimensions.vol_initial_cold )
-    console.log(currentTest.sample.dimensions)
     $('#loadData').html("Data loaded").delay(1000).html("Load data")
 }
 
@@ -445,18 +450,22 @@ function calculate_barrelling(){
 function prepareDownload(){
     var isoDataPoints = chart_4.options.data[2].dataPoints
     var fricDataPoints = chart_4.options.data[1].dataPoints
+    var rawDataPoints = chart_4.options.data[0].dataPoints
     //console.log(dataPoints)
     var data = []
-    data[0] = "True Strain (mm), Fric Corr Stress (MPa), True Iso Stress (MPa)\r\n"
-    for(var i=0; i<isoDataPoints.length; i++){
+    data[0] = "True Strain (mm), Raw Stress (MPa),Fric Corr Stress (MPa), True Iso Stress (MPa)\r\n"
+    console.log("Data length = " + isoDataPoints.length + ",  " + fricDataPoints.length+ ",  " + rawDataPoints.length)
+    for(var i=0; i<fricDataPoints.length; i++){
         var isoPoint = isoDataPoints[i]
         var fricPoint = fricDataPoints[i]
-        if(isoPoint.x && isoPoint.y && fricPoint.y ){
-            data.push(isoPoint.x + "," + fricPoint.y + "," + isoPoint.y + "\r\n")
+        var rawPoint = rawDataPoints[i]
+        if(rawPoint.x && rawPoint.y && fricPoint.y && rawPoint.x > 0.0){
+            data.push(rawPoint.x + "," + rawPoint.y + "," + fricPoint.y + "," + isoPoint.y + "\r\n")
     //        console.log(point)
         }
     }
-    //console.log(data)
+    console.log("Data to download")
+    console.log(data)
     data.join()
 
     var blob = new Blob(data, {type: "text/.txt"});
@@ -597,9 +606,9 @@ function calcFricCorrStress(){
          return Math.sqrt(( 4 * vol_cold ) / ( Math.PI * d.x))
     })
 
-    console.log("Friction mu_0 = " + currentTest.mu_0)
+    console.log("Friction mu_0 = " + currentTest.mu_0 )
     chart_4.options.data[1].dataPoints = heights.map(function(d, i){
-        var factor = 1 / ( 1 + ( ( 2 * currentTest.mu_0 * radii[i] )  / ( d.x  * Math.sqrt(3) * 3  ) ))
+        var factor = 1 / ( 1 + ( ( 2 * currentTest.mu_0  * radii[i] )  / ( d.x  * Math.sqrt(3) * 3  ) ))
         var stress_fric_corr = stress[i].y * factor
         var strain = stress[i].x
         return { "x": strain, "y": stress_fric_corr, "label": "Fric Corr Stress 1"}

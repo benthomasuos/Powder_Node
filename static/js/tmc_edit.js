@@ -312,8 +312,8 @@ function getSingleTest(){
                                             })
                         }
                     }).catch(function(err){
-                    console.log(err)
-                    $('#test_status').show()
+                        console.log(err)
+                        $('#test_status').show()
             })
 
 
@@ -367,8 +367,8 @@ function populateTestForm(doc){
     $("input[name='location']").val(doc.location)
     $("input[name='musfile_name']").val(doc.musfile.name)
     $("input[name='num_readings']").val(doc.measurements.length)
-    $("input[name='testdate']").val( new Date(doc.testdate).toISOString().split('T')[0] )
-    $("input[name='testtime']").val( doc.testdate.split(' ')[3] )
+    $("input[name='testdate']").val( doc.testdate.split(' ')[1] )
+    $("input[name='testtime']").val( doc.testdate.split(' ')[0] )
 
     $.each(doc.segments, function(i, val){
         var segment = $('<div class="input-group"></div>')
@@ -377,7 +377,12 @@ function populateTestForm(doc){
         segment_num.html("<h5>" + i +"</h5>")
         console.log(val)
 
-        segment_text.val( JSON.stringify(val, null, 3) )
+        var text = JSON.stringify(val)
+        text = text.replace('\t', ' ')
+        console.log(text)
+        segment_text.val( text.replace('\t', ' ') )
+
+
         segment.append(segment_num).append(segment_text)
         segmentsDiv.append(segment)
     });
@@ -568,6 +573,7 @@ function plotData(data) {
         data:[
         {
             type: "line",
+            lineColor: "black",
             toolTipContent: "Height: {x} mm, Load: {y} kN",
             dataPoints: parseData(data, "displacement", "load", "")
         }]
@@ -621,6 +627,7 @@ function plotData(data) {
        data:[
        {
          type: "line",
+         lineColor: "black",
          toolTipContent: "Height: {x} mm, Temp: {y} ºC",
          dataPoints: parseData(data, "displacement", "sample_temp_2_centre", "")
      }]
@@ -681,6 +688,7 @@ axisY:
    data:[
    {
      type: "line",
+     lineColor: "black",
      toolTipContent: "Height: {x} mm, Velocity: {y} mm/s",
      dataPoints: parseData(data, "displacement", "velocity_", "")
  }]
@@ -737,6 +745,7 @@ axisY:
    data:[
    {
      type: "line",
+     lineColor: "black",
      toolTipContent: "Strain: {x}, Stress: {y} MPa",
      dataPoints: parseData(data, "displacement", "strain_rate", "")
  }]
@@ -778,8 +787,7 @@ axisX:{
        tickColor: "#000",
        labelFontColor: "#000",
        titleFontColor: "#000",
-       lineThickness: 1,
-       reversed:  true
+       lineThickness: 1
 },
 axisY:
   {
@@ -795,13 +803,13 @@ axisY:
  },
    data:[
    {
+     connectNullData: false,
      type: "line",
+     lineColor: "#333",
      toolTipContent: "Strain: {x}, Stress: {y} MPa",
-     dataPoints: parseData(data, "strain", "isoStress", "")
+     dataPoints: parseData(data, "strain", "fricStress", "")
  }]
 });
-
-
 
 
 

@@ -430,7 +430,8 @@ function saveTest(){
             console.log(typeof(data))
             test = parseDatafile(data);
 
-            test.created = new Date();
+            test.created = moment().format("HH:mm:ss DD/MM/YYYY");
+            test.modified = moment().format("HH:mm:ss DD/MM/YYYY");
 
             var powder_id = form.find('#powder_name option:selected').val();
             console.log(powder_id)

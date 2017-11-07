@@ -358,6 +358,10 @@ function saveData(){
 
     console.log("Saved data")
     console.log(currentTest)
+    
+    var d = new Date();
+    test.modified = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + " " + d.getDate() + "-" + d.getMonth() + "-" + d.getFullYear()
+
     test_db.get( currentTest._id ).then(function(doc) {
         currentTest._rev = doc._rev
       return test_db.put( currentTest );

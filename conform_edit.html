@@ -189,36 +189,35 @@
 <div class="container-fluid col-md-12">
 
 
-
-
-<div class="container-fluid col-md-12"id="mainGraph_Parent">
-        <div class="graphDiv" id="mainGraph" ></div>
-</div>
-<div class="container-fluid col-md-6"id="grooveGraph_Parent" hidden>
-        <div class="graphDiv" id="grooveGraph" ></div>
-</div>
-<div class="container-fluid col-md-6"id="abutGraph_Parent" hidden>
-        <div class="graphDiv" id="abutGraph" ></div>
-</div>
-</div>
-
-<div class="modal" id="noteModal" hidden>
-    <div class="modal-content">
-        <span class="close" onclick="$('#noteModal').hide(200)">&times;</span>
-        <h3>Note</h3>
-        <p id="note-position"></p>
-        <div class="input-group col-md-12">
-            <textarea class="form-control" id="trialNote" rows="10" placeholder="Write note here"></textarea>
-        </div>
-        <div class="btn btn-md btn-success" hidden>Save note</div>
-        <div class="btn btn-md btn-danger" hidden>Delete note</div>
+    <div class="container-fluid col-md-12" id="mainGraph_Parent">
+            <div id="mainGraph"></div>
+    </div>
+    <div class="container-fluid col-md-6" id="grooveGraph_Parent" hidden>
+            <div id="grooveGraph" ></div>
+    </div>
+    <div class="container-fluid col-md-6" id="abutGraph_Parent" hidden>
+            <div id="abutGraph" ></div>
     </div>
 
- </div>
+
+    <div class="modal" id="noteModal" hidden>
+        <div class="modal-content">
+            <span class="close" onclick="$('#noteModal').hide(200)">&times;</span>
+            <h3>Note</h3>
+            <p id="note-position"></p>
+            <div class="input-group col-md-12">
+                <textarea style="resize:none" class="form-control" id="trialNote" rows="10" wrap="soft" placeholder="Write note here"></textarea>
+            </div>
+            <div class="btn btn-md btn-success" hidden>Save note</div>
+            <div class="btn btn-md btn-danger" hidden>Delete note</div>
+        </div>
+
+     </div>
+
+</div>
 
 
-
-
+<div class="container-fluid col-md-12">
 
  <div class="container-fluid col-md-6">
      <div id="dataInput" class="panel panel-primary">

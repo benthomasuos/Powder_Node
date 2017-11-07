@@ -123,7 +123,7 @@ function getAllTests(){
                                 analyse_cell.html("<a href='/tests/tmc/process?_id="+test_id+"'><i class='fa fa-table fa-2x'></i></a>")
                                 row.append( analyse_cell )
 
-                                var checkbox = $('<input class="form-control" type="checkbox" />').attr('name', test_id ).attr('id', test_id)
+                                var checkbox = $('<input class="form-control checkbox-md" type="checkbox" />').attr('name', test_id ).attr('id', test_id)
                                 var compareCell = $('<td></td>').append(checkbox)
                                 if(doc.analysed == true){
                                     analyse_cell.find('i').css('color', 'green')
@@ -145,7 +145,7 @@ function getAllTests(){
                         tableBody.find("i.fa-trash").on('click', function(){
                             var test_id = $(this).closest('tr').attr('name');
                             console.log("Deleting test " + test_id)
-                            var response = confirm("Are you sure you want to delete test: "+ test_id)
+                            var response = confirm("Are you sure you want to delete test: " + test_id)
                             //var response = true
                             if( response == true){
                                 removeTest(test_id);
@@ -410,7 +410,8 @@ function saveTest(){
             console.log(typeof(data))
             test = parseMusfile(data);
 
-            test.created = new Date();
+            test.created = moment().format("HH:mm:ss DD/MM/YYYY");
+
             test.sample.name.user_defined = form.find('input[name="sample_name"]').val();
             test.type = form.find('select[name="test_type"]').val();
 
@@ -563,16 +564,18 @@ function parseMusfile(data){
        testData.sample = sample
 
        var testdate = {};
-       var datetime = rows[1].split('\t')[0].split(' ')
-       var day = datetime[0];
-       var month = datetime[1];
-       var year = datetime[2];
-       var time = datetime[3].split(":")
-       var time = time
-       var hours = time[0]
-       var minutes = time[1]
-       var seconds = time[2]
-       testData.testdate = day + " " + month + ", " + year + " " + hours + ":" + minutes + ":" + seconds
+       var datetime = rows[1].split('\t')[0] ;
+       try {
+           console.log("Trying to parse date")
+           datetime = moment(datetime, ['DD MMM YYYY HH:mm:ss','DD-MM-YYYY HH:mm']);
+           console.log("Date parsed successfully")
+
+       }
+       catch(err){
+           console.log(err)
+       }
+
+       testData.testdate = datetime.format("HH:mm:ss DD/MM/YYYY")
 
        var test = sections[0].split('\n')
        var columnHeaders = test[5].split('\t');

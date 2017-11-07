@@ -207,3 +207,13 @@ td + i.fa-trash:hover{
     line-height: 10px;
     background-color: #222
 }
+
+#currentTests > tbody > tr > td {
+    text-align: center;
+}
+
+.checkbox-md{
+    height: 26px;
+    width: 26px;
+    padding-left: 80px;
+}

@@ -146,10 +146,8 @@ function getAllPowders(){
                                 var supplier_cell = row.append( $('<td></td>').html( doc.supplier ) )
                                 var psd_min_cell = row.append( $('<td></td>').html(doc.psd_min + " µm") )
                                 var psd_min_cell = row.append( $('<td></td>').html(doc.psd_max + " µm") )
-                                var date = new Date(doc.created)
-                                var creation_date = date.getDate() + "-" + date.getMonth() + "-" + date.getFullYear()
-                                var date = new Date(doc.modified)
-                                var modified_date = date.getDate() + "-" + date.getMonth() + "-" + date.getFullYear()
+                                var creation_date = moment(doc.created).format("HH:mm:ss DD/MM/YYYY")
+                                var modified_date = moment(doc.modified).format("HH:mm:ss DD/MM/YYYY")
                                 var created_cell = row.append( $('<td></td>').html(creation_date) )
                                 var modified_cell = row.append( $('<td></td>').html(modified_date) )
                                 var edit_cell =  row.append($('<td></td>').html("<a href='/powders/edit?_id="+powder_id+"'><i class='fa fa-edit fa-2x'></i></a>"))
@@ -376,8 +374,8 @@ function savePowder(){
         //console.log(powder)
         powder._id =  "powder_" + new Date().getTime()
 
-        powder.created = new Date();
-        powder.modified = new Date();
+        powder.created = moment().format("HH:mm:ss DD/MM/YYYY");
+        powder.modified = moment().format("HH:mm:ss DD/MM/YYYY");
 
         powders_db_local.put( powder )
             .then(function(result){

@@ -78,7 +78,7 @@
 
 
 
-<div class="container-fluid col-md-12">
+<div class="container-fluid col-md-6">
 <div class="panel panel-primary">
     <div class="panel-heading">
         <h4>Current analysis<i style="float:right" class="fa fa-caret-up" id="hideTable"></i></h4>
@@ -87,12 +87,12 @@
     <div class="panel-body">
         <table id="currentTests" class="table table-condensed">
             <thead>
-                <th>Test #</th>
+                <th>Test ID #</th>
                 <th>Sample</th>
                 <th>Temperature (ºC)</th>
                 <th>Strain Rate (s<sup>-1</sup>)</th>
             </thead>
-            <tbody>
+            <tbody style="font-size: 1.5em">
             </tbody>
         </table>
     </div>
@@ -151,7 +151,7 @@
                     <div class="input-group">
                         <span class="input-group-addon">Thermal exp.</span>
                         <input name="thermal_expansion" id="thermal_expansion" type="number" class="form-control" value=0.000012 />
-                        <span class="input-group-addon"><b>UNITS</b></span>
+                        <span class="input-group-addon"><b>% / ºC</b></span>
                     </div>
                 </div>
             </form>
@@ -322,7 +322,7 @@
                 <div class="form-group" id="constants">
                     <div class="input-group">
                         <span class="input-group-addon">&mu;<sub>0</sub></span>
-                        <input name="mu_0" id="mu_0" type="number" class="form-control" value=0.1 />
+                        <input name="mu_0" id="mu_0" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.3 />
                     </div>
                     <div class="input-group">
                         <span class="input-group-addon">A</span>

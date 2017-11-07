@@ -337,7 +337,9 @@ function saveTest(){
             console.log(typeof(data))
             test = parseDatafile(data);
 
-            test.created = new Date();
+            var d = new Date();
+            test.created = moment().format("HH:mm:ss DD/MM/YYYY");
+            test.modified = moment().format("HH:mm:ss DD/MM/YYYY");
 
             var sample = form.find('input[name="sample"]').val();
             var description = form.find('input[name="description"]').val();
@@ -391,7 +393,7 @@ function saveTest(){
                                 $('#saveTest').removeClass("btn-default")
                                 $('#saveTest').attr('disabled', false).find('i').removeClass("fa-spinner fa-spin")
                                 getAllTests();
-                        
+
 
 
 

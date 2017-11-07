@@ -91,49 +91,6 @@
 
 
 
-
-
-
-
-
-<div class="container-fluid col-md-6">
-    <div id="dataInput" class="panel panel-primary">
-        <div class="panel-heading">
-            <h4>Upload images <i style="float:right" class="fa fa-times"></i></h4>
-        </div>
-        <div class="panel-body">
-            <form id="imagesForm">
-                <div class="form-group">
-                    <input class="form-control" name="imageUpload" id="imageUpload" type="file" accept="image/*" multiple/>
-                </div>
-            </form>
-            <div class="well" id="uploadImagesPreview" >
-
-            </div>
-            <div class="container-fluid col-md-6">
-                <div class="btn-group">
-                    <div id="resetForm" class="btn btn-md btn-primary" onclick="resetImagePreview()">Reset</div>
-                    <div id="uploadImages" class="btn btn-md btn-success" >Upload images</div>
-            </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-<div class="container-fluid col-md-6">
-    <div class="panel panel-primary">
-        <div class="panel-heading">
-            <h4>Images <i style="float:right" class="fa fa-times"></i></h4>
-        </div>
-        <div class="panel-body">
-            <div class="well" id="testImages" >
-
-            </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 
@@ -142,9 +99,10 @@
 
 
 
+<div class="container-fluid col-md-12" >
 
 
-<div class="container-fluid col-md-6" >
+<div class="container-fluid col-md-6">
 
     <div class="panel panel-primary">
         <div class="panel-heading">
@@ -203,9 +161,9 @@
                     </div>
                     <div class="input-group">
                         <div class="input-group-addon">Date</div>
-                        <input name="testdate" id="testdate" type="date" class="form-control" disabled/>
+                        <input name="testdate" id="testdate" type="text" class="form-control" disabled/>
                         <div class="input-group-addon">Time</div>
-                        <input name="testtime" id="testtime" type="time" class="form-control" disabled/>
+                        <input name="testtime" id="testtime" type="text" class="form-control" disabled/>
                     </div>
                     <div class="input-group">
                         <div class="input-group-addon">Config</div>
@@ -224,60 +182,112 @@
                         <input name="location" id="location" type="text" class="form-control" disabled/>
                     </div>
                 </div>
-                <div class="form-group" name="segments">
-                    <h5>Test segments</h5>
 
-
-                </div>
 
                 </div>
             </form>
 
 
-
-
-
-
         </div>
+
+    </div>
+        <div class="container-fluid col-md-6">
+            <div class="panel panel-primary">
+            <div class="panel-heading">Test Schedule</div>
+                <div class="panel-body" name="segments">
+                    <h4>Test segments</h4>
+                </div>
+            </div>
+        </div>
+
+
+
+
     </div>
 
 
+
+
+
+
+
+
+
+
+
+
+<div class="container-fluid col-md-12" style="margin-bottom:100px;">
+
+
+
+
+<div class="container-fluid col-md-6" id="graph_LS_Parent">
+        <div class="graphDiv" id="graphLS" ></div>
+</div>
+<div class="container-fluid col-md-6" id="graph_TS_Parent">
+        <div class="graphDiv" id="graphTS" ></div>
+</div>
+
+<div class="container-fluid col-md-6" id="graph_VS_Parent">
+        <div class="graphDiv" id="graphVS" ></div>
+</div>
+
+<div class="container-fluid col-md-6" id="graph_SRS_Parent">
+        <div class="graphDiv" id="graphSRS" ></div>
 </div>
 
 
-
-
-
+<div class="container-fluid col-md-12" id="graph_SS_Parent">
+        <div class="graphDiv" id="graphSS" ></div>
+</div>
+</div>
 
 
 
 
 
 <div class="container-fluid col-md-12">
+<div class="container-fluid col-md-6">
+    <div id="dataInput" class="panel panel-primary">
+        <div class="panel-heading">
+            <h4>Upload images <i style="float:right" class="fa fa-times"></i></h4>
+        </div>
+        <div class="panel-body">
+            <form id="imagesForm">
+                <div class="form-group">
+                    <input class="form-control" name="imageUpload" id="imageUpload" type="file" accept="image/*" multiple/>
+                </div>
+            </form>
+            <div class="well" id="uploadImagesPreview" >
 
-
-
-
-<div class="container-fluid col-md-6"id="graph_LS_Parent">
-        <div class="graphDiv" id="graphLS" ></div>
+            </div>
+            <div class="container-fluid col-md-6">
+                <div class="btn-group">
+                    <div id="resetForm" class="btn btn-md btn-primary" onclick="resetImagePreview()">Reset</div>
+                    <div id="uploadImages" class="btn btn-md btn-success" >Upload images</div>
+            </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="container-fluid col-md-6"id="graph_TS_Parent">
-        <div class="graphDiv" id="graphTS" ></div>
-</div>
-
-<div class="container-fluid col-md-6"id="graph_VS_Parent">
-        <div class="graphDiv" id="graphVS" ></div>
-</div>
-
-<div class="container-fluid col-md-6"id="graph_SRS_Parent">
-        <div class="graphDiv" id="graphSRS" ></div>
-</div>
 
 
-<div class="container-fluid col-md-12"id="graph_SS_Parent">
-        <div class="graphDiv" id="graphSS" ></div>
+
+<div class="container-fluid col-md-6">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h4>Images <i style="float:right" class="fa fa-times"></i></h4>
+        </div>
+        <div class="panel-body">
+            <div class="well" id="testImages" >
+
+            </div>
+            </div>
+        </div>
+    </div>
 </div>
-</div>
+
+
 
 
 

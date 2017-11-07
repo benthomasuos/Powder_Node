@@ -488,7 +488,7 @@ function populatePowderForm(){
     $("input[name='supplier']").val(currentPowder.supplier)
     $("#morphology").val(currentPowder.morphology)
     $("input[name='created']").val( currentPowder.created.split("T")[1].split(".")[0] + " " + currentPowder.created.split("T")[0] )
-    $("input[name='modified']").val( currentPowder.modified.split("T")[1].split(".")[0] + " " + currentPowder.modified.split("T")[0] )
+    $("input[name='modified']").val( currentPowder.modified )
     $("input[name='psd_min']").val(currentPowder.psd_min)
     $("input[name='psd_max']").val(currentPowder.psd_max)
     if(currentPowder.psd){
@@ -570,7 +570,8 @@ function savePowder(){
         currentPowder.chemistry[ d.name ].wt_pc = d.value
     })
 
-    currentPowder.modified = new Date()
+    var d = new Date()
+    currentPowder.modified = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + " " + d.getDate() + "-" + d.getMonth() + "-" + d.getFullYear()
 
     powders_db_local.get( currentPowder._id )
             .then(function(doc){

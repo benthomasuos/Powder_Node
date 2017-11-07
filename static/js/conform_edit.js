@@ -8,13 +8,15 @@ var allControls = $('.controls');
 var plotAllTests = $('#plotAll');
 var currentTestTable = $('#currentTests');
 var tableBody = currentTestTable.find("tbody")
+var mainGraphDiv = $('#mainGraph')
+
 
 var chart_main = ""
 var chart_groove = ""
 var chart_abut = ""
 
-var previewBox = $('#uploadImagesPreview')
-var imageUpload = $('#imageUpload')
+var previewBox = $('#uploadImagesPreview');
+var imageUpload = $('#imageUpload');
 var testImages = $('#testImages');
 var noteModal = $('#noteModal');
 var currentTest = ""
@@ -515,7 +517,10 @@ function plotData() {
         ]
     });
 
+    console.log(mainGraphDiv)
+    mainGraph.height(chart_main.get("height"));
     chart_main.render();
+
 /*
     chart_groove = new CanvasJS.Chart("grooveGraph",
     {
