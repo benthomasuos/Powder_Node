@@ -8,6 +8,7 @@ var graph_Parent = $('#graph_Parent');
 var graph_SS = $('#graph_SS');
 var graph_SS_Parent = $('#graph_SS_Parent');
 var graph_sr_Parent = $('#graph_sr_Parent');
+var samplingNum = $("#sampingNum");
 
 var settingsDiv = $('#settingsDiv');
 
@@ -454,7 +455,7 @@ function prepareDownload(){
     //console.log(dataPoints)
     var data = []
     data[0] = "True Strain (mm), Raw Stress (MPa),Fric Corr Stress (MPa), True Iso Stress (MPa)\r\n"
-    console.log("Data length = " + isoDataPoints.length + ",  " + fricDataPoints.length+ ",  " + rawDataPoints.length)
+    //console.log("Data length = " + isoDataPoints.length + ",  " + fricDataPoints.length+ ",  " + rawDataPoints.length)
     for(var i=0; i<fricDataPoints.length; i++){
         var isoPoint = isoDataPoints[i]
         var fricPoint = fricDataPoints[i]
@@ -464,8 +465,7 @@ function prepareDownload(){
     //        console.log(point)
         }
     }
-    console.log("Data to download")
-    console.log(data)
+
     data.join()
 
     var blob = new Blob(data, {type: "text/.txt"});
@@ -475,8 +475,9 @@ function prepareDownload(){
 
 }
 
-$('#sampling_period').on("input", function(){
-    smoothRawData($(this).val())
+$('#sampling_period').on("change", function(){
+    smoothRawData($(this).val());
+    samplingNum.html($(this).val + ' samples');
 })
 
 
@@ -493,48 +494,12 @@ $('#sampling_period').on("input", function(){
 
 function smoothRawData(period){
     console.log(period)
-    currentTest.sampling = []
+    currentTest.sampling = [];
 
     for(var i=0; i< currentTest.measurements.length;i+=parseInt(period) ){
         console.log(i)
             currentTest.sampling.push(currentTest.measurements[i])
     }
-
-    if(i < factors.length - period ){
-        var slice = factors.slice(i,i+period)
-        //console.log(temp_slice)
-        var sum_T=0.0
-        var sum_S=0.0
-        for( var j = 0; j < slice.length; j++ ){
-             sum_T += parseInt( slice[j].T );
-             sum_T += parseInt( slice[j].fric_corr_stress );
-        }
-
-        var avg_T = sum_T/slice.length;
-        var avg_S = sum_S/slice.length;
-        //console.log(avg_T)
-        var delta_T = avg_T - currentTest.temperature
-        var d_T = slice[slice.length-1].T - slice[0].T
-        var d_S = slice[slice.length-1].fric_corr_stress - slice[0].fric_corr_stress
-        var d_S_d_T = d_S / d_T
-        var corr_factor = d_T * d_S_d_T
-
-        var iso_stress = d.fric_corr_stress + corr_factor
-        return { "x": factors[i+period].strain, "y": iso_stress, "label": "Isothermal Stress"}
-    }
-    else {
-        return { "x": factors[i].strain, "y": null, "label": "Isothermal Stress"}
-    }
-
-
-
-
-
-
-
-
-
-
 
     console.log(currentTest.sampling)
     processData(currentTest.sampling, prepareDownload)
