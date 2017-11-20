@@ -50,7 +50,7 @@
 
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="/account" disabled><i class="fa fa-user-circle"></i> My account</a></li>
+              <li><a href="#" id="loginButton"><i class="fa fa-user-circle"></i> Login</a></li>
           </ul>
         </div><!-- /.navbar-collapse -->
       </div><!-- /.container-fluid -->
@@ -83,22 +83,22 @@
         </div>
     </a>
     <a href="/tests/aspshear">
-        <div class="tile tile-large tile-blue">
+        <div class="thumbnail tile tile-large tile-blue">
             <h1>ASP Powder Shear tests</h1>
         </div>
     </a>
     <a href="/tests/orthogonal">
-        <div class="tile tile-large tile-yellow">
+        <div class="thumbnail tile tile-large tile-yellow">
             <h1>Orthogonal cut tests</h1>
         </div>
     </a>
     <a href="/tests/fast">
-        <div class="tile tile-large tile-carrot">
+        <div class="thumbnail tile tile-large tile-carrot">
             <h1>FAST</h1>
         </div>
     </a>
     <a href="/tests/conform">
-        <div class="tile tile-large tile-teal">
+        <div class="thumbnail tile tile-large tile-teal">
             <h1>Conform</h1>
         </div>
     </a>
@@ -108,7 +108,22 @@
 
 
 
+<div class="wrapper" id="loginModal" hidden>
+    <form class="form-signin">
+      <h2 class="form-signin-heading">Please login</h2>
+      <input type="text" class="form-control" name="username" placeholder="Email Address" required="" autofocus="" />
+      <input type="password" class="form-control" name="password" placeholder="Password" required=""/>
+      <label class="checkbox">
+        <input type="checkbox" value="remember-me" id="rememberMe" name="rememberMe"> Remember me
+      </label>
+      <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+    </form>
+  </div>
 
+
+
+
+<script src="/js/home.js"></script>
 </body>
 
 </html>

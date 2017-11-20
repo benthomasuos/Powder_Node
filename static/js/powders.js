@@ -14,13 +14,17 @@ var loading_progress = data_load.find('progress')
 var local_powders = 0
 var remote_powders = 0
 
+
+
+var remoteServer_IP = '143.167.48.53:5984';
+
 var powders_db_local = new PouchDB('powders')
 powders_db_local.info().then(function (info) {
   console.log(info);
   local_powders = info.doc_count
 })
 
-var powders_db_remote = new PouchDB('http://143.167.48.53:5984/powders')
+var powders_db_remote = new PouchDB('http://' + remoteServer_IP + '/powders')
 powders_db_remote.info().then(function (info) {
   console.log(info);
   remote_powders = info.doc_count
@@ -34,17 +38,17 @@ $(document).ready(function(){
 
 
     var sync_time = new Date()
-    var time =  sync_time.getHours() + ":" + sync_time.getMinutes() + ":" + sync_time.getSeconds() +  " "+sync_time.getDate() + "-" + sync_time.getMonth() + "-" + sync_time.getFullYear()
     powders_db_local.sync(powders_db_remote).on('complete', function () {
-
-            sync_status.html("Sync with remote database<br>Success @ " + time)
+            var sync_html = "<a hidden disabled><i class='fa fa-database' />  Online</a>"
+            sync_status.html(sync_html);
             sync_status.css("background-color", "#3d4")
-          console.log("Database sync between local and remote Success @ " + time)
+          console.log("Database sync between local and remote Success @ " + sync_time)
         }).on('error', function (err) {
-
-            sync_status.html("Database sync between local and remote<br>Failed @ " + time)
+            var sync_html = "<a hidden disabled><i class='fa fa-database' />  Online</a>"
+            sync_status.show();
+            sync_status.html(sync_html);
             sync_status.css("background-color", "#d34")
-          console.log("Database sync between local and remote Failed @ " + time)
+          console.log("Database sync between local and remote Failed @ " + sync_time)
         });
 
     initialiseSearch()

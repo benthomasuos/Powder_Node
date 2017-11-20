@@ -1,16 +1,81 @@
 var fs = require('fs');
+var couchUser = require('express-user-couchdb');
 var express = require('express')
 var router = express.Router();
 var app = express()
 var bodyParser = require('body-parser');
-
+var passport = require('passport');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+
+
+
+app.use(couchUser({
+    users: 'http://143.167.48.53:5984/_users',
+    request_defaults: {
+        auth: {
+            user: 'admin',
+            pass: 'adminpw'
+        }
+    },
+    email:{
+        address: "b.thomas@sheffield.ac.uk"
+    },
+    validateUser: function(data, cb) {
+      var MAX_FAILED_LOGIN = 5;
+      var req = data.req;     //all the fields in data is captured from /api/user/signin callback function
+      var user = data.user;
+      var headers = data.headers;
+      var outData = {         // This object will be attached to the session
+        userInfo: "userAge"   // req.session.userInfo will be "userAge"
+      };
+
+      if(data.user.failedLogin > MAX_FAILED_LOGIN) {
+        //fails check
+        var errorPayload = {
+          statusCode: 403,                           //if not included will default to 401
+          message: 'Exceeded fail login attempts',   //if not included will default to 'Invalid User Login'
+          error: 'Forbidden'                         //if not included will default 'unauthorized'
+        }
+        cb(errorPayload);
+      } else {
+        //passess check
+        cb(null, outData);
+      }
+    }
+}));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 app.get('/',function(req, res){
     res.sendFile(process.cwd() + '/home.html')
 })
+
+
+
+
+app.post('/',function(req, res){
+    res.redirect
+    res.sendFile(process.cwd() + '/home.html')
+})
+
 
 
 

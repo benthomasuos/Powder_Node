@@ -217,3 +217,19 @@ td + i.fa-trash:hover{
     width: 26px;
     padding-left: 80px;
 }
+
+#loginModal {
+    text-align: center;
+    width: 30%;
+    max-width: 300px;
+    position: absolute;
+    left: 35%;
+}
+
+#sync_status{
+    font-family: inherit;
+    text-align: center;
+    font-size: 1.2em;
+    color: #fff;
+    vertical-align: 50px;
+}
