@@ -79,8 +79,6 @@ app.post('/',function(req, res){
 
 
 
-
-
 app.get('/tests/tmc',function(req, res){
     res.sendFile(process.cwd() + '/tmc.html')
 })
@@ -113,6 +111,13 @@ app.get('/tests/conform/edit',function(req, res){
 app.get('/models/conform',function(req, res){
     res.sendFile(process.cwd() + '/conform_model.html')
 })
+
+
+app.get('/models/conform',function(req, res){
+    res.sendFile(process.cwd() + '/conform_model.html')
+})
+
+
 
 
 app.get('/tests/fast',function(req, res){

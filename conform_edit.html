@@ -189,32 +189,18 @@
 <div class="container-fluid col-md-12">
 
 
-    <div class="container-fluid col-md-12" id="mainGraph_Parent">
-            <div id="mainGraph"></div>
-    </div>
+
+            <div style="width: 90%; height: 300px; display: inline-block;" id="mainGraph"></div>
+
+
+            <div style="width: 45%; height: 300px; display: inline-block;" id="abutGraph" ></div>
+
     <div class="container-fluid col-md-6" id="grooveGraph_Parent" hidden>
             <div id="grooveGraph" ></div>
     </div>
-    <div class="container-fluid col-md-6" id="abutGraph_Parent" hidden>
-            <div id="abutGraph" ></div>
-    </div>
-
-
-    <div class="modal" id="noteModal" hidden>
-        <div class="modal-content">
-            <span class="close" onclick="$('#noteModal').hide(200)">&times;</span>
-            <h3>Note</h3>
-            <p id="note-position"></p>
-            <div class="input-group col-md-12">
-                <textarea style="resize:none" class="form-control" id="trialNote" rows="10" wrap="soft" placeholder="Write note here"></textarea>
-            </div>
-            <div class="btn btn-md btn-success" hidden>Save note</div>
-            <div class="btn btn-md btn-danger" hidden>Delete note</div>
-        </div>
-
-     </div>
-
 </div>
+
+
 
 
 <div class="container-fluid col-md-12">
@@ -257,9 +243,27 @@
              </div>
          </div>
      </div>
+
+
+
  </div>
 
+ <div class="container-fluid col-md-12">
+     <div class="modal" id="noteModal" hidden>
+         <div class="modal-content">
+             <span class="close" onclick="$('#noteModal').hide(200)">&times;</span>
+             <h3>Note</h3>
+             <p id="note-position"></p>
+             <div class="input-group col-md-12">
+                 <textarea style="resize:none" class="form-control" id="trialNote" rows="10" wrap="soft" placeholder="Write note here"></textarea>
+             </div>
+             <div class="btn btn-md btn-success" hidden>Save note</div>
+             <div class="btn btn-md btn-danger" hidden>Delete note</div>
+         </div>
 
+      </div>
+
+ </div>
 
 
 

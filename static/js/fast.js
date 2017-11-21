@@ -49,7 +49,6 @@ $(document).ready(function(){
     var sync_time = new Date()
     var time =  sync_time.getHours() + ":" + sync_time.getMinutes() + ":" + sync_time.getSeconds() +  " "+sync_time.getDate() + "-" + sync_time.getMonth() + "-" + sync_time.getFullYear()
     fast_db_local.sync(fast_db_remote).on('complete', function () {
-
             sync_status.html("Sync with remote database<br>Success @ " + time)
             sync_status.css("background-color", "#3d4")
           console.log("Database sync between local and remote Success @ " + time)
@@ -60,6 +59,27 @@ $(document).ready(function(){
           console.log("Database sync between local and remote Failed @ " + time)
         });
 
+        // If a powder ID is in the URL, split it up and find out what the ID is.
+        var url = window.location.href;
+        if ( url.match(/\?/) ){
+            currentPowder_id = url.split("?")[1].split("=")[1];
+        }
+        else{
+            currentPowder_id = "";
+        }
+        // If a powder ID is found in the URL, search for all tests conducted with that powder and display in the table
+        if(currentPowder_id){
+            $('.page_header').find("span").html(currentPowder_id)
+            console.log("Finding tests for powder: "+ currentPowder_id)
+            getSearchedTests(currentPowder_id)
+
+        }else{
+            console.log("No powder chosen")
+            getAllTests()
+        }
+
+
+
 
         $("#mould_diameter").on('input', function(){
             calculatePressure()
@@ -69,8 +89,6 @@ $(document).ready(function(){
         })
 
 
-
-        getAllTests()
 
 
     /*initialiseSearch()
@@ -156,15 +174,13 @@ function getAllTests(){
                 if(result.rows.length > 0){
                     $('#num_tests').find('span').html(result.rows.length)
                     $('#test_status').hide()
-
                     return result
-
                     }
                     else{
                         $('#test_status').show()
                     }
-
                 }).then(function(result){
+
                     console.log(result)
                         for(i=0; i<result.rows.length; i++){
                             var doc = result.rows[i].doc
@@ -192,24 +208,27 @@ function getAllTests(){
 
 
 
-                                //var analyse_cell =  $('<td></td>')
-                                //analyse_cell.html("<a href='/tests/fast/process?_id="+test_id+"'><i class='fa fa-table fa-2x'></i></a>")
-                                //row.append( analyse_cell )
-                                var edit_cell =  row.append($('<td></td>').html("<a href='/tests/fast/edit?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>"))
+                            //var analyse_cell =  $('<td></td>')
+                            //analyse_cell.html("<a href='/tests/fast/process?_id="+test_id+"'><i class='fa fa-table fa-2x'></i></a>")
+                            //row.append( analyse_cell )
+                            var edit_cell =  row.append($('<td></td>').html("<a href='/tests/fast/edit?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>"))
 
-                                /*
-                                if(doc.analysed == true){
-                                    analyse_cell.find('i').css('color', 'green')
-                                }
-                                else(
-                                    analyse_cell.find('i').css('color', 'red')
-                                )
-                                */
+                            /*
+                            if(doc.analysed == true){
+                                analyse_cell.find('i').css('color', 'green')
+                            }
+                            else(
+                                analyse_cell.find('i').css('color', 'red')
+                            )
+                            */
 
-                                var trash_cell = row.append( $('<td></td>').html("<i class='fa fa-trash fa-2x'></i>") )
-                                tableBody.append(row)
+                            var trash_cell = row.append( $('<td></td>').html("<i class='fa fa-trash fa-2x'></i>") )
+                            tableBody.append(row)
 
                         }
+
+
+
                     }).then(function(){
 
                         currentTestTable.DataTable()
@@ -267,7 +286,7 @@ function getAllTests(){
 }
 
 
-function getSearchedTests(){
+function getSearchedTests(powder_id){
     var allTests = [];
     tableBody.html("");
     var allSamples = []
@@ -275,20 +294,22 @@ function getSearchedTests(){
         allSamples.push( $(this).val() );
     })
 
+    if (powder_id){
+        allSamples = [powder_id]
+    }
+
     console.log(allSamples)
     if(allSamples.length == 0){
 
     }
 
-    fast_db_local.find(
-        { selector: {
-                        sample: { "$in": allSamples } ,
-                        temperature: { "$gte" : temp_min.val() },
-                        temperature: { "$lte" : temp_max.val() },
-                        strainrate: { "$gte" : sr_min.val() },
-                        strainrate: { "$lte" : sr_max.val() }
-                    }
-        })
+
+        fast_db_local.find(
+            { selector: {
+                            sample: { "$eq" : allSamples } ,
+
+                        }
+            })
             .then(function(result){
                 console.log(result);
                 var number_of_tests = result.docs.length

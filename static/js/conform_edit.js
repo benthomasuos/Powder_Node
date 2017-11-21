@@ -26,7 +26,7 @@ var form_groupDiv = $("<div class='form-group'></div>")
 var input_groupDiv = $("<div class='input-group'></div>")
 var formDiv = $("<form class='form'></form>")
 
- var trialNote = $("#trialNote")
+var trialNote = $("#trialNote")
 
 
 //setup the in-browser database to save the uploaded flow stress data and saved fitted parameters
@@ -181,75 +181,17 @@ function uploadImages(test_id){
 
 
 
-
-function getAllTests(){
-    //var allTests = tests_coll.find({});
-    var allTests = [];
-    tableBody.html("");
-    testImages.html("");
-    pouchdb.allDocs({
-                include_docs : true
-            })
-            .then(function(result){
-                //console.log(result.rows)
-                        if(result.rows.length > 0){
-                            $('#test_status').hide()
-                            for(i=0; i<result.rows.length; i++){
-                                var doc = result.rows[i].doc;
-                                console.log(doc)
-                                tableBody.append("<tr name='"+ result.rows[i].id +"'><td>"+ result.rows[i].id  +"</td><td name='sample'>"+ doc.sample +"</td><td name='temperature'>"+ doc.data.temperature +"</td><td name='strainrate'>"+ doc.data.strainrate +"</td><td><i class='fa fa-trash fa-2x' ></i></td></tr>")
-                            }
-
-                        tableBody.find("tr td:not(:last-child)").on("click", function(){
-                                    var row = $(this).closest('tr');
-                                    var test_id = row.attr("name");
-                                    var color = "#d33";
-                                    if(!row.hasClass("plotted")){
-                                        row.addClass("plotted");
-                                        plotSingleTest(test_id);
-                                    }
-                                    else{
-                                        row.removeClass("plotted")
-                                        removePlot(test_id);
-                                    }
-                                })
-
-                        tableBody.find("i.fa-trash").on('click', function(){
-                            var test_id = $(this).closest('tr').attr('name');
-                            console.log("Deleting test " + test_id)
-                            removeTest(test_id);
-                        })
-
-
-
-
-
-                        }
-                        else{
-                            $('#test_status').show()
-
-                        }
-
-            }).catch(
-                    console.log("Couldn't retrieve data from the database")
-            )
-
-    //console.log(allTests);
-
-
-}
-
 function getSingleTest(){
     tableBody.html("");
     testImages.html("");
     pouchdb.get( currentTest , { attachments : true } )
             .then(function(doc){
                 currentTest = doc
-                console.log(currentTest.rawData)
+                console.log(currentTest)
                 populateTestForm(currentTest)
                 plotData()
 
-                tableBody.append("<tr name='"+ doc._id +"'><td>"+ doc._id  +"</td><td name='sample'>"+ doc.sample.name.user_defined +"</td><td name='temperature'>"+ doc.temperature +"</td><td name='strainrate'>"+ doc.strainrate +"</td></tr>")
+                tableBody.append("<tr name='"+ doc._id +"'><td>"+ doc._id  +"</td><td name='sample'>"+ doc.feedstock.name.user_defined +"</td><td name='temperature'>"+ doc.temperature +"</td><td name='strainrate'>"+ doc.strainrate +"</td></tr>")
 
                 var images = doc._attachments
                     for( var key in images ){
@@ -272,7 +214,12 @@ function getSingleTest(){
                                             })
                         }
                     }).catch(function(err){
-                    console.log(err)
+                        //console.log(err)
+                    if(err.reason == "missing"){
+                        console.log("Nothing to upload")
+                    }
+
+                    $('#test_status').show()
                     $('#test_status').show()
             })
 
@@ -517,8 +464,8 @@ function plotData() {
         ]
     });
 
-    console.log(mainGraphDiv)
-    mainGraph.height(chart_main.get("height"));
+    //console.log(mainGraphDiv)
+    mainGraphDiv.css('height', chart_main.get("height") + 80);
     chart_main.render();
 
 /*
@@ -603,7 +550,7 @@ function plotData() {
        name: "grooveWidth",
        legendText: "Groove Width",
        axisYIndex: 0,
-       dataPoints: parseData(data, "time", "grooveWidth", "Groove Width")
+       dataPoints: parseData(currentTest.rawData, "time", "grooveWidth", "Groove Width")
        },
        {
          type: "line",
@@ -611,7 +558,7 @@ function plotData() {
          name: "grooveDepth",
          legendText: "Groove Depth",
          axisYIndex: 0,
-         dataPoints: parseData(data, "time", "grooveDepth", "Groove Depth")
+         dataPoints: parseData(currentTest.rawData, "time", "grooveDepth", "Groove Depth")
        },
        {
          type: "line",
@@ -620,7 +567,7 @@ function plotData() {
          legendText: "Groove CSA",
          axisYType: "secondary",
          axisYIndex: 0,
-         dataPoints: parseData(data, "time", "grooveCSA", "Groove CSA")
+         dataPoints: parseData(currentTest.rawData, "time", "grooveCSA", "Groove CSA")
      }]
     });
 
@@ -628,7 +575,7 @@ function plotData() {
 
 
 chart_groove.render();
-
+*/
 
 chart_abut = new CanvasJS.Chart("abutGraph",
 {
@@ -682,7 +629,7 @@ axisY:
        markerSize: 10,
        markerColor: "rgba(0,0,0,0.3)",
        showInLegend: true,
-       dataPoints: parseData(data, "wheelSpeed", "abutStress", "Abutment Stress")
+       dataPoints: parseData(currentTest.rawData, "wheelSpeed", "abutStress", "Abutment Stress")
    }]
 });
 
@@ -691,7 +638,7 @@ axisY:
 
 chart_abut.render();
 
-*/
+
 
    }
 

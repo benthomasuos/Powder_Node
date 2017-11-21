@@ -33,44 +33,65 @@ var currentPowder_id = ""
 var currentPowder = ""
 var cumulative_pc = 0
 
+var local_powders = 0
+var remote_powders = 0
+
+
+
 //var $contextMenu = $("#contextMenu");
 
 
 //setup the in-browser database to save the uploaded flow stress data and saved fitted parameters
 var axi_db = new PouchDB('flowstress')
 axi_db.info().then(function (info) {
-  console.log(info);
+  //console.log(info);
 })
 
 var aspshear_db = new PouchDB('aspshear')
 aspshear_db.info().then(function (info) {
+  //console.log(info);
+})
+
+var fast_db = new PouchDB('fast')
+fast_db.info().then(function (info) {
   console.log(info);
 })
+
+
+
+var remoteServer_IP = '143.167.48.53:5984';
 
 var powders_db_local = new PouchDB('powders')
 powders_db_local.info().then(function (info) {
   console.log(info);
+  local_powders = info.doc_count
 })
 
-var powders_db_remote = new PouchDB('http://143.167.48.53:5984/powders')
+var powders_db_remote = new PouchDB('http://' + remoteServer_IP + '/powders')
 powders_db_remote.info().then(function (info) {
   console.log(info);
+  remote_powders = info.doc_count
 })
+
 
 
 $(document).ready(function(){
+    if(local_powders != remote_powders){
+        console.log("Local and remote databases are out of sync. Please refresh page.")
+    }
+
     var sync_time = new Date()
-    var time =  sync_time.getHours() + ":" + sync_time.getMinutes() + ":" + sync_time.getSeconds() +  " "+sync_time.getDate() + "-" + sync_time.getMonth() + "-" + sync_time.getFullYear()
     powders_db_local.sync(powders_db_remote).on('complete', function () {
-
-            sync_status.html("Sync with remote database<br>Success @ " + time)
+            var sync_html = "<a hidden disabled><i class='fa fa-database' />  Online</a>"
+            sync_status.html(sync_html);
             sync_status.css("background-color", "#3d4")
-          console.log("Database sync between local and remote Failed @ " + time)
+          console.log("Database sync between local and remote Success @ " + sync_time)
         }).on('error', function (err) {
-
-            sync_status.html("Database sync between local and remote<br>Failed @ " + time)
+            var sync_html = "<a hidden disabled><i class='fa fa-database' />  Online</a>"
+            sync_status.show();
+            sync_status.html(sync_html);
             sync_status.css("background-color", "#d34")
-          console.log("Database sync between local and remote Failed @ " + time)
+          console.log("Database sync between local and remote Failed @ " + sync_time)
         });
 
 
@@ -79,13 +100,8 @@ $(document).ready(function(){
     currentPowder_id = window.location.href.split("?")[1].split("=")[1];
     if(currentPowder_id){
         $('.page_header').find("span").html(currentPowder_id)
-
-
         console.log("Processing test: "+ currentPowder_id)
         getSinglePowder(currentPowder_id)
-
-        //plotSingleTest(currentPowder)
-
     }else{
         console.log("No test chosen")
         getAllPowders()
@@ -240,16 +256,36 @@ function getSinglePowder(){
 
                     }).then(function(){
                         displayElements()
-                }).then(function(){
+                    }).then(function(){
                         return aspshear_db.find( { selector: {  powder_id : currentPowder._id } } )
                     }).then(function(asptests){
                         $("#aspshear_tests").append("<span class='badge'>" + asptests.docs.length + "</span>" )
+                        $("#aspshear_tests").wrap('<a href="/tests/aspshear?_id=' + currentPowder_id + '" id="aspshearTests"></a>')
+
+
                         console.log(asptests.docs)
                     }).then(function(){
                         return axi_db.find( { selector: { powder_id : currentPowder._id } } )
                     }).then(function(axi_tests){
                         $("#axi_tests").append("<span class='badge'>" + axi_tests.docs.length + "</span>" )
+                        $("#axi_tests").wrap('<a href="/tests/tmc?_id=' + currentPowder_id + '" id="axiTests"></a>')
+
+
+
+
                         console.log(axi_tests.docs)
+
+
+                    }).then(function(){
+                        return fast_db.find( { selector: { powder_id : currentPowder._id } } )
+                    }).then(function(fast_tests){
+                        $("#fast_tests").append("<span class='badge'>" + fast_tests.docs.length + "</span>" )
+                        $("#fast_tests").wrap('<a href="/tests/fast?_id=' + currentPowder_id + '" id="fastTests"></a>')
+
+
+
+
+                        console.log(fast_tests.docs)
 
 
                     }).then(function(){
