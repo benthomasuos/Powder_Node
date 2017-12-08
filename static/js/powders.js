@@ -151,6 +151,7 @@ function getAllPowders(){
                                 var psd_min_cell = row.append( $('<td></td>').html(doc.psd_min + " µm") )
                                 var psd_min_cell = row.append( $('<td></td>').html(doc.psd_max + " µm") )
                                 var creation_date = moment(doc.created).format("HH:mm:ss DD/MM/YYYY")
+                                console.log(doc.modified)
                                 var modified_date = moment(doc.modified).format("HH:mm:ss DD/MM/YYYY")
                                 var created_cell = row.append( $('<td></td>').html(creation_date) )
                                 var modified_cell = row.append( $('<td></td>').html(modified_date) )

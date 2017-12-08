@@ -606,8 +606,8 @@ function savePowder(){
         currentPowder.chemistry[ d.name ].wt_pc = d.value
     })
 
-    var d = new Date()
-    currentPowder.modified = d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds() + " " + d.getDate() + "-" + d.getMonth() + "-" + d.getFullYear()
+
+    currentPowder.modified = new Date();
 
     powders_db_local.get( currentPowder._id )
             .then(function(doc){

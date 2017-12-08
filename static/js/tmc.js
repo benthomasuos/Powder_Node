@@ -11,6 +11,8 @@ var temp_max = $("#temp_max")
 var sr_min = $("#sr_min")
 var sr_max = $("#sr_max")
 var matrix_chart = ""
+var local_powders = ""
+var remote_powders = ""
 //setup the in-memory database to save the uploaded flow stress data and saved fitted parameters
 
 
@@ -18,6 +20,14 @@ var test_db = new PouchDB('flowstress')
 test_db.info().then(function (info) {
   console.log(info);
 })
+
+var powders_db_local = new PouchDB('powders')
+powders_db_local.info().then(function (info) {
+  console.log(info);
+  local_powders = info.doc_count
+})
+
+
 
 $(document).ready(function(){
     initialiseSearch()
@@ -324,7 +334,7 @@ function newTestForm(){
     var panel_body = $('#dataInput').find('div.panel-body').html('');
 
 
-    var dataInputForm = "<form id='testForm'><h3>Upload musfile</h3><div class='form-group'><div class='input-group col-md-12' id='typeDiv' hidden><label for='test_type'>Test type</label><select class='form-control' name='test_type'><option value='axi'>Axi compression</option><option value='powder'>Powder compression</option><option value='psc'>Plane strain compression</option></select></div><div class='input-group col-md-12' id='sampleDiv' hidden><label for='sample_name'>Sample name</label><input type='test' class='form-control' name='sample_name' placeholder='Sample name'/></div><div class='form-group'><div class='input-group col-md-12' id='musfileDiv' hidden><label for='musfile'>Upload musfile</label><input type='file' class='form-control' name='musfile' placeholder='MUSfile' accept='text/*,.MUS'/></div><div class='form-group' ><div class='input-group'><div class='btn btn-md btn-default' id='newTest' onclick='newTestForm()' ><i class='fa fa-reset'></i> Reset</div><div class='btn btn-md btn-success' id='saveTest' onclick='saveTest()' hidden><i class='fa fa-save'></i> Save data</div><div class='alert' id='alert' hidden></div></div></div></form>"
+    var dataInputForm = "<form id='testForm'><h3>Upload musfile</h3><div class='form-group'><div class='input-group col-md-12' id='typeDiv' hidden><label for='test_type'>Test type</label><select class='form-control' name='test_type'><option value='axi'>Axi Compression (Solid)</option><option value='powder'>Powder Axi Compression</option><option value='psc' disabled>Plane Strain Compression</option></select></div><div class='input-group col-md-12' id='sampleDiv' hidden><label for='sample_name'>Sample name</label><input type='test' class='form-control' name='sample_name' placeholder='Sample name'/></div><div class='form-group'><div class='input-group col-md-12' id='musfileDiv' hidden><label for='musfile'>Upload musfile</label><input type='file' class='form-control' name='musfile' placeholder='MUSfile' accept='text/*,.MUS'/></div><div class='form-group' ><div class='input-group'><div class='btn btn-md btn-default' id='newTest' onclick='newTestForm()' ><i class='fa fa-reset'></i> Reset</div><div class='btn btn-md btn-success' id='saveTest' onclick='saveTest()' hidden><i class='fa fa-save'></i> Save data</div><div class='alert' id='alert' hidden></div></div></div></form>"
 
 
 
@@ -348,6 +358,7 @@ function newTestForm(){
             case "powder":
                 sampleName.hide();
                 var powders = getPowders();
+                console.log(powders)
                 var powderSelect = $("<select name='sample_name'></select>")
                 powderSelect.before('<label for="sample_name">Sample name</label>')
                 //testType.after()
@@ -393,7 +404,21 @@ function newTestForm(){
 }
 
 
+function getPowders(){
+    powders_db_local.allDocs({
+            include_docs : true
+            })
+            .then(function(result){
+                console.log(result)
+                if(result.rows.length > 0){
+                    return result.rows
+                }
 
+            }).catch(
+                    console.log("Couldn't retrieve data from the database")
+            )
+
+}
 
 
 function saveTest(){
