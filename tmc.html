@@ -9,10 +9,11 @@
     <link rel="stylesheet" media="screen" href='/css/metro-bootstrap.css'>
     <link rel="stylesheet" href = "/css/style.css">
     <link rel="manifest" href="manifest.json">
-    <script src='/js/jquery2_1_4.js' type='text/javascript'></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
     <script src='/js/bootstrap.min.js' type='text/javascript'></script>
 
-    <title> Flow Stress Fitting - Web app</title>
+    <title> TMC Analysis</title>
 
 </head>
 <body>
@@ -61,8 +62,7 @@
 
 
 <div class="jumbotron">
-    <h1>Thermomechanical compression machine</h1>
-    <h2>Flow stress data</h2>
+    <h1>Thermomechanical compression analysis</h1>
 </div>
 
 
@@ -216,6 +216,16 @@
 </div>
 
 
+
+<script type="text/javascript">
+    $(document).bind("mobileinit", function () {
+        // jQuery Mobile's Ajax navigation does not work in all cases (e.g.,
+        // when navigating from a mobile to a non-mobile page), especially when going back, hence disabling it.
+        $.extend($.mobile, {
+            ajaxEnabled: false
+        });
+    });
+</script>
 
 <script src="/js/canvasjs.min.js" type="text/javascript"></script>
 <script src="//cdn.jsdelivr.net/pouchdb/6.2.0/pouchdb.min.js"></script>

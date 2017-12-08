@@ -375,6 +375,7 @@ function savePowder(){
     })
         powder.morphology = $("#morphology").val()
         powder.type = $("#type").val()
+        powder.base_metal = $("#base_metal option:selected").text()
 
         //console.log(powder)
         powder._id =  "powder_" + new Date().getTime()

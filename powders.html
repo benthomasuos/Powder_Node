@@ -14,7 +14,7 @@
     <script src='/js/bootstrap.min.js' type='text/javascript'></script>
     <script src="/js/moment.js" type="text/javascript"></script>
 
-    <title> MAPP - Powder Database</title>
+    <title>Powder Database</title>
 
 </head>
 <body>
@@ -64,13 +64,17 @@
 
 
 <div class="jumbotron">
-    <h1>Powders </h1>
+    <h1>Powder database</h1>
 </div>
 
 
 
 <div class="container-fluid col-md-12">
-    <div class="btn btn-lg btn-default" id="searchBoxToggle" disabled> Search <i class="fa fa-search"></i> </div>
+    <div class="btn btn-lg btn-default" id="searchBoxToggle"> Search <i class="fa fa-search"></i> </div>
+    <div class="btn btn-lg btn-success" id="addNewPowder_btn">
+        <i class="fa fa-plus" id="hideTable"></i>
+        New Powder
+    </div>
 </div>
 
 <div class="container-fluid col-md-12">
@@ -179,7 +183,15 @@
 
                                     <div class="input-group">
                                         <div class="input-group-addon">Base metal</div>
-                                        <input name="base_metal" id="base_metal" type="text" class="form-control" />
+                                        <select name="base_metal" id="base_metal" class="form-control">
+                                            <option value="Fe">Iron</option>
+                                            <option value="Ti">Titanium</option>
+                                            <option value="Al">Aluminium</option>
+                                            <option value="Mg">Magnesium</option>
+                                            <option value="Ni">Nickel</option>
+                                            <option value="W">Tungsten</option>
+                                            <option value="Cr">Chromium</option>
+                                        </select>
                                     </div>
                                     <div class="input-group">
                                         <div class="input-group-addon">Alloy</div>
@@ -211,10 +223,10 @@
                                     </div>
                                     <div class="input-group">
                                         <div class="input-group-addon">PSD min</div>
-                                        <input name="psd_min" id="psd_min" type="number" class="form-control" />
+                                        <input name="psd_min" id="psd_min" type="number" min=0 class="form-control" />
                                         <div class="input-group-addon"> µm </div>
                                         <div class="input-group-addon">PSD max</div>
-                                        <input name="psd_max" id="psd_max" type="number" class="form-control" />
+                                        <input name="psd_max" id="psd_max" type="number" min=0 class="form-control" />
                                         <div class="input-group-addon"> µm </div>
                                     </div>
                                 </div>
@@ -262,7 +274,7 @@
 <div class="container-fluid col-md-12">
 <div class="panel panel-primary">
     <div class="panel-heading">
-        <h4>All available powders <i style="float:right" class="fa fa-caret-up" id="hideForm"></i> <div style="float:right; margin-right:100px;" id="addNewPowder_btn"><i class="fa fa-plus-circle" id="hideTable"></i> New Powder</div> </h4>
+        <h4>All available powders</h4>
         <div id="num_powders">Number of powders found: <span>0</span></div>
         <div id="data_loading"><progress value=0 max=100 ></progress></div>
     </div>
