@@ -194,38 +194,38 @@
 </div>
 </div>
 
-<div id="showMaterialMatrix" class="container-fluid col-md-12">
+<div id="materialMatrix" class="container-fluid col-md-12" hidden>
     <div class="container-fluid col-md-12" >
-        <h3>Material Test Matrix</h3>
+        <h3>DEFORM Material Flow Stress Generation</h3>
+
     </div>
-    <div class="container-fluid col-md-3" >
-        <label for="matrixSampleChoice" >Choose sample material:</label>
-        <select name="matrixSampleChoice" id="matrixSampleChoice"></select>
-    </div>
-    <div class="container-fluid col-md-12" >
+    <div class="container-fluid col-md-6" >
         <div id="matrix"></div>
 
+
+    </div>
+    <div class="container-fluid col-md-3" >
+        <h3>Extrapolation controls</h3>
+        <form id="materialControls">
+            <div class="input-group">
+                <label for="strain_points">Strain points to extract</label>
+                <textarea class="form-control" name="strain_points" id="strain_points" rows="10" cols="10" >0.0
+0.1
+0.2
+0.3
+0.4
+0.5</textarea>
+            </div>
+            <div class="btn btn-warning" onclick="getMaterialData()"><i class="fa fa-cogs"></i>  Generate Material Data</div>
+
+        </form>
+
+
+
     </div>
 </div>
 
 
-<div id="push" class="container-fluid col-md-12" >
-</div>
-<div id="matrix" class="container-fluid col-md-12" >
-
-</div>
-
-
-
-<script type="text/javascript">
-    $(document).bind("mobileinit", function () {
-        // jQuery Mobile's Ajax navigation does not work in all cases (e.g.,
-        // when navigating from a mobile to a non-mobile page), especially when going back, hence disabling it.
-        $.extend($.mobile, {
-            ajaxEnabled: false
-        });
-    });
-</script>
 
 <script src="/js/canvasjs.min.js" type="text/javascript"></script>
 <script src="//cdn.jsdelivr.net/pouchdb/6.2.0/pouchdb.min.js"></script>

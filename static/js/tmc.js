@@ -10,9 +10,13 @@ var temp_min = $("#temp_min")
 var temp_max = $("#temp_max")
 var sr_min = $("#sr_min")
 var sr_max = $("#sr_max")
-var matrix_chart = ""
+var material_chart = "";
 var local_powders = ""
 var remote_powders = ""
+var materialData = []
+var unique_strains = []
+var unique_strainrates = []
+var unique_temperatures = []
 //setup the in-memory database to save the uploaded flow stress data and saved fitted parameters
 
 
@@ -20,6 +24,29 @@ var test_db = new PouchDB('flowstress')
 test_db.info().then(function (info) {
   console.log(info);
 })
+
+/*
+//Use this to delete indexes in the tmc database
+test_db.getIndexes().then(function (indexesResult) {
+  return test_db.deleteIndex(indexesResult.indexes[1]);
+}).then(function (result) {
+  console.log(result)
+}).catch(function (err) {
+  console.log(err);
+});
+*/
+
+test_db.createIndex({
+    index : {
+        fields:['type', 'sample', 'strainrate', 'temperature'],
+        name: "tmc_index"
+    }
+}).then(function (result) {
+  console.log(result)
+}).catch(function (err) {
+  console.log(err);
+});
+
 
 var powders_db_local = new PouchDB('powders')
 powders_db_local.info().then(function (info) {
@@ -32,6 +59,9 @@ powders_db_local.info().then(function (info) {
 $(document).ready(function(){
     initialiseSearch()
     getAllTests()
+
+
+
 
     addNewTest_btn.on('click',function(){
         newTestForm()
@@ -63,18 +93,21 @@ function initialiseSearch(){
     samples.find('option').remove();
     test_db.allDocs({
             include_docs : true
-            })
-            .then(function(result){
-                if(result.rows.length > 0){
+    }).then(function(result){
+        console.log(result)
+                if(result.rows.length > 0 ){
 
                     for(i=0; i<result.rows.length; i++){
-                        var doc = result.rows[i].doc;
-                            //console.log(doc);
-                            var option = $("<option></option>");
-                            option
-                                .html(doc.sample.name.user_defined)
-                                .val(doc.sample.name.user_defined)
-                            samples.append(option)
+                            var doc = result.rows[i].doc;
+                            if(!doc.language){  // Don't include any index documents
+                                //console.log(doc);
+                                var option = $("<option></option>");
+                                option
+                                    .html(doc.sample.name.user_defined)
+                                    .val(doc.sample.name.user_defined)
+                                samples.append(option)
+                            }
+
                             }
 
                         }
@@ -87,7 +120,6 @@ function initialiseSearch(){
                     console.log("Couldn't retrieve data from the database")
             )
 
-
 }
 
 function getAllTests(){
@@ -96,22 +128,22 @@ function getAllTests(){
     tableBody.html("");
 
     //  Query the test_db database
-    test_db.allDocs({
-                include_docs : true
+    test_db.find({
+                selector : { type :"axi"  }
             })
             .then(function(result){
-                console.log(result.rows)
-                        if(result.rows.length > 0){
-                            $('#num_tests').find('span').html(result.rows.length)
+                //console.log(result)
+                        if(result.docs.length > 0){
+                            $('#num_tests').find('span').html(result.docs.length)
 
                             $('#test_status').hide()
-                            for(i=0; i<result.rows.length; i++){
-                                var doc = result.rows[i].doc;
-                                var test_id = result.rows[i].id
+                            for(i=0; i<result.docs.length; i++){
+                                var doc = result.docs[i];
+                                var test_id = doc._id
                                 //console.log(doc)
                                 var row = $('<tr></tr>')
                                 row.attr("name", test_id)
-                                var id_cell = row.append( $('<td></td>').html(test_id) )
+                                var id_cell = row.append( $('<td name="id"></td>').html(test_id) )
                                 if(doc.sample.name.user_defined){
                                     var sample_name = doc.sample.name.user_defined
                                 }else if(doc.sample.name.musfile_defined){
@@ -119,11 +151,11 @@ function getAllTests(){
                                 }else{
                                         var sample_name = 'N/A'
                                 }
-                                var sample_cell = row.append( $('<td></td>').html(sample_name) )
+                                var sample_cell = row.append( $('<td name="sample"></td>').html(sample_name) )
 
                                 $('#matrixSampleChoice').append("<option value = >")
-                                var temp_cell = row.append( $('<td></td>').html(+doc.temperature) )
-                                var sr_cell = row.append( $('<td></td>').html(+doc.strainrate) )
+                                var temp_cell = row.append( $('<td name="temperature"></td>').html(+doc.temperature) )
+                                var sr_cell = row.append( $('<td name="strainrate"></td>').html(+doc.strainrate) )
                                 var datapoints_cell = row.append( $('<td></td>').html(doc.measurements.length) )
                                 var testdate_cell = row.append( $('<td></td>').html( doc.testdate ) )
                                 var created_cell = row.append( $('<td></td>').html(doc.created) )
@@ -133,15 +165,17 @@ function getAllTests(){
                                 analyse_cell.html("<a href='/tests/tmc/process?_id="+test_id+"'><i class='fa fa-table fa-2x'></i></a>")
                                 row.append( analyse_cell )
 
-                                var checkbox = $('<input class="form-control checkbox-md" type="checkbox" />').attr('name', test_id ).attr('id', test_id)
+                                var checkbox = $('<input class="form-control" type="checkbox" />').attr('name', test_id ).attr('id', test_id)
                                 var compareCell = $('<td></td>').append(checkbox)
                                 if(doc.analysed == true){
                                     analyse_cell.find('i').css('color', 'green')
+                                    analyse_cell.attr('name' ,'analysed_true')
 
                                 }
-                                else(
+                                else{
                                     analyse_cell.find('i').css('color', 'red')
-                                )
+                                    analyse_cell.attr('name' ,'analysed_false')
+                                }
 
                                 row.append( compareCell )
                                 var edit_cell =  row.append($('<td></td>').html("<a href='/tests/tmc/edit?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>"))
@@ -166,20 +200,45 @@ function getAllTests(){
                             var tests_to_compare = [];
                             tableBody.find('input[type="checkbox"]').each(function(){
                                 if( $(this)[0].checked ){
-                                    tests_to_compare.push( $(this).attr('name') );
+                                    var row = $(this).parent().parent();
+                                    var analysed = row.find('td[name*="analysed_"]').attr('name').split('_')[1]
+                                    console.log(analysed)
+
+                                    console.log(row)
+                                    tests_to_compare.push( {
+                                        "id" : row.find('td[name="id"]').html(),
+                                        "sample" : row.find('td[name="sample"]').html() ,
+                                        "strainrate" : row.find('td[name="strainrate"]').html(),
+                                        "temperature" : row.find('td[name="temperature"]').html(),
+                                        "analysed" : analysed
+                                    });
+
                                 }
                             })
+
+                            if(tests_to_compare.length == 2){
+                                initDeformMatrix()
+                            }
+                            else if(tests_to_compare.length < 2){
+                                $('#materialMatrix').hide(200);
+                            }
 
                             if( tests_to_compare.length >= 2 ){
                                 var testString = ""
                                 for(var i=0;i<tests_to_compare.length;i++){
-                                    testString += "_id_"+ i+ "=" + tests_to_compare[i]
+                                    var test = tests_to_compare[i];
+                                    testString += "_id_"+ i+ "=" + test.id;
+                                    console.log("Test data: " + test.id, test.sample, test.strainrate, test.temperature, test.analysed)
+                                    appendToMatrix(test.id, test.sample, test.strainrate, test.temperature, test.analysed)
                                     if(i<tests_to_compare.length-1){
                                         testString += "&";
                                     }
                                 }
                                 console.log(testString)
                                 $('#compareTests').html("<a href='/tests/tmc/compare?"+ testString +"'><div class='btn btn-md btn-primary'>Compare tests</div>")
+                                var downloadMatBtn = $("<a class='btn btn-success btn-md' id ='downloadMat'><i class='fa fa-download'></i> DEFORM Material</a>")
+                                $('#compareTests').append(downloadMatBtn);
+
 
                                 //console.log("Tests to compare: " + tests_to_compare);
                             }
@@ -476,12 +535,20 @@ function saveTest(){
                     })
                     .catch(function(err){
                         console.log(err)
+                        switch(err.status){
+                        case 409:
+                            var error_text = "You have already uploaded this test. Try another file."
+                            break;
+                        default:
+                            var error_text = "Error: " + err.message
+                        }
+
                         label
                             .removeClass("alert-success")
                             .addClass("alert-danger")
-                            .html("Error: "+ err.name)
+                            .html(error_text)
                             .show(200)
-                            .delay(2000)
+                            .delay(3000)
                             .hide(200);
                     })
 
@@ -669,103 +736,253 @@ function parseMusfile(data){
 
 
 
-function testMatrix(){
 
-    matrix_chart = new CanvasJS.Chart("matrix",
-   {
-       height: 600,
-       width: 600,
-       animationEnabled: true,
-       exportEnabled: true,
-       exportFileName: "Test matrix",
-       title: {
-           text: "Test Matrix",
-           fontColor: "#000",
-           fontfamily: "Arial",
-           fontSize: 24,
-           padding: 8
-       },
-   axisX:{
-           title: "Strain rate (/s)",
-           fontColor: "#000",
-           fontfamily: "Arial",
-           titleFontSize: 30,
-           labelFontSize: 24,
-           labelFontColor: "#000",
-           titleFontColor: "#000",
-           lineThickness: 0,
-           logarithmic:  true
-   },
-   axisY:
-      {
-        title: "Temperature (ºC)",
-        fontfamily: "Arial",
-        titleFontSize: 30,
-        labelFontSize: 24,
-        labelFontColor: "#000",
-        titleFontColor: "#000",
-        lineThickness: 0
-    },
-       data:[
-           {
-               type:"scatter",
-               dataPoints: [],
-               markerType: "square",
-               markerColor: "steelblue",
-               markerSize: 100
-           }
+
+
+
+
+function initDeformMatrix(){
+    $('#matrix').html('')
+    $('#materialMatrix').show(200);
+    material_chart = new CanvasJS.Chart("matrix",
+        {
+          title:{
+           text: "Material data"
+          },
+          width: 500,
+          height: 500,
+          axisX: {
+              title: "Strain rate (/s)",
+              logarithmic:  true,
+              crosshair: {
+			               enabled: true
+		                     }
+          },
+          axisY: {
+              title : "Temperature (ºC)",
+              crosshair: {
+			               enabled: true
+		      }
+          },
+          toolTip:{
+               content:"Test: {name}" ,
+             },
+          data: [
+          {
+            type: "bubble",
+            dataPoints: []
+       }
        ]
-   });
+     });
+
+    material_chart.render();
+
+}
+
+
+function appendToMatrix(id, sample, strainrate, temperature, analysed){
+
+    if(analysed == "true"){
+        var color = '#46f279';
+    }
+    else{
+        var color = '#e11';
+    }
+
+    var data = {
+        "x" : parseFloat(strainrate),
+        "y" : parseFloat(temperature),
+        "z" : 100,
+        "name": id,
+        "markerColor": color,
+        "markerType": 'square'
+    }
+    console.log(data)
+    material_chart.data[0].dataPoints.push(data)
+    material_chart.render();
+}
 
 
 
+function getMaterialData(){
+    var tests = material_chart.data[0].dataPoints.map(function(d){
+        return d.name
+    })
+    console.log(tests)
+    unique_strainrates = []
+    unique_temperatures = []
+    unique_strains = $('#strain_points').val().split('\n');
 
-  // matrix_chart.render();
+    for(var i=0; i<tests.length; i++){
+        test_db.get(tests[i]
+        ).then(function(result){
+            if(!unique_strainrates.find(result.strainrate)){
+                unique_strainrates.push(result)
+            }
+            if(!unique_temperatures.find(result.temperatures)){
+                unique_temperatures.push(result)
+            }
+            materialData.push(interpolateFlowStress(result))
+
+
+        }).catch(function(err){
+            console.log(err)
+        })
+    }
+
+
+
+}
+
+
+function generateMaterialData( strains, strainrates, temperatures, flowStressData){
+
 
 
 }
 
 
 
-$('#matrixSampleChoice').on('input', function(){
-    var sample = $(this).find('option:selected').val()
-    showMaterialTests(sample)
+function interpolateFlowStress(test){
+    console.log("Interpolating data for test: " + test._id)
 
-})
-
-
-
-function showMaterialTests(sample){
-
-    testMatrix()
-
-    test_db.allDocs({include_docs: true}
-
-    ).then(function(results){
-        for(i=0; i<result.rows.length; i++){
-            var doc = result.rows[i].doc;
-            console.log(doc)
-            plotMaterialTest(doc)
+    var strains = []
+    var stresses = []
+    for(var i=0; i<test.measurements.length; i++){
+        var dataPoint = test.measurements[i]
+        if(dataPoint.strain > 0.0 && dataPoint.fricStress > 0.0){
+            strains.push( parseFloat(dataPoint.strain) )
+            stresses.push( parseFloat(dataPoint.fricStress) )
+            }
         }
-    })
-    .catch(function(err){
-        console.log("Cannot find tests related to this powder")
-    })
+
+    //console.log("Stress strain data to interpolate" )
+
+    // Linear interpolation setup occurs here
+
+    //console.log("Strains = " + strains)
+    //console.log("Stresses = " + stresses)
+
+    //Interpolation using Everpolate.js
+    var flowstress = evaluateLinear(unique_strains, strains, stresses)
+
+    // Save interpolated data to an object
+    var interpolatedData = {
+            "strainrate" : test.strainrate,
+            "temperature" : test.temperature,
+            "flowstress" : flowstress
+
+    }
+    console.log(interpolatedData)
+    return interpolatedData
+}
+
+
+function makeDEFORMFlowStress(){
+
 
 
 }
 
 
 
-function plotMaterialTest(test){
-    console.log("HEllo plotting")
-    matrix_chart.options.data[0].dataPoints.push({
-        x : test.strainrate ,
-        y : test.temperture,
-        label : test.sample.name.user_defined
 
-    })
-    matrix_chart.render()
+
+
+
+
+
+
+// Modified from Everpolate.js / linear.js - https://github.com/BorisChumichev/everpolate
+function evaluateLinear (pointsToEvaluate, functionValuesX, functionValuesY) {
+    //console.log(pointsToEvaluate)
+    //console.log(functionValuesX)
+    //console.log(functionValuesY)
+  var results = []
+  pointsToEvaluate.forEach(function (point) {
+    var index = findIntervalLeftBorderIndex(point, functionValuesX)
+    if (index == functionValuesX.length - 1)
+      index--
+    results.push(linearInterpolation(point, functionValuesX[index], functionValuesY[index]
+      , functionValuesX[index + 1], functionValuesY[index + 1]))
+  })
+  return results
+}
+
+// Modified from Everpolate.js / linear.js  - https://github.com/BorisChumichev/everpolate
+function linearInterpolation (x, x0, y0, x1, y1) {
+  var a = (y1 - y0) / (x1 - x0)
+  var b = -a * x0 + y0
+  return a * x + b
+}
+
+// Modified from Everpolate.js / help.js - https://github.com/BorisChumichev/everpolate
+function findIntervalLeftBorderIndex(point, intervals) {
+  //If point is beyond given intervals
+  if (point < intervals[0])
+    return 0
+  if (point > intervals[intervals.length - 1])
+    return intervals.length - 1
+  //If point is inside interval
+  //Start searching on a full range of intervals
+  var indexOfNumberToCompare
+    , leftBorderIndex = 0
+    , rightBorderIndex = intervals.length - 1
+  //Reduce searching range till it find an interval point belongs to using binary search
+  while (rightBorderIndex - leftBorderIndex !== 1) {
+    indexOfNumberToCompare = leftBorderIndex + Math.floor((rightBorderIndex - leftBorderIndex)/2)
+    point >= intervals[indexOfNumberToCompare]
+      ? leftBorderIndex = indexOfNumberToCompare
+      : rightBorderIndex = indexOfNumberToCompare
+  }
+  return leftBorderIndex
+}
+
+
+
+/*
+function makeDEFORMFlowStress(num_strain){
+
+    var header = "# DEFORM Function data output
+#
+# Function Data (Y): Flow Stress
+# Axis 1       (X1): Strain
+# Axis 2       (X2): Strain Rate
+# Axis 3       (X3): Temperature
+#
+# File Format :
+#
+# 0(Reserved)          0(Reserved)          3(Function dimension)
+# No. of X1 values,    No. of X2 values,    No. of X3 values
+# X1_1  ,...,  X1_n
+# X2_1  ,...,  X2_n
+# X3_1  ,...,  X3_n
+# Y(1,1,1)  Y(2,1,1)  ...  Y(l,1,1)
+# Y(1,2,1)  Y(2,2,1)  ...  Y(l,2,1)
+# ...       ...       ...  ...
+# Y(1,m,1)  Y(2,m,1)  ...  Y(l,m,1)
+#
+# Y(1,1,2)  Y(2,1,2)  ...  Y(l,1,2)
+# Y(1,2,2)  Y(2,2,2)  ...  Y(l,2,2)
+# ...       ...       ...  ...
+# Y(1,m,2)  Y(2,m,2)  ...  Y(l,m,2)
+#
+# ...
+#
+# Y(1,1,n)  Y(2,1,n)  ...  Y(l,1,n)
+# Y(1,2,n)  Y(2,2,n)  ...  Y(l,2,n)
+# ...       ...      ...  ...
+# Y(1,m,n)  Y(2,m,n)  ...  Y(l,m,n)
+#
+#
+# There cannot be any comments after this line"
+
+
+
+
+
+
 
 
 }
+*/
