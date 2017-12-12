@@ -612,11 +612,18 @@ function parseMusfile(data){
 
            }
            testData.segments[ i-6 ] = segment
-           console.log(segment["Position"])
-           if(segment["Start temperature"] && segment["End temperature"]){
-               if(segment["Start temperature"] == segment["End temperature"] ){
-                       var temperature = segment["End temperature"].split(' ')[0]
-                       console.log(segment["End temperature"].split(' ')[0])
+
+           var segment_pos = parseInt(segment["Position"].split(';')[0])
+           console.log("Segment position = " + segment_pos)
+
+           if(segment_pos == 6){
+               var previous_segment = testData.segments[ i-7 ]
+               console.log(previous_segment)
+
+
+               if(previous_segment["Start temperature"] == previous_segment["End temperature"] ){
+                       var temperature = previous_segment["End temperature"].split(' ')[0]
+                       console.log(previous_segment["End temperature"].split(' ')[0])
                         testData.temperature = +temperature;
                    }
                }
@@ -895,47 +902,47 @@ function makeDEFORMFlowStress(){
 
 // Modified from Everpolate.js / linear.js - https://github.com/BorisChumichev/everpolate
 function evaluateLinear (pointsToEvaluate, functionValuesX, functionValuesY) {
-    //console.log(pointsToEvaluate)
-    //console.log(functionValuesX)
-    //console.log(functionValuesY)
-  var results = []
-  pointsToEvaluate.forEach(function (point) {
-    var index = findIntervalLeftBorderIndex(point, functionValuesX)
-    if (index == functionValuesX.length - 1)
-      index--
-    results.push(linearInterpolation(point, functionValuesX[index], functionValuesY[index]
-      , functionValuesX[index + 1], functionValuesY[index + 1]))
-  })
-  return results
+        //console.log(pointsToEvaluate)
+        //console.log(functionValuesX)
+        //console.log(functionValuesY)
+      var results = []
+      pointsToEvaluate.forEach(function (point) {
+        var index = findIntervalLeftBorderIndex(point, functionValuesX)
+        if (index == functionValuesX.length - 1)
+          index--
+        results.push(linearInterpolation(point, functionValuesX[index], functionValuesY[index]
+          , functionValuesX[index + 1], functionValuesY[index + 1]))
+      })
+      return results
 }
 
 // Modified from Everpolate.js / linear.js  - https://github.com/BorisChumichev/everpolate
 function linearInterpolation (x, x0, y0, x1, y1) {
-  var a = (y1 - y0) / (x1 - x0)
-  var b = -a * x0 + y0
-  return a * x + b
+      var a = (y1 - y0) / (x1 - x0)
+      var b = -a * x0 + y0
+      return a * x + b
 }
 
 // Modified from Everpolate.js / help.js - https://github.com/BorisChumichev/everpolate
 function findIntervalLeftBorderIndex(point, intervals) {
-  //If point is beyond given intervals
-  if (point < intervals[0])
-    return 0
-  if (point > intervals[intervals.length - 1])
-    return intervals.length - 1
-  //If point is inside interval
-  //Start searching on a full range of intervals
-  var indexOfNumberToCompare
-    , leftBorderIndex = 0
-    , rightBorderIndex = intervals.length - 1
-  //Reduce searching range till it find an interval point belongs to using binary search
-  while (rightBorderIndex - leftBorderIndex !== 1) {
-    indexOfNumberToCompare = leftBorderIndex + Math.floor((rightBorderIndex - leftBorderIndex)/2)
-    point >= intervals[indexOfNumberToCompare]
-      ? leftBorderIndex = indexOfNumberToCompare
-      : rightBorderIndex = indexOfNumberToCompare
-  }
-  return leftBorderIndex
+      //If point is beyond given intervals
+      if (point < intervals[0])
+        return 0
+      if (point > intervals[intervals.length - 1])
+        return intervals.length - 1
+      //If point is inside interval
+      //Start searching on a full range of intervals
+      var indexOfNumberToCompare
+        , leftBorderIndex = 0
+        , rightBorderIndex = intervals.length - 1
+      //Reduce searching range till it find an interval point belongs to using binary search
+      while (rightBorderIndex - leftBorderIndex !== 1) {
+        indexOfNumberToCompare = leftBorderIndex + Math.floor((rightBorderIndex - leftBorderIndex)/2)
+        point >= intervals[indexOfNumberToCompare]
+          ? leftBorderIndex = indexOfNumberToCompare
+          : rightBorderIndex = indexOfNumberToCompare
+      }
+      return leftBorderIndex
 }
 
 

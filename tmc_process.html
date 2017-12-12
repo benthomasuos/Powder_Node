@@ -106,6 +106,9 @@
     <div class="container-fluid col-md-12" id="graph_1_Parent" style="float:left;">
         <div class="graphDiv" id="graph_1" style="height: 600px"></div>
     </div>
+    <div class="container-fluid col-md-12" id="graph_temp_Parent" style="float:left;">
+        <div class="graphDiv" id="graph_temp" style="height: 600px"></div>
+    </div>
     <div class="container-fluid col-md-12" id="graph_sr_Parent" style="float:left;" hidden>
         <div class="graphDiv" id="graph_sr" style="height: 600px"></div>
     </div>
@@ -118,12 +121,12 @@
     <div class="container-fluid col-md-12" id="graph_4_Parent" style="float:left;">
         <div class="graphDiv" id="graph_4" style="height: 600px"></div>
     </div>
-    <div class="container-fluid col-md-12" id="graph_temp_Parent" style="float:left;">
-        <div class="graphDiv" id="graph_temp" style="height: 600px"></div>
-    </div>
+
 
 </div>
-    <div class="container-fluid col-md-5 col-sm-6 col-xs-12" id="settingsDiv" style="float:right">
+
+
+    <div class="container-fluid col-md-5 col-sm-6 col-xs-12 settingsDiv" id="settingsDiv" style="float:right">
 
     <div class="panel panel-default" id="sampleData">
         <div class="panel-heading">
@@ -136,23 +139,26 @@
                 <div class="form-group" id="constants">
                     <h5>Constants</h5>
                     <div class="input-group">
-                        <span class="input-group-addon">Q<sub>act</sub></span>
-                        <select class="form-control" name="q_act" id="q_act">
-                            <option value="53500">CP-Ti | 53500</option>
-                            <option value="107000">Ti-6Al-4V | 107000</option>
-                        </select>
-                        <span class="input-group-addon">J mol<sup>-1</sup></span>
-                    </div>
-                    <div class="input-group">
                         <span class="input-group-addon">R</span>
-                        <input name="gas_constant" id="gas_constant" type="number" class="form-control" value=8.31 disabled/>
+                        <input name="gas_constant" id="gas_constant" type="number" class="form-control" disabled/>
                         <span class="input-group-addon">J K<sup>-1</sup> mol<sup>-1</sup></span>
                     </div>
                     <div class="input-group">
                         <span class="input-group-addon">Thermal exp.</span>
-                        <input name="thermal_expansion" id="thermal_expansion" type="number" class="form-control" value=0.000012 />
+                        <input name="thermal_expansion" id="thermal_expansion" type="number" class="form-control" />
                         <span class="input-group-addon"><b>% / ºC</b></span>
                     </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">T<sub>Def</sub></span>
+                        <input name="deformation_temperature" id="deformation_temperature" type="number" class="form-control" min=0.0 />
+                        <span class="input-group-addon"><b>ºC</b></span>
+                    </div>
+
+
+
+
+
+
                 </div>
             </form>
 
@@ -164,8 +170,8 @@
             <form class="form" id="sampleDimensions_form">
 
                 <div class="form-group" id="initialDimensions">
-                    <h5>Initial dimensions</h5>
-                    <h6>Height</h6>
+                    <h4>Initial dimensions</h4>
+                    <h5>Height</h5>
                     <div class="input-group">
                         <span class="input-group-addon">h1</span>
                         <input name="h_initial_1" id="h_initial_1" type="number" class="form-control" min=0.0 max=20.0 step=0.01 />
@@ -184,7 +190,7 @@
                     </div>
 
 
-                    <h6>Diameter</h6>
+                    <h5>Diameter</h5>
                     <div class="input-group">
                         <span class="input-group-addon">d1</span>
                         <input name="d_initial_1" id="d_initial_1" type="number" class="form-control" min=0.0 max=15.0 step=0.01 />
@@ -206,8 +212,8 @@
                 <input name="av_d_initial" id="av_d_initial" type="number" hidden/>
 
                 <div class="form-group" id="finalDimensions">
-                    <h5>Final dimensions</h5>
-                    <h6>Height</h6>
+                    <h4>Final dimensions</h4>
+                    <h5>Height</h5>
                     <div class="input-group">
                         <span class="input-group-addon">h5</span>
                         <input name="h_final_5" id="h_final_5" type="number" class="form-control"  min=0.0 max=20.0 step=0.01 />
@@ -225,7 +231,7 @@
                         <span class="input-group-addon">mm</span>
                     </div>
 
-                    <h6>Diameter - Ends</h6>
+                    <h5>Diameter</h5>
                     <div class="input-group">
                         <span class="input-group-addon">d5</span>
                         <input name="d_final_5" id="d_final_5" type="number" class="form-control"  min=0.0 max=15.0 step=0.01 />
@@ -242,28 +248,37 @@
                         <input name="d_final_8" id="d_final_8"type="number" class="form-control"  min=0.0 max=15.0 step=0.01 />
                         <span class="input-group-addon">mm</span>
                     </div>
-                    <h6>Diameter - Middle</h6>
-                    <div class="input-group">
-                        <span class="input-group-addon">d9</span>
-                        <input name="d_mid_9" id="d_mid_9" type="number" class="form-control"  min=0.0 max=20.0 step=0.01 />
-                        <span class="input-group-addon">mm</span>
-                        <span class="input-group-addon">d10</span>
-                        <input name="d_mid_10" id="d_mid_10" type="number" class="form-control"  min=0.0 max=20.0 step=0.01 />
-                        <span class="input-group-addon">mm</span>
-                    </div>
-                    <div class="input-group">
-                        <span class="input-group-addon">d11</span>
-                        <input name="d_mid_11" id="d_mid_11" type="number" class="form-control"  min=0.0 max=20.0 step=0.01 />
-                        <span class="input-group-addon">mm</span>
-                        <span class="input-group-addon">d12</span>
-                        <input name="d_mid_12" id="d_mid_12" type="number" class="form-control"  min=0.0 max=20.0 step=0.01 />
-                        <span class="input-group-addon">mm</span>
+                    <div class="form-group" id="hotDimensions">
+                        <h4>Hot dimensions</h4>
+                        <div class="input-group">
+                            <span class="input-group-addon">h_i</span>
+                            <input name="h_hot_initial" id="h_hot_initial" type="number" class="form-control" disabled/>
+                            <span class="input-group-addon">mm</span>
+                            <span class="input-group-addon">h_f</span>
+                            <input name="h_hot_final" id="h_hot_final"type="number" class="form-control"  disabled/>
+                            <span class="input-group-addon">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-addon">d_i</span>
+                            <input name="d_hot_initial" id="d_hot_initial" type="number" class="form-control" disabled/>
+                            <span class="input-group-addon">mm</span>
+                            <span class="input-group-addon">d_f</span>
+                            <input name="d_hot_final" id="d_hot_final"type="number" class="form-control"  disabled/>
+                            <span class="input-group-addon">mm</span>
+                        </div>
+
+
+
+
+                    <div style="height:30px; width: 100%"></div>
+                    <div class="input-group" style="margin: auto; max-width: 300px">
+                        <span class="input-group-addon">Barrel ratio</span>
+                        <input name="barrel_ratio" id="barrel_ratio" type="number" class="form-control" style="color:#fff; font-size: 1.2em; text-align: center" disabled/>
+                        <span class="input-group-addon" id="test_validity" style="min-width:100px"></span>
                     </div>
                 </div>
                 <input name="av_h_final" id="av_h_final" type="number" hidden/>
                 <input name="av_d_final" id="av_d_final" type="number" hidden/>
-                <input name="av_d_mid" id="av_d_mid" type="number" hidden/>
-                <input name="barrel_ratio" id="barrel_ratio" type="number" hidden/>
             </form>
 
 
@@ -280,8 +295,8 @@
         </div>
         <div class="panel-body" hidden>
             <form class="form" id="origin_corr_form">
-                <label for="sampling_period">Data smoothing</label>
-                <div class="input-group">
+                <label for="sampling_period" hidden>Data smoothing</label>
+                <div class="input-group" hidden>
 
                     <input type="range" class="form-control" id="sampling_period" name="sampling_period" placeholder="Sampling period" min="1" max="100" step="1" value="1" />
                     <span id="samplingNum" class="input-group-addon">Samples</span>
@@ -290,6 +305,11 @@
 
 
                 <label for="displacement_offset">Displacement offset</label>
+                <div class="container-fluid">
+                    <div id="startLinear" class="btn btn-md btn-success ">Start</div>
+                    <div id="stopLinear" class="btn btn-md btn-danger " disabled>Stop</div>
+                    <div id="linearCalcMsg" class="well"></div>
+                </div>
                 <div class="input-group">
 
                     <input type="number" class="form-control" id="displacement_offset" name="displacement_offset" placeholder="Displacement offset" min="-20.0" max="20.0" step="0.001" />
@@ -324,14 +344,7 @@
                         <span class="input-group-addon">&mu;<sub>0</sub></span>
                         <input name="mu_0" id="mu_0" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.3 />
                     </div>
-                    <div class="input-group">
-                        <span class="input-group-addon">A</span>
-                        <input name="A" id="A" type="number" class="form-control" value=0.14 />
-                    </div>
-                    <div class="input-group">
-                        <span class="input-group-addon">&epsilon;<sub>0</sub></span>
-                        <input name="epsilon_0" id="epsilon_0" type="number" class="form-control" value=0.6 />
-                    </div>
+
                 </div>
             </form>
         </div>
@@ -349,6 +362,15 @@
                     </div>
                     <h4>Averaging period</h4>
                     <div id="iso_period_value"></div>
+                    <h4>Q<sub>def</sub></h4>
+                    <div class="input-group">
+                        <span class="input-group-addon">Q<sub>def</sub></span>
+                        <select class="form-control" name="q_act" id="q_act">
+                            <option value="53500">CP-Ti | 53500</option>
+                            <option value="107000">Ti-6Al-4V | 107000</option>
+                        </select>
+                        <span class="input-group-addon">J mol<sup>-1</sup></span>
+                    </div>
                 </div>
             </form>
         </div>

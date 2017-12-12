@@ -99,7 +99,7 @@ td + i.fa-trash:hover{
     padding-top: 10px;
     padding-left: 40px;
     overflow: hidden;
-    z: -9999;
+    z: 900;
 }
 
 .graph_y_controls{
@@ -132,11 +132,37 @@ td + i.fa-trash:hover{
     max-width: 60px;
 }
 
-#settingsDiv{
 
-
+.settingsDiv {
+    position: fixed;
+    top: 60px;
+    right: 0;
+    float: right;
+    z-index: 899;
+    min-width: 400px;
+    max-width: 600px;
+    background-color: #fff;
 
 }
+
+.settingsDiv_fixed {
+    right: 0;
+    top: 60px;
+    float: right;
+    z-index: 899;
+    width: 40%;
+
+}
+.settingsDiv_moving {
+    position: fixed;
+    top: 60px;
+    right: 0;
+    float: right;
+    z-index: 899;
+    width: 40%;
+
+}
+
 
 .wt_pc_input{
     bottom: 0px;

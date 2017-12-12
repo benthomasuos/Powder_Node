@@ -27,6 +27,7 @@ var chart_4 = "";
 var chart_sr = "";
 
 
+
 var currentTest = "";
 var vol_cold = 0.0;
 var vol_hot = 0.0;
@@ -89,27 +90,38 @@ $(document).ready(function(){
 
 
 
-
+/*
     var $sidebar   = $("#settingsDiv"),
-       $window    = $(window),
-       offset     = $sidebar.offset(),
-       topPadding = 30;
+        $window    = $(window),
+        offset     = $sidebar.offset(),
+        topPadding = 60;
 
    $window.scroll(function() {
        if ($window.scrollTop() > offset.top) {
-           //$sidebar.stop().animate({
-        //       marginTop: $window.scrollTop() - offset.top + topPadding
-         //  });
-           $sidebar.css("marginTop", $window.scrollTop() - offset.top + topPadding
-           );
+           console.log('Sidebar released')
+           $sidebar.addClass("settingsDiv_moving");
+           $sidebar.removeClass("settingsDiv_fixed");
+
        } else {
-           $sidebar.css("marginTop", 0);
+           console.log('Sidebar fixed')
+           $sidebar.addClass("settingsDiv_fixed");
+           $sidebar.removeClass("settingsDiv_moving");
+
        }
    });
 
+*/
 
 
+})
 
+
+$('#startLinear').on('click', function(){
+    startLinearCalculation()
+})
+
+$('#stopLinear').on('click', function(){
+    stopLinearCalculation()
 })
 
 
@@ -192,21 +204,91 @@ function startYieldCalculation(){
 
 }
 
+function startLinearCalculation(){
 
 
-function startTrim(){
+    $('#stopLinear').attr("disabled", false)
+    $('#startLinear').attr("disabled", true)
+    chart_2.options.data[1].visible = false;
+    chart_2.options.axisX.viewportMinimum = -1.0
+    chart_2.options.axisX.viewportMaximum = 1.0
+
+    $('#linearCalcMsg').html('Click at start of linear region on the black line');
+    console.log(chart_2)
+    var chart_options = chart_2.options;
+    chart_options.data[2] = {
+        name: 'Linear fit',
+        color: '#292',
+        type: 'line',
+        dataPoints: []
+    };
+    chart_2.render()
+
+    var clicks = 0;
+
+
+    chart_options.data[0].click  = function(e){
+        clicks += 1
+        if(clicks < 2){//First click
+            console.log(e)
+            chart_options.data[2].dataPoints.push({ x: e.dataPoint.x , y: e.dataPoint.y })
+            $('#linearCalcMsg').html("Click at the end of the linear region")
+            chart_2.render()
+        }
+        else if(clicks == 2){//Second click
+            console.log(e)
+            chart_options.data[2].dataPoints.push({ x: e.dataPoint.x , y: e.dataPoint.y })
+            $('#linearCalcMsg').html("Fitting straight line!")
+            var m = (chart_options.data[2].dataPoints[1].y - chart_options.data[2].dataPoints[0].y)/ (chart_options.data[2].dataPoints[1].x - chart_options.data[2].dataPoints[0].x)
+            var intercept = chart_options.data[2].dataPoints[1].y - (m * chart_options.data[2].dataPoints[1].x)
+
+            currentTest.zero_offset = - intercept / m
+            //Plot the fitted line
+            chart_options.data[3] = {
+                name: 'Linear fit',
+                color: '#229',
+                type: 'line',
+                dataPoints: [   {"x":0, "y":0},
+                                {"x":0.5  , "y": ((m * 0.5) + intercept)   }  ]
+            };
+            chart_2.render()
+
+            if(confirm("Are you happy with the fitted line?")){
+                chart_2.options.data[1].visible = true;
+
+
+                chart_2.render()
+                calcOffset(currentTest.zero_offset)
+                $('#displacement_offset').val(currentTest.zero_offset.toFixed(3))
+                $('#displacement_offset_range').val(currentTest.zero_offset.toFixed(3))
+                $('#linearCalcMsg').html("Line has equation:  Y = " + m.toFixed(3) + " X + " + intercept.toFixed(3) +"<br /><br />Data has been offset by " + currentTest.zero_offset.toFixed(3) + " mm")
+                stopLinearCalculation()
+
+            }
+            else {
+                stopLinearCalculation()
+            }
+
+
+        }
 
 
 
 
+    }
 
+
+    chart_options.data[1].click = null
 
 }
 
+function stopLinearCalculation(){
+    $('#stopLinear').attr("disabled", true)
+    $('#startLinear').attr("disabled", false)
+    //$('#linearCalcMsg').html('Offset calculation finished');
+    processData(currentTest.measurements, prepareDownload)
 
-
-
-
+}
 
 
 
@@ -246,14 +328,14 @@ function saveData(){
     $('input').each(function(){
         if($(this).attr('name')){
             var name = $(this).attr('name')
-
             var value = $(this).val()
-
             if($(this).attr('type') == "number"){
                  value =  +$(this).val()
+                 //console.log(name, value)
 
             }
             if( name.includes("h_") || name.includes("d_") && !name.includes("load")){
+                //console.log(name, value)
                 currentTest.sample.dimensions[name] = value;
             }else{
                 //console.log($(this).attr('name'), $(this).val())
@@ -263,20 +345,20 @@ function saveData(){
         }
     })
 
-var measurements = currentTest.measurements.map(function(d,i){
-    var strainrate = chart_sr.options.data[0].dataPoints[i].y
-    var strain = chart_4.options.data[2].dataPoints[i].x
-    var fricStress = chart_4.options.data[1].dataPoints[i].y
-    var isoStress = chart_4.options.data[2].dataPoints[i].y
+    var measurements = currentTest.measurements.map(function(d,i){
+            var strainrate = chart_sr.options.data[0].dataPoints[i].y
+            var strain = chart_4.options.data[2].dataPoints[i].x
+            var fricStress = chart_4.options.data[1].dataPoints[i].y
+            var isoStress = chart_4.options.data[2].dataPoints[i].y
 
-d.strain = strain
-d.strainrate = strainrate
-d.fricStress = fricStress
-d.isoStress = isoStress
+            d.strain = strain
+            d.strainrate = strainrate
+            d.fricStress = fricStress
+            d.isoStress = isoStress
 
-return d
+        return d
 
-})
+        })
 
     console.log("Saved data")
     console.log(currentTest)
@@ -306,58 +388,81 @@ function loadData(){
             var name = $(this).attr('name')
             if( name.includes("h_") || name.includes("d_") && !name.includes("load")){
                 $(this).val(currentTest.sample.dimensions[name]);
-            }else{
+                //console.log(name + ": " + currentTest.sample.dimensions[name])
+            }
+
+            else{
                 $(this).val(currentTest[name]);
             }
 
+
+        }
+
+        if( currentTest.thermal_expansion ){
+            //Check if the test has a saved CTE value and use that if it does
+            $('#thermal_expansion').val(currentTest.thermal_expansion)
+        }
+        else{
+            //Use a default value for CTE if one is not saved
+            $('#thermal_expansion').val(0.0000128)
+        }
+
+        if( currentTest.deformation_temperature ){
+            //Check to see if there is an existing user defined deformation temperature and use it if so
+            $('#deformation_temperature').val(currentTest.deformation_temperature)
+        }
+        else{
+            $('#deformation_temperature').val(currentTest.temperature)
         }
 
     })
-    vol_cold = currentTest.sample.dimensions.av_h_initial * Math.PI * (currentTest.sample.dimensions.av_d_initial/2) **2
-    currentTest.sample.dimensions.vol_initial_cold = vol_cold
+
 
     console.log("Loaded data")
     $('#loadData').html("Data loaded").delay(1000).html("Load data")
 }
 
 
-$("input[name^='h_initial_'").on('input', function(){
-    var sum = 0.0;
-    var num_inputs = 0;
-    $("input[name^='h_initial_'").each(function(){
-        console.log($(this).val())
-        if($(this).val() > 0.0){
-            sum += parseFloat( $(this).val() )
-            num_inputs++
-            console.log("sum of sample heights = " + sum)
-        }
-    })
-    var av_height_initial = sum / num_inputs
-    console.log("Average sample height = " + av_height_initial)
-    $('#av_h_initial').val(av_height_initial)
-    currentTest.sample.dimensions.av_h_initial = +av_height_initial
-    calcOffset()
-
-})
-$("input[name^='h_final_'").on('input', function(){
-    var sum = 0.0;
-    var num_inputs = 0;
-    $("input[name^='h_final_'").each(function(){
-        console.log($(this).val())
-        if($(this).val() > 0.0){
-            sum += parseFloat( $(this).val() )
-            num_inputs++
-            console.log("sum of sample heights = " + sum)
-        }
-    })
-    var av_height_final = sum / num_inputs
-    console.log("Average sample height = " + av_height_final)
-    $('#av_h_final').val(av_height_final)
-    currentTest.sample.dimensions.av_h_final = +av_height_final
+$("input[name^='h_initial_']").on('change', function(){
+        var sum = 0.0;
+        var num_inputs = 0;
+        $("input[name^='h_initial_'").each(function(){
+            console.log($(this))
+            if($(this).val() > 0.0){
+                sum += parseFloat( $(this).val() )
+                num_inputs++
+                console.log("sum of sample initial heights = " + sum)
+            }
+        })
+        var av_height_initial = sum / (num_inputs)
+        console.log("Average sample height = " + av_height_initial, num_inputs)
+        $('#av_h_initial').val(av_height_initial)
+        currentTest.sample.dimensions.av_h_initial = +av_height_initial
+        calculateDimensions()
+        calcOffset()
 
 })
 
-$("input[name^='d_initial_'").on('input', function(){
+$("input[name^='h_final_']").on('change', function(){
+        var sum = 0.0;
+        var num_inputs = 0;
+        $("input[name^='h_final_'").each(function(){
+            console.log($(this).val())
+            if($(this).val() > 0.0){
+                sum += parseFloat( $(this).val() )
+                num_inputs++
+                console.log("sum of sample final heights = " + sum)
+            }
+        })
+        var av_height_final = sum / (num_inputs)
+        console.log("Average sample height = " + av_height_final)
+        $('#av_h_final').val(av_height_final)
+        currentTest.sample.dimensions.av_h_final = +av_height_final
+        calculateDimensions()
+
+})
+
+$("input[name^='d_initial_']").on('change', function(){
     var sum = 0.0;
     var num_inputs = 0;
     $("input[name^='d_initial_'").each(function(){
@@ -365,16 +470,18 @@ $("input[name^='d_initial_'").on('input', function(){
         if($(this).val() > 0.0){
             sum += parseFloat( $(this).val() )
             num_inputs++
-            console.log("sum of sample heights = " + sum)
+            console.log("sum of sample initial diameters = " + sum)
         }
     })
-    var av_diameter_initial = sum / num_inputs
-    console.log("Average sample diamter = " + av_diameter_initial)
+    var av_diameter_initial = sum / (num_inputs)
+    console.log("Average sample diameter = " + av_diameter_initial)
     $('#av_d_initial').val(av_diameter_initial)
     currentTest.sample.dimensions.av_d_initial = +av_diameter_initial
+    calculateDimensions()
+    calculate_barrelling()
 
 })
-$("input[name^='d_final_'").on('input', function(){
+$("input[name^='d_final_']").on('change', function(){
     var sum = 0.0;
     var num_inputs = 0;
     $("input[name^='d_final_'").each(function(){
@@ -382,34 +489,59 @@ $("input[name^='d_final_'").on('input', function(){
         if($(this).val() > 0.0){
             sum += parseFloat( $(this).val() )
             num_inputs++
-            console.log("sum of sample heights = " + sum)
+            console.log("sum of sample final diameters = " + sum)
         }
     })
-    var av_diameter_final = sum / num_inputs
+    var av_diameter_final = sum / (num_inputs)
     console.log("Average sample diamter = " + av_diameter_final)
     $('#av_d_final').val(av_diameter_final)
     currentTest.sample.dimensions.av_d_final = +av_diameter_final
+    calculateDimensions()
+    calculate_barrelling()
 })
 
 
 
-$("input[name^='d_mid_'").on('input', function(){
-    var sum = 0.0;
-    var num_inputs = 0;
-    $("input[name^='d_mid_'").each(function(){
-        console.log($(this).val())
-        if($(this).val() > 0.0){
-            sum += parseFloat( $(this).val() )
-            num_inputs++
-            console.log("Sum of diameter middles = " + sum)
-        }
-    })
-    var av_d_mid_final = sum / num_inputs
-    console.log("Average av_d_mid_final  = " + av_d_mid_final )
-    $('#av_d_mid_final ').val(av_d_mid_final )
-    currentTest.sample.dimensions.av_d_mid_final = +av_d_mid_final
-    calcOffset()
 
+
+
+function hot_dimension(dimension, cte, temp, ref_temp){
+    var size = dimension + (cte * dimension * ( temp - ref_temp))
+    //console.log(size)
+    return size
+}
+
+
+
+function calculateDimensions(){
+    var therm_ex_coeff = parseFloat($('#thermal_expansion').val());
+    if( $('#deformation_temperature').val() > 0.0 ){
+        //User suppiled deformation temperature
+        var def_temp = parseFloat($('#deformation_temperature').val());
+    }
+    else{
+        //Use default deformation tempeature found in FTTU section in musfile
+        var def_temp = parseFloat(currentTest.temperature);
+    }
+    vol_cold = currentTest.sample.dimensions.av_h_initial * Math.PI * (currentTest.sample.dimensions.av_d_initial/2) **2
+    currentTest.sample.dimensions.vol_cold = vol_cold
+
+    currentTest.sample.dimensions.h_hot_initial = hot_dimension(currentTest.sample.dimensions.av_h_initial, therm_ex_coeff, def_temp, 20)
+    $('#h_hot_initial').val(currentTest.sample.dimensions.h_hot_initial.toFixed(3) )
+    currentTest.sample.dimensions.h_hot_final = hot_dimension(currentTest.sample.dimensions.av_h_final, therm_ex_coeff, def_temp, 20)
+    $('#h_hot_final').val(currentTest.sample.dimensions.h_hot_final.toFixed(3) )
+    currentTest.sample.dimensions.d_hot_initial = hot_dimension(currentTest.sample.dimensions.av_d_initial, therm_ex_coeff, def_temp, 20)
+    $('#d_hot_initial').val(currentTest.sample.dimensions.d_hot_initial.toFixed(3) )
+    currentTest.sample.dimensions.d_hot_final = hot_dimension(currentTest.sample.dimensions.av_d_final, therm_ex_coeff, def_temp, 20)
+    $('#d_hot_final').val(currentTest.sample.dimensions.d_hot_final.toFixed(3) )
+    vol_hot = currentTest.sample.dimensions.h_hot_initial * Math.PI * (currentTest.sample.dimensions.d_hot_initial/2) **2
+    currentTest.sample.dimensions.vol_hot = vol_hot
+}
+
+
+$('#thermal_expansion, #deformation_temperature, input[name^="h_"], input[name^="d_"]').on('change', function(){
+        calculateDimensions()
+        processData(currentTest.measurements, prepareDownload)
 })
 
 
@@ -417,9 +549,17 @@ $('#iso_period').on('input change', function(){
     $('#iso_period_value').html( $(this).val() )
 })
 
+
+
+/*
 $('#analysed').on('click', function(){
+        console.log("Test set to 'Analysed'")
         currentTest.analysed = true
 })
+*/
+
+
+
 
 function processData(data, callback) {
     //console.log(currentTest)
@@ -441,11 +581,22 @@ function processData(data, callback) {
 
 function calculate_barrelling(){
     var dimensions = currentTest.sample.dimensions
+    //console.log(dimensions)
     var diameter_end = dimensions.av_d_final
     var diameter_mid = dimensions.av_d_mid_final
     var barrel_ratio = (dimensions.av_h_final * ( dimensions.av_d_final ** 2))/(dimensions.av_h_initial * ( dimensions.av_d_initial ** 2))
-    $('#barrel_ratio').val(barrel_ratio)
-        console.log(barrel_ratio)
+
+
+    $('#barrel_ratio').val(barrel_ratio.toFixed(2))
+    if(barrel_ratio <= 1.1){
+        $('#barrel_ratio').css('background-color','#292')
+        $('#test_validity').html('Valid test')
+    }
+    else if( barrel_ratio > 1.1 ){
+        $('#barrel_ratio').css('background-color','#922')
+        $('#test_validity').html('Invalid test')
+    }
+    //console.log("Barrelling ratio = " + barrel_ratio)
 }
 
 function prepareDownload(){
@@ -501,7 +652,7 @@ function smoothRawData(period){
             currentTest.sampling.push(currentTest.measurements[i])
     }
 
-    console.log(currentTest.sampling)
+    //console.log(currentTest.sampling)
     processData(currentTest.sampling, prepareDownload)
 
 }
@@ -511,12 +662,34 @@ function smoothRawData(period){
 
 
 function calcOffset(value){
-    var dataPoints = chart_2.options.data[0].dataPoints
+    var dataPoints = chart_2.options.data[1].dataPoints
+    // Find the maximum value of displacement in the valid portion of the test data (typically at max load but check for excessive load cell noise in the raw data (zoom in on the graph!))
+    var d_max = 0.0;
+    var load_max = 0.0
+    console.log(dataPoints)
+    for(var i=0; i<dataPoints.length;i++){
+        var this_load = dataPoints[i].y;
+        console.log(this_load)
+        // If the latest load is higher than the currently stored on replace it
+        if(this_load <= load_max){
+            load_max = this_load;
+            d_max = dataPoints[i].x
+        }
+    }
+    console.log('d_max = '  +  d_max)
     chart_2.options.data[1].dataPoints = dataPoints.map(function(d){
-        return { "x": d.x - currentTest.zero_offset, "y": d.y - currentTest.load_offset , "label": d.label}
+        var d_corr = d.x * ( ( currentTest.sample.dimensions.h_hot_initial - currentTest.sample.dimensions.h_hot_final   )  / d_max )
+        return { "x": d_corr, "y": d.y - currentTest.load_offset , "label": d.label}
     })
     chart_2.render()
 }
+
+
+
+
+
+
+
 
 
 function calcStrain(){
@@ -544,18 +717,20 @@ function calcStrainRate(){
 }
 
 
+
+
 function calcStress(){
-    var area_0 = Math.PI * ((parseFloat(currentTest.sample.dimensions.av_d_initial)/2)**2)
+    var area_0 = Math.PI * ((parseFloat(currentTest.sample.dimensions.d_hot_initial)/2)**2)
     var heights = chart_2.options.data[1].dataPoints
     chart_4.options.data[0].dataPoints = heights.map(function(d, i){
         var strain = chart_3.options.data[0].dataPoints[i].x
         //console.log(strain)
-        var h_i = currentTest.sample.dimensions.av_h_initial - d.x
+        var h_i_hot = currentTest.sample.dimensions.h_hot_initial - d.x
         //console.log(h_i)
-        var d_i = Math.sqrt(( 4 * vol_cold ) / ( Math.PI * h_i))
+        var d_i_hot = Math.sqrt(( 4 * vol_hot ) / ( Math.PI * h_i_hot))
         //console.log(d_i)
-        var area_i = Math.PI * ( ( d_i / 2 ) ** 2 )
-        var stress = - ( d.y / area_i ) * 1000.0
+        var area_i_hot = Math.PI * ( ( d_i_hot / 2 ) ** 2 )
+        var stress = - ( d.y / area_i_hot ) * 1000.0
         //console.log(stress)
         return { "x": strain, "y": stress, "label": "Strain"}
     })
@@ -563,12 +738,15 @@ function calcStress(){
 }
 
 
+
+
+
 function calcFricCorrStress(){
     var heights = chart_1.options.data[0].dataPoints
     var stress = chart_4.options.data[0].dataPoints
 
     var radii = heights.map(function(d){
-         return Math.sqrt(( 4 * vol_cold ) / ( Math.PI * d.x))
+         return Math.sqrt(( 4 * vol_hot ) / ( Math.PI * d.x))
     })
 
     console.log("Friction mu_0 = " + currentTest.mu_0 )
@@ -582,12 +760,14 @@ function calcFricCorrStress(){
     chart_4.render()
 }
 
+
+
+
 function calcIsoStress(){
     var fric_corr_stress = chart_4.options.data[1].dataPoints
     var temps = currentTest.measurements
 
     var factors = []
-
 
     var factors = fric_corr_stress.map(function(d, i){
         return { "T": temps[i].sample_temp_2_centre, "fric_corr_stress": d.y, "strain": d.x}
@@ -624,10 +804,6 @@ function calcIsoStress(){
     })
 
 
-
-
-
-
     chart_4.render()
 }
 
@@ -644,6 +820,7 @@ $(".panel-heading").on('click', function(){
         panel_heading.removeClass("fa-caret-up");
     })
     */
+
     var body = panel.find('.panel-body');
     //console.log(body)
     body.toggle(50)
@@ -654,7 +831,7 @@ $(".panel-heading").on('click', function(){
 
 
 function plot_raw(data) {
-    console.log('Plotting load stroke graph');
+    console.log('Plotting load displacement graph');
     console.log(data)
      chart_1 = new CanvasJS.Chart("graph_1",
     {
@@ -668,7 +845,7 @@ function plot_raw(data) {
                 shared: true,
         },
         title: {
-            text: "Load - Sample Height",
+            text: "Load - Displacment",
             fontColor: "#000",
             fontfamily: "Arial",
             fontSize: 20,
@@ -691,7 +868,7 @@ function plot_raw(data) {
             }
         },
     axisX:{
-            title: "Sample height (mm)",
+            title: "Displacement (mm)",
             fontColor: "#000",
             fontfamily: "Arial",
             titleFontSize: 20,
@@ -739,7 +916,7 @@ function plot_raw(data) {
 
 
    function plot_sr(data) {
-       console.log('Plotting load stroke graph');
+       console.log('Plotting strain rate graph');
 
         chart_sr = new CanvasJS.Chart("graph_sr",
        {
@@ -896,7 +1073,7 @@ function plot_raw(data) {
                color: "#333",
                toolTipContent: "Height: {x} mm, Load: {y} kN",
                dataPoints: data.map(function(d){
-                   return {"x": currentTest.sample.dimensions.av_h_initial - d.displacement , "y": d.load, "label": "Stroke" }
+                   return {"x": currentTest.sample.dimensions.h_hot_initial - d.displacement , "y": d.load, "label": "Stroke" }
                })
            },
            {
@@ -907,7 +1084,7 @@ function plot_raw(data) {
                color: "#d34",
                toolTipContent: "Stroke: {x} mm, Load: {y} kN",
                dataPoints: data.map(function(d){
-                   return {"x": currentTest.sample.dimensions.av_h_initial - d.displacement - currentTest.zero_offset , "y": d.load - currentTest.load_offset, "label": "Stroke-offset" }
+                   return {"x": currentTest.sample.dimensions.h_hot_initial - d.displacement - currentTest.zero_offset , "y": d.load - currentTest.load_offset, "label": "Stroke-offset" }
                })
            }
 
@@ -1138,7 +1315,7 @@ function plot_stress(data) {
                                      shared: true,
                              },
                              title: {
-                                 text: "Temperature - True Strain",
+                                 text: "Temperature - Time",
                                  fontColor: "#000",
                                  fontfamily: "Arial",
                                  fontSize: 20,
@@ -1161,7 +1338,7 @@ function plot_stress(data) {
                                  }
                              },
                          axisX:{
-                                 title: "True Strain (mm/mm)",
+                                 title: "Time (s)",
                                  fontColor: "#000",
                                  fontfamily: "Arial",
                                  titleFontSize: 20,
@@ -1170,8 +1347,8 @@ function plot_stress(data) {
                                  tickColor: "#000",
                                  labelFontColor: "#000",
                                  titleFontColor: "#000",
-                                 lineThickness: 1,
-                                 viewportMinimum: 0.0
+                                 lineThickness: 1
+
                          },
                          axisY:
                             {
@@ -1183,35 +1360,18 @@ function plot_stress(data) {
                               tickColor: "#000",
                               labelFontColor: "#000",
                               titleFontColor: "#000",
-                              lineThickness: 1,
-                              viewportMinimum: currentTest.temperature - 100,
-                              viewportMaximum :currentTest.temperature + 100,
+                              lineThickness: 1
                           },
                              data:[
                                  {
                                      connectNullData: false,
                                      type: "line",
                                      showInLegend: true,
-                                     name: "Zero offset",
+                                     name: "Sample temperature",
                                      color: "#d34",
-                                     toolTipContent: "Stroke: {x} mm, Load: {y} kN",
-                                     dataPoints: data.map(function(d, i){
-
-                                            var strain = chart_4.options.data[1].dataPoints[i].x
-
-                                            var temperature = d.sample_temp_2_centre
-                                            if(!temperature){
-                                                var temperature = 20.0
-                                            }
-                                            //console.log(strain , temperature)
-                                            if(isNaN(strain)){
-                                                strain = 0.0
-                                                temperature = null
-                                            }
-
-
-                                         return {"x": strain , "y": temperature, "label": "Temperature" }
-                                     })
+                                     toolTipContent: "Time: {x} s, Temperature: {y} ºC",
+                                     dataPoints: parseData(currentTest.measurements, 'time',
+                                                            'sample_temp_2_centre', 'Temperature' )
                                  }
                          ]
                          });

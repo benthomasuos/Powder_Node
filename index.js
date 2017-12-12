@@ -5,57 +5,69 @@ var router = express.Router();
 var app = express()
 var bodyParser = require('body-parser');
 var passport = require('passport');
-
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-
-
-
-app.use(couchUser({
-    users: 'http://143.167.48.53:5984/_users',
-    request_defaults: {
-        auth: {
-            user: 'admin',
-            pass: 'adminpw'
-        }
-    },
-    email:{
-        address: "b.thomas@sheffield.ac.uk"
-    },
-    validateUser: function(data, cb) {
-      var MAX_FAILED_LOGIN = 5;
-      var req = data.req;     //all the fields in data is captured from /api/user/signin callback function
-      var user = data.user;
-      var headers = data.headers;
-      var outData = {         // This object will be attached to the session
-        userInfo: "userAge"   // req.session.userInfo will be "userAge"
-      };
-
-      if(data.user.failedLogin > MAX_FAILED_LOGIN) {
-        //fails check
-        var errorPayload = {
-          statusCode: 403,                           //if not included will default to 401
-          message: 'Exceeded fail login attempts',   //if not included will default to 'Invalid User Login'
-          error: 'Forbidden'                         //if not included will default 'unauthorized'
-        }
-        cb(errorPayload);
-      } else {
-        //passess check
-        cb(null, outData);
-      }
-    }
-}));
+var cookieParser = require('cookie-parser');
+var bodyParser   = require('body-parser');
+var session      = require('express-session');
+var flash    = require('connect-flash');
 
 
+// require('./config/passport')(passport); // pass passport for configuration
+
+// set up our express application
+app.use(cookieParser()); // read cookies (needed for auth)
+app.use(bodyParser()); // get information from html forms
+
+// required for passport
+app.use(session({ secret: 'scary_titanium' })); // session secret
+app.use(passport.initialize());
+app.use(passport.session()); // persistent login sessions
+app.use(flash()); // use connect-flash for flash messages stored in session
+
+    // LOGIN ===
+    // show the login form
+    app.get('/login', function(req, res) {
+
+        // render the page and pass in any flash data if it exists
+        res.sendFile(process.cwd() + '/login.html', { message: req.flash('loginMessage') });
+    });
+
+    // process the login form
+    // app.post('/login', do all our passport stuff here);
+    // SIGNUP =====
+    // show the signup form
+    app.get('/signup', function(req, res) {
+        // render the page and pass in any flash data if it exists
+        res.sendFile(process.cwd() + '/signup.html', { message: req.flash('signupMessage') });
+    });
+
+    // process the signup form
+    // app.post('/signup', do all our passport stuff here);
+    // PROFILE SECTION ===
+    // we will want this protected so you have to be logged in to visit
+    // we will use route middleware to verify this (the isLoggedIn function)
+    app.get('/profile', isLoggedIn, function(req, res) {
+        res.sendFile(process.cwd() + '/profile.html', {
+            user : req.user // get the user out of session and pass to template
+        });
+    });
 
 
+    // LOGOUT ====
+    app.get('/logout', function(req, res) {
+        req.logout();
+        res.redirect(process.cwd() + '/');
+    });
 
+// route middleware to make sure a user is logged in
+function isLoggedIn(req, res, next) {
 
+    // if user is authenticated in the session, carry on
+    if (req.isAuthenticated())
+        return next();
 
-
-
-
+    // if they aren't redirect them to the home page
+    res.redirect('/');
+}
 
 
 
@@ -68,13 +80,6 @@ app.get('/',function(req, res){
     res.sendFile(process.cwd() + '/home.html')
 })
 
-
-
-
-app.post('/',function(req, res){
-    res.redirect
-    res.sendFile(process.cwd() + '/home.html')
-})
 
 
 
