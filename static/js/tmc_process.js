@@ -45,28 +45,28 @@ pouchdb.info().then(function (info) {
         var value = $(this).val();
         displacement_offset_range.val(value)
         currentTest.zero_offset = value;
-        calcOffset(value)
+        calcDispOffset()
     })
 
     displacement_offset_range.on('input', function(){
         var value = $(this).val();
         displacement_offset.val(value)
         currentTest.zero_offset = value;
-        calcOffset(value)
+        calcDispOffset()
     })
 
     load_offset.on('input', function(){
         var value = $(this).val();
         load_offset_range.val(value)
         currentTest.load_offset = value;
-        calcOffset(value)
+        calcLoadOffset()
     })
 
     load_offset_range.on('input', function(){
         var value = $(this).val();
         load_offset.val(value)
         currentTest.load_offset = value;
-        calcOffset(value)
+        calcLoadOffset()
     })
 
 
@@ -134,10 +134,7 @@ $('#stopYield').on('click', function(){
 })
 
 
-$('#mu_0').on('change', function(){
-        console.log("Replotting friction correction")
-        processData(currentTest.measurements, prepareDownload)
-})
+
 
 function stopYieldCalculation(){
     $('#stopYield').attr("disabled", true)
@@ -258,11 +255,11 @@ function startLinearCalculation(){
 
 
                 chart_2.render()
-                calcOffset(currentTest.zero_offset)
                 $('#displacement_offset').val(currentTest.zero_offset.toFixed(3))
                 $('#displacement_offset_range').val(currentTest.zero_offset.toFixed(3))
                 $('#linearCalcMsg').html("Line has equation:  Y = " + m.toFixed(3) + " X + " + intercept.toFixed(3) +"<br /><br />Data has been offset by " + currentTest.zero_offset.toFixed(3) + " mm")
                 stopLinearCalculation()
+                calcDispOffset()
 
             }
             else {
@@ -309,7 +306,7 @@ function getSingleTest(){
                 $("#test_status").hide()
                 console.log(currentTest)
             }).then(function(){
-                processData(currentTest.measurements, prepareDownload)
+                    plotData()
             }).catch(function(err){
                         console.log(err)
                     $('#test_status').show()
@@ -345,26 +342,31 @@ function saveData(){
         }
     })
 
-    var measurements = currentTest.measurements.map(function(d,i){
+        var measurements = currentTest.measurements.map(function(d,i){
+            var disp_corr = chart_2.options.data[2].dataPoints[i].x
+            var load_corr = chart_1.options.data[1].dataPoints[i].y
             var strainrate = chart_sr.options.data[0].dataPoints[i].y
             var strain = chart_4.options.data[2].dataPoints[i].x
             var fricStress = chart_4.options.data[1].dataPoints[i].y
             var isoStress = chart_4.options.data[2].dataPoints[i].y
-
+            d.disp_corr = disp_corr
+            d.load_corr = load_corr
             d.strain = strain
             d.strainrate = strainrate
             d.fricStress = fricStress
             d.isoStress = isoStress
 
-        return d
+            return d
 
         })
 
     console.log("Saved data")
-    console.log(currentTest)
+    //console.log(currentTest)
+
     pouchdb.get( currentTest._id ).then(function(doc) {
-        currentTest._rev = doc._rev
-      return pouchdb.put( currentTest );
+            currentTest._rev = doc._rev
+            console.log(currentTest)
+            return pouchdb.put( currentTest );
         }).then(function(response) {
             console.log(response);
         $('#saveData').html("Data saved OK").addClass('btn-success').delay(2000)
@@ -374,9 +376,13 @@ function saveData(){
                n();
            })
 
+    }).then(function(result){
+        processData(currentTest.measurements, prepareDownload)
     }).catch(function (err) {
       console.log(err);
     });
+
+
 
 
 }
@@ -439,7 +445,7 @@ $("input[name^='h_initial_']").on('change', function(){
         $('#av_h_initial').val(av_height_initial)
         currentTest.sample.dimensions.av_h_initial = +av_height_initial
         calculateDimensions()
-        calcOffset()
+        calcDispOffset()
 
 })
 
@@ -549,7 +555,10 @@ $('#iso_period').on('input change', function(){
     $('#iso_period_value').html( $(this).val() )
 })
 
-
+$('#manualDisp').on('click', function(){
+    $('#manualDiv').toggle()
+    $(this).find('i').toggleClass('fa-caret-down')
+})
 
 /*
 $('#analysed').on('click', function(){
@@ -564,18 +573,32 @@ $('#analysed').on('click', function(){
 function processData(data, callback) {
     //console.log(currentTest)
     plot_raw(data)
+    console.log("Lana!!")
     plot_stroke(data)
+    console.log("Lana!!")
     calculate_barrelling()
+    console.log("Lana!!")
     plot_strain(data)
+    console.log("Lana!!")
     calcStrain()
+    console.log("Lana!!")
     plot_sr(data)
+    console.log("Lana!!")
     calcStrainRate()
+    console.log("Lana!!")
     plot_stress()
+    console.log("Lana!!")
     calcStress()
+    console.log("Lana!!")
     calcFricCorrStress()
+    console.log("Lana!!")
     calcIsoStress()
+    console.log("Lana!!")
     plot_temp(data)
+    console.log("Lana!!")
+
     callback()
+
 }
 
 
@@ -600,12 +623,13 @@ function calculate_barrelling(){
 }
 
 function prepareDownload(){
+    console.log("Preparing download. Please wait...")
     var isoDataPoints = chart_4.options.data[2].dataPoints
     var fricDataPoints = chart_4.options.data[1].dataPoints
     var rawDataPoints = chart_4.options.data[0].dataPoints
     //console.log(dataPoints)
     var data = []
-    data[0] = "True Strain (mm), Raw Stress (MPa),Fric Corr Stress (MPa), True Iso Stress (MPa)\r\n"
+    data[0] = "True Strain (mm), Raw Stress (MPa), Fric Corr Stress (MPa), True Iso Stress (MPa)\r\n"
     //console.log("Data length = " + isoDataPoints.length + ",  " + fricDataPoints.length+ ",  " + rawDataPoints.length)
     for(var i=0; i<fricDataPoints.length; i++){
         var isoPoint = isoDataPoints[i]
@@ -623,7 +647,7 @@ function prepareDownload(){
     var url = URL.createObjectURL(blob);
     export_SS.attr('href', url )
     export_SS.attr('download', currentTest._id + "_analysed_data.txt" )
-
+    console.log("Download is ready!")
 }
 
 $('#sampling_period').on("change", function(){
@@ -659,27 +683,43 @@ function smoothRawData(period){
 
 
 
+function calcLoadOffset(){
+    var delta_load = load_offset.val()
+    chart_1.options.data[1].dataPoints = chart_1.options.data[0].dataPoints.map(function(d){
+        return { "x": d.x, "y": d.y - delta_load , "label": d.label}
+    })
+    chart_1.render()
+    calcDispOffset()
+}
 
 
-function calcOffset(value){
-    var dataPoints = chart_2.options.data[1].dataPoints
+
+
+
+
+
+function calcDispOffset(){
+    var dataPoints_uncorr = chart_2.options.data[0].dataPoints
+    var dataPoints_corr = chart_2.options.data[1].dataPoints
+    var delta_stroke = displacement_offset.val()
+    var delta_load = load_offset.val()
     // Find the maximum value of displacement in the valid portion of the test data (typically at max load but check for excessive load cell noise in the raw data (zoom in on the graph!))
-    var d_max = 0.0;
+    var d_0_max = 0.0;
     var load_max = 0.0
-    console.log(dataPoints)
-    for(var i=0; i<dataPoints.length;i++){
-        var this_load = dataPoints[i].y;
-        console.log(this_load)
+    //console.log(dataPoints)
+    for(var i=0; i<dataPoints_corr.length;i++){
+        var this_load = dataPoints_corr[i].y;
+        //console.log(this_load)
         // If the latest load is higher than the currently stored on replace it
         if(this_load <= load_max){
             load_max = this_load;
-            d_max = dataPoints[i].x
+            d_0_max = dataPoints_corr[i].x
         }
     }
-    console.log('d_max = '  +  d_max)
-    chart_2.options.data[1].dataPoints = dataPoints.map(function(d){
-        var d_corr = d.x * ( ( currentTest.sample.dimensions.h_hot_initial - currentTest.sample.dimensions.h_hot_final   )  / d_max )
-        return { "x": d_corr, "y": d.y - currentTest.load_offset , "label": d.label}
+    console.log('d_max = '  +  d_0_max)
+    chart_2.options.data[2].dataPoints = dataPoints_corr.map(function(d){
+        var d_corr = ( d.x ) * ( ( currentTest.sample.dimensions.h_hot_initial - currentTest.sample.dimensions.h_hot_final   )  / ( (d_0_max) ) )
+        return { "x": d_corr, "y": d.y , "label": d.label}
     })
     chart_2.render()
 }
@@ -693,9 +733,9 @@ function calcOffset(value){
 
 
 function calcStrain(){
-    var heights = chart_2.options.data[1].dataPoints
+    var heights = chart_2.options.data[2].dataPoints
     chart_3.options.data[0].dataPoints = heights.map(function(d){
-        var strain = -Math.log(parseFloat(currentTest.sample.dimensions.av_h_initial - d.x ) / currentTest.sample.dimensions.av_h_initial )
+        var strain = -Math.log(parseFloat(currentTest.sample.dimensions.h_hot_initial - d.x ) / currentTest.sample.dimensions.h_hot_initial )
         if(isNaN(strain)){
             strain = 0.0
         }
@@ -705,9 +745,9 @@ function calcStrain(){
 }
 
 function calcStrainRate(){
-    var heights = chart_2.options.data[0].dataPoints
+    var heights = chart_2.options.data[2].dataPoints
     chart_sr.options.data[0].dataPoints = heights.map(function(d, i){
-        var height =  currentTest.sample.dimensions.av_h_initial - d.x
+        var height =  currentTest.sample.dimensions.h_hot_initial - d.x
         var velocity = currentTest.measurements[i].velocity_
         var strainrate = velocity / height
         return { "x": height, "y": strainrate, "label": "Strain rate"}
@@ -721,14 +761,14 @@ function calcStrainRate(){
 
 function calcStress(){
     var area_0 = Math.PI * ((parseFloat(currentTest.sample.dimensions.d_hot_initial)/2)**2)
-    var heights = chart_2.options.data[1].dataPoints
+    var heights = chart_2.options.data[2].dataPoints
     chart_4.options.data[0].dataPoints = heights.map(function(d, i){
         var strain = chart_3.options.data[0].dataPoints[i].x
         //console.log(strain)
         var h_i_hot = currentTest.sample.dimensions.h_hot_initial - d.x
-        //console.log(h_i)
-        var d_i_hot = Math.sqrt(( 4 * vol_hot ) / ( Math.PI * h_i_hot))
-        //console.log(d_i)
+        //console.log(h_i_hot)
+        var d_i_hot = Math.sqrt(( 4 * currentTest.sample.dimensions.vol_hot ) / ( Math.PI * h_i_hot))
+        //console.log(d_i_hot)
         var area_i_hot = Math.PI * ( ( d_i_hot / 2 ) ** 2 )
         var stress = - ( d.y / area_i_hot ) * 1000.0
         //console.log(stress)
@@ -742,23 +782,127 @@ function calcStress(){
 
 
 function calcFricCorrStress(){
-    var heights = chart_1.options.data[0].dataPoints
-    var stress = chart_4.options.data[0].dataPoints
-
+    var heights = chart_1.options.data[1].dataPoints
+    var stresses = chart_4.options.data[0].dataPoints
     var radii = heights.map(function(d){
-         return Math.sqrt(( 4 * vol_hot ) / ( Math.PI * d.x))
+         return Math.sqrt(( 4 * currentTest.sample.dimensions.vol_hot ) / ( Math.PI * d.x))
     })
+    //console.log(heights, stresses, radii)
 
-    console.log("Friction mu_0 = " + currentTest.mu_0 )
+    var friction_type = $('input[name="optradio"]:checked').attr('box')
+    console.log("Friction type = " + friction_type)
+
+    switch(friction_type){
+        case "linear_fric":
+        console.log("Using linear friction correction")
+            linearFric(heights, radii, stresses)
+            chart_4.render()
+            break
+        case "bilinear_fric":
+            console.log("Using bilinear friction correction")
+            bilinearFric(heights, radii, stresses)
+            chart_4.render()
+            break
+        case "pressure_fric":
+            console.log("Using pressure dependant friction correction")
+            pressureFric(heights, radii, stresses)
+            chart_4.render()
+            break
+        default:
+            console.log("No friction correction")
+            chart_4.render()
+        break
+    }
+
+}
+
+
+
+
+
+
+
+
+function linearFric(heights, radii, stresses){
+    $('#pc_corrected').html('0.0 %')
+    $('#pc_corrected').show()
+    var m_bar = $('#m_bar').val()
+
+    //Set the friction correction type and value(s) for the test
+    currentTest.friction_correction = {
+        "type" : "linear",
+        "m_bar" : m_bar
+    }
     chart_4.options.data[1].dataPoints = heights.map(function(d, i){
-        var factor = 1 / ( 1 + ( ( 2 * currentTest.mu_0  * radii[i] )  / ( d.x  * Math.sqrt(3) * 3  ) ))
-        var stress_fric_corr = stress[i].y * factor
-        var strain = stress[i].x
+        var percent = ( i * 100 / heights.length)
+        //console.log("% of test corrected = " + percent.toFixed(1) + " %")
+        $('#pc_corrected').html(percent.toFixed(1) + " %")
+        var factor = 1 / ( 1 + ( ( 2 * m_bar  * radii[i] )  / ( d.x  * Math.sqrt(3) * 3  ) ))
+        var stress_fric_corr = stresses[i].y * factor
+        var strain = stresses[i].x
         return { "x": strain, "y": stress_fric_corr, "label": "Fric Corr Stress 1"}
     })
-
-    chart_4.render()
+    console.log("Finished friction correction")
+    $('#pc_corrected').hide()
 }
+
+
+
+
+
+
+
+
+
+
+function bilinearFric(heights, radii, stresses){
+    $('#pc_corrected').html('0.0 %')
+    $('#pc_corrected').show()
+    var m_bar_1 = $('#m_bar_1').val()
+    var m_bar_2 = $('#m_bar_2').val()
+    var m_bar_3 = $('#m_bar_3').val()
+    var pc_test = $('#pc_test').val()
+    //Set the friction correction type and value(s) for the test
+    currentTest.friction_correction = {
+        "type" : "bilinear",
+        "m_bar_1" : m_bar_1,
+        "m_bar_2" : m_bar_2,
+        "m_bar_3" : m_bar_3,
+        "pc_test" : pc_test
+    }
+    chart_4.options.data[1].dataPoints = heights.map(function(d, i){
+        var percent = ( i * 100 / heights.length)
+        //console.log("% of test corrected = " + percent.toFixed(1) + " %")
+
+        //$('#pc_corrected').html(percent.toFixed(1) + " %")
+        var gradient_1 = parseFloat( (m_bar_2 - m_bar_1)/( pc_test ) )
+        var intercept_1 = parseFloat (m_bar_1 )
+        var gradient_2 = parseFloat( (m_bar_3 - m_bar_2)/( 100 - pc_test ) )
+        var intercept_2 = parseFloat( m_bar_2 - (gradient_2 * pc_test) )
+
+        if(percent <= pc_test ){
+
+            var m_bar = (gradient_1 * percent) + intercept_1;
+            console.log("Using m_bar = " + m_bar.toFixed(3) + ": % of test corrected = " + ( i * 100 / heights.length).toFixed(1) + " %" )
+        }
+        else{
+            var m_bar = (gradient_2 * percent) + intercept_2
+            console.log("Using m_bar = " + m_bar.toFixed(3) + ": % of test corrected = " + ( i * 100 / heights.length).toFixed(1) + " %" )
+        }
+        var factor = 1 / ( 1 + ( ( 2 * m_bar  * radii[i] )  / ( d.x  * Math.sqrt(3) * 3  ) ))
+        var stress_fric_corr = stresses[i].y * factor
+        var strain = stresses[i].x
+        return { "x": strain, "y": stress_fric_corr, "label": "Fric Corr Stress 1"}
+    })
+    console.log("Finished friction correction")
+
+    $('#pc_corrected').hide()
+}
+
+
+
+
+
 
 
 
@@ -832,7 +976,7 @@ $(".panel-heading").on('click', function(){
 
 function plot_raw(data) {
     console.log('Plotting load displacement graph');
-    console.log(data)
+    //console.log(data)
      chart_1 = new CanvasJS.Chart("graph_1",
     {
         animationEnabled: true,
@@ -845,7 +989,7 @@ function plot_raw(data) {
                 shared: true,
         },
         title: {
-            text: "Load - Displacment",
+            text: "Load - Displacement",
             fontColor: "#000",
             fontfamily: "Arial",
             fontSize: 20,
@@ -890,7 +1034,8 @@ function plot_raw(data) {
          tickColor: "#000",
          labelFontColor: "#000",
          titleFontColor: "#000",
-         lineThickness: 1
+         lineThickness: 1,
+         reversed:  true
      },
         data:[
         {
@@ -905,9 +1050,32 @@ function plot_raw(data) {
                     d.displacement = 0.0
                     d.load = null
                 }
-                return {"x": d.displacement , "y": -d.load, "label": "Raw" }
+                return {"x": d.displacement , "y": d.load , "label": "Raw" }
             })
-        }]
+        },
+        {
+            connectNullData: false,
+            type: "line",
+            showInLegend: true,
+            name: "Load corrected",
+            color: "#f33",
+            toolTipContent: "Height: {x} mm, Load: {y} kN",
+            dataPoints: data.map(function(d){
+                if(!d.displacement){
+                    d.displacement = 0.0
+                    d.load = null
+                }
+                if(d.load_corr){
+                    var load = d.load_corr
+                }
+                else{
+                    var load = d.load
+                }
+                return {"x": d.displacement , "y": load , "label": "Raw" }
+            })
+        }
+
+    ]
     });
 
     chart_1.render();
@@ -1071,9 +1239,16 @@ function plot_raw(data) {
                showInLegend: true,
                name: "Raw Data",
                color: "#333",
-               toolTipContent: "Height: {x} mm, Load: {y} kN",
+               toolTipContent: "Stroke: {x} mm, Load: {y} kN",
                dataPoints: data.map(function(d){
-                   return {"x": currentTest.sample.dimensions.h_hot_initial - d.displacement , "y": d.load, "label": "Stroke" }
+                   if(d.load_corr){
+                       var load = d.load_corr
+                   }
+                   else{
+                       var load = d.load
+                   }
+
+                   return {"x": currentTest.sample.dimensions.h_hot_initial - d.displacement , "y": load, "label": "Stroke" }
                })
            },
            {
@@ -1084,7 +1259,38 @@ function plot_raw(data) {
                color: "#d34",
                toolTipContent: "Stroke: {x} mm, Load: {y} kN",
                dataPoints: data.map(function(d){
-                   return {"x": currentTest.sample.dimensions.h_hot_initial - d.displacement - currentTest.zero_offset , "y": d.load - currentTest.load_offset, "label": "Stroke-offset" }
+                   if(d.load_corr){
+                       var load = d.load_corr
+                   }
+                   else{
+                       var load = 0
+                   }
+
+                   return {"x": currentTest.sample.dimensions.h_hot_initial - d.displacement - currentTest.zero_offset , "y": load, "label": "Stroke-offset" }
+               })
+           },
+           {
+               connectNullData: false,
+               type: "line",
+               showInLegend: true,
+               name: "Full corrected",
+               color: "#3d4",
+               toolTipContent: "Stroke: {x} mm, Load: {y} kN",
+               dataPoints: data.map(function(d){
+                   if(d.load_corr){
+                       var load = d.load_corr
+                   }
+                   else{
+                       var load = 0
+                   }
+                   if(d.disp_corr){
+                       var disp_corr  = d.disp_corr
+                   }
+                   else{
+                       var disp_corr = currentTest.sample.dimensions.h_hot_initial - d.displacement - currentTest.zero_offset
+                   }
+
+                   return {"x": disp_corr , "y": load, "label": "Stroke-offset" }
                })
            }
 
@@ -1184,7 +1390,6 @@ function plot_stress(data) {
 
     export_SS.show(200)
 
-
              console.log('Plotting stress strain graph');
 
               chart_4 = new CanvasJS.Chart("graph_4",
@@ -1234,7 +1439,7 @@ function plot_stress(data) {
                      titleFontColor: "#000",
                      lineThickness: 1,
                      viewportMinimum: 0.0,
-                     viewportMaximum: -Math.log(( currentTest.sample.dimensions.av_h_final / currentTest.sample.dimensions.av_h_initial )) + 0.3
+                     viewportMaximum: -Math.log(( currentTest.sample.dimensions.h_hot_final / currentTest.sample.dimensions.h_hot_initial )) + 0.3
              },
              axisY:
                 {
@@ -1286,7 +1491,7 @@ function plot_stress(data) {
                      name: "Yield calculation line",
                      color: "#3cd",
                      toolTipContent: "Yield calculation line",
-                     dataPoints: [{x:0.02, y:0}]
+                     dataPoints: [{x:0.002, y:0}]
                  }
              ]
              });
@@ -1393,3 +1598,15 @@ function parseData(data, x_name, y_name, label){
        //console.log(parsed_data)
        return parsed_data
 }
+
+
+
+$('input[type="radio"], input[name^="m_bar"], #pc_test ').on('change', function(){
+    var divName = $(this).attr('box');
+    if(divName){
+        $('.fricDiv').hide();
+        $('#' + divName).show()
+    }
+    calcFricCorrStress()
+
+})

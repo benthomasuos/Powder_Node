@@ -296,10 +296,20 @@
         <div class="panel-body" hidden>
             <form class="form" id="origin_corr_form">
                 <label for="sampling_period" hidden>Data smoothing</label>
-                <div class="input-group" hidden>
 
-                    <input type="range" class="form-control" id="sampling_period" name="sampling_period" placeholder="Sampling period" min="1" max="100" step="1" value="1" />
-                    <span id="samplingNum" class="input-group-addon">Samples</span>
+                <div class="input-group" hidden>
+                    <input type="range" class="form-control" id="sampling_period" name="sampling_period" placeholder="Sampling period" min="1" max="100" step="1" value="1" hidden/>
+                    <span id="samplingNum" class="input-group-addon" hidden>Samples</span>
+                </div>
+
+
+                <label for="load_offset">Load offset</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="load_offset" name="load_offset" placeholder="Load offset" min="-1.0" max="1.0" step="0.001" />
+                    <span class="input-group-addon">kN</span>
+                </div>
+                <div class="input-group" style="width:100%">
+                    <input type="range" class="form-control"  id="load_offset_range" min="-20.0" max="20.0" step="0.001" style="width:90%"/>
                 </div>
 
 
@@ -308,25 +318,21 @@
                 <div class="container-fluid">
                     <div id="startLinear" class="btn btn-md btn-success ">Start</div>
                     <div id="stopLinear" class="btn btn-md btn-danger " disabled>Stop</div>
+                    <div id="manualDisp" class="btn btn-md btn-default">Manual adjustment  <i class="fa fa-caret-up fa-caret-down"></i></div>
                     <div id="linearCalcMsg" class="well"></div>
                 </div>
-                <div class="input-group">
 
-                    <input type="number" class="form-control" id="displacement_offset" name="displacement_offset" placeholder="Displacement offset" min="-20.0" max="20.0" step="0.001" />
-                    <span class="input-group-addon">mm</span>
-                </div>
-                <div class="input-group" style="width:100%">
-                    <input type="range" class="form-control"  id="displacement_offset_range" min="-20.0" max="20.0" step="0.001" style="width:90%"/>
+                <div id="manualDiv" hidden>
+                    <label for="displacement_offset">Manual displacement offset</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="displacement_offset" name="displacement_offset" placeholder="Displacement offset" min="-3.0" max="3.0" step="0.001" />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group" style="width:100%">
+                        <input type="range" class="form-control"  id="displacement_offset_range" min="-20.0" max="20.0" step="0.001" style="width:90%"/>
+                    </div>
                 </div>
 
-<label for="load_offset">Load offset</label>
-                <div class="input-group">
-                    <input type="number" class="form-control" id="load_offset" name="load_offset" placeholder="Load offset" min="-20.0" max="20.0" step="0.001" />
-                    <span class="input-group-addon">kN</span>
-                </div>
-                <div class="input-group" style="width:100%">
-                    <input type="range" class="form-control"  id="load_offset_range" min="-20.0" max="20.0" step="0.001" style="width:90%"/>
-                </div>
 
             </form>
         </div>
@@ -339,11 +345,41 @@
         </div>
         <div class="panel-body" hidden>
             <form class="form" id="fric_correction_form">
-                <div class="form-group" id="constants">
+                <div class="form-group" id="friction">
                     <div class="input-group">
-                        <span class="input-group-addon">&mu;<sub>0</sub></span>
-                        <input name="mu_0" id="mu_0" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.3 />
+                        <label class="radio-inline"><input type="radio" name="optradio" box="linear_fric" checked="checked">Linear</label>
+                        <label class="radio-inline"><input type="radio" name="optradio" box="bilinear_fric">Bilinear</label>
+                        <label class="radio-inline"><input type="radio" name="optradio" box="pressure_fric" disabled>Pressure dependant</label>
                     </div>
+                </div>
+
+                <div class="form-group" id="friction" >
+                    <div id="linear_fric" class="fricDiv">
+                        <div class="input-group">
+                            <span class="input-group-addon"><span style="text-decoration: overline">m</span></span>
+                            <input name="m_bar" id="m_bar" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.3 />
+                        </div>
+                    </div>
+
+                    <div id="bilinear_fric" class="fricDiv" hidden>
+                        <div class="input-group">
+                            <span class="input-group-addon"><span style="text-decoration: overline">m<sub>1</sub></span></span>
+                            <input name="m_bar_1" id="m_bar_1" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.05 />
+                            <span class="input-group-addon"><span style="text-decoration: overline">m<sub>2</sub></span></span>
+                            <input name="m_bar_2" id="m_bar_2" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.1 />
+                            <span class="input-group-addon"><span style="text-decoration: overline">m<sub>3</sub></span></span>
+                            <input name="m_bar_3" id="m_bar_3" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.35 />
+                            <span class="input-group-addon">% of test</span>
+                            <input name="pc_test" id="pc_test" type="number" class="form-control" step=1 min=0.0 max=100 value=50 />
+                        </div>
+                    </div>
+                    <div id="pressure_fric" class="fricDiv" hidden>
+                        <div class="input-group">
+                            <span class="input-group-addon">&mu;<sub>0</sub></span>
+                            <input name="mu_0" id="mu_0" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.3 />
+                        </div>
+                    </div>
+                    <div id="pc_corrected" hidden></div>
 
                 </div>
             </form>
