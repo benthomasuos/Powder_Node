@@ -69,40 +69,31 @@
 
 <div class="container-fluid col-md-12">
 
-
-
-
-
-
-
-
-
-
-<div class="container-fluid col-md-6">
-<div class="panel panel-primary">
-    <div class="panel-heading">
-        <h4>Current analysis<i style="float:right" class="fa fa-caret-up" id="hideTable"></i></h4>
-    </div>
-        <div id="test_status" class="alert alert-warning" hidden>No test data available to show</div>
-    <div class="panel-body">
-        <table id="currentTests" class="table table-condensed">
-            <thead>
-                <th>Test ID #</th>
-                <th>Sample</th>
-                <th>Temperature (ºC)</th>
-                <th>Strain Rate (s<sup>-1</sup>)</th>
-            </thead>
-            <tbody style="font-size: 1.5em">
-            </tbody>
-        </table>
-    </div>
-</div>
-</div>
+        <div class="container-fluid col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading testData">
+                <h4>Current analysis<i style="float:right" class="fa fa-caret-up" id="hideTable"></i></h4>
+            </div>
+                <div id="test_status" class="alert alert-warning" hidden>No test data available to show</div>
+            <div class="panel-body">
+                <table id="currentTests" class="table table-condensed">
+                    <thead>
+                        <th>Test ID #</th>
+                        <th>Sample</th>
+                        <th>Temperature (ºC)</th>
+                        <th>Strain Rate (s<sup>-1</sup>)</th>
+                    </thead>
+                    <tbody style="font-size: 1.5em">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        </div>
 
 <div class="container-fluid col-md-7 col-sm-6 col-xs-12">
 
 
-
+<div class="container-fluid well">
     <div class="container-fluid col-md-12" id="graph_1_Parent" style="float:left;">
         <div class="graphDiv" id="graph_1" style="height: 600px"></div>
     </div>
@@ -112,16 +103,20 @@
     <div class="container-fluid col-md-12" id="graph_sr_Parent" style="float:left;" hidden>
         <div class="graphDiv" id="graph_sr" style="height: 600px"></div>
     </div>
+</div>
+
+<div class="container-fluid well">
     <div class="container-fluid col-md-12" id="graph_2_Parent" style="float:left;">
         <div class="graphDiv" id="graph_2" style="height: 600px"></div>
     </div>
-    <div class="container-fluid col-md-12" id="graph_3_Parent" style="float:left;">
-        <div class="graphDiv" id="graph_3" style="height: 600px"></div>
-    </div>
+</div>
+
+<div class="container-fluid well">
     <div class="container-fluid col-md-12" id="graph_4_Parent" style="float:left;">
         <div class="graphDiv" id="graph_4" style="height: 600px"></div>
     </div>
-
+</div>
+<div style="width:100%; height: 100px; float:left"></div>
 
 </div>
 
@@ -130,7 +125,7 @@
 
     <div class="panel panel-default" id="sampleData">
         <div class="panel-heading">
-            <h4>1.   Sample data<i style="float:right" class="fa fa-caret-up"></i></h4>
+            <h4><b>1.   Test data</b><i style="float:right" class="fa fa-caret-up"></i></h4>
         </div>
         <div class="panel-body">
 
@@ -287,43 +282,47 @@
 
 
     </div>
-
+</div>
 
     <div class="panel panel-default" id="origin_corr">
         <div class="panel-heading">
-            <h4>2.   Origin correction<i style="float:right" class="fa fa-caret-down"></i></h4>
+            <h4><b>2.   Origin correction</b><i style="float:right" class="fa fa-caret-down"></i></h4>
         </div>
         <div class="panel-body" hidden>
             <form class="form" id="origin_corr_form">
-                <label for="sampling_period" hidden>Data smoothing</label>
 
-                <div class="input-group" hidden>
-                    <input type="range" class="form-control" id="sampling_period" name="sampling_period" placeholder="Sampling period" min="1" max="100" step="1" value="1" hidden/>
-                    <span id="samplingNum" class="input-group-addon" hidden>Samples</span>
+                <div style="display: none !important;">
+                    <h4for="sampling_period" >Data smoothing</h4>
+                    <div class="input-group" >
+                        <input type="range" class="form-control" id="sampling_period" name="sampling_period" placeholder="Sampling period" min="1" max="100" step="1" value="1" hidden/>
+                        <span id="samplingNum" class="input-group-addon" hidden>Samples</span>
+                    </div>
                 </div>
 
 
-                <label for="load_offset">Load offset</label>
-                <div class="input-group">
-                    <input type="number" class="form-control" id="load_offset" name="load_offset" placeholder="Load offset" min="-1.0" max="1.0" step="0.001" />
-                    <span class="input-group-addon">kN</span>
-                </div>
-                <div class="input-group" style="width:100%">
-                    <input type="range" class="form-control"  id="load_offset_range" min="-20.0" max="20.0" step="0.001" style="width:90%"/>
-                </div>
-
-
-
-                <label for="displacement_offset">Displacement offset</label>
-                <div class="container-fluid">
-                    <div id="startLinear" class="btn btn-md btn-success ">Start</div>
-                    <div id="stopLinear" class="btn btn-md btn-danger " disabled>Stop</div>
-                    <div id="manualDisp" class="btn btn-md btn-default">Manual adjustment  <i class="fa fa-caret-up fa-caret-down"></i></div>
-                    <div id="linearCalcMsg" class="well"></div>
+                <div class="well">
+                    <h4>Load offset</h4>
+                    <div class="input-group">
+                        <input type="range" class="form-control"  id="load_offset_range" min="-20.0" max="20.0" step="0.001" style="width:60%"/>
+                        <input type="number" class="form-control" id="load_offset" name="load_offset" placeholder="Load offset" min="-1.0" max="1.0" step="0.001" />
+                        <span class="input-group-addon">kN</span>
+                    </div>
                 </div>
 
-                <div id="manualDiv" hidden>
-                    <label for="displacement_offset">Manual displacement offset</label>
+
+
+                <div class="well">
+                    <h4>Displacement offset</h4>
+                    <div class="container-fluid">
+                        <div style="margin-bottom: 10px;">
+                            <div id="startLinear" class="btn btn-lg btn-success ">Start</div>
+                            <div id="stopLinear" class="btn btn-lg btn-danger " disabled>Stop</div>
+                        </div>
+                        <div id="linearCalcMsg" class="well" style="background-color: #fff; min-height: 100px"></div>
+                    </div>
+
+                <div id="manualDiv" class="container-fluid">
+                    <h4>Manual displacement offset</h4>
                     <div class="input-group">
                         <input type="number" class="form-control" id="displacement_offset" name="displacement_offset" placeholder="Displacement offset" min="-3.0" max="3.0" step="0.001" />
                         <span class="input-group-addon">mm</span>
@@ -332,7 +331,7 @@
                         <input type="range" class="form-control"  id="displacement_offset_range" min="-20.0" max="20.0" step="0.001" style="width:90%"/>
                     </div>
                 </div>
-
+                </div>
 
             </form>
         </div>
@@ -341,36 +340,36 @@
 
     <div class="panel panel-default" id="fric_correction">
         <div class="panel-heading">
-            <h4>3.   Friction correction<i style="float:right" class="fa fa-caret-down"></i></h4>
+            <h4><b>3.   Friction correction</b><i style="float:right" class="fa fa-caret-down"></i></h4>
         </div>
         <div class="panel-body" hidden>
             <form class="form" id="fric_correction_form">
-                <div class="form-group" id="friction">
+                <div class="form-group">
                     <div class="input-group">
-                        <label class="radio-inline"><input type="radio" name="optradio" box="linear_fric" checked="checked">Linear</label>
-                        <label class="radio-inline"><input type="radio" name="optradio" box="bilinear_fric">Bilinear</label>
+                        <label class="radio-inline"><input type="radio" name="optradio" box="linear_fric" >Linear</label>
+                        <label class="radio-inline"><input type="radio" name="optradio" box="bilinear_fric" checked="checked">Bilinear</label>
                         <label class="radio-inline"><input type="radio" name="optradio" box="pressure_fric" disabled>Pressure dependant</label>
                     </div>
                 </div>
 
-                <div class="form-group" id="friction" >
-                    <div id="linear_fric" class="fricDiv">
+                <div class="form-group" name="friction">
+                    <div id="linear_fric" class="fricDiv" hidden>
                         <div class="input-group">
                             <span class="input-group-addon"><span style="text-decoration: overline">m</span></span>
                             <input name="m_bar" id="m_bar" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.3 />
                         </div>
                     </div>
 
-                    <div id="bilinear_fric" class="fricDiv" hidden>
+                    <div id="bilinear_fric" class="fricDiv">
                         <div class="input-group">
                             <span class="input-group-addon"><span style="text-decoration: overline">m<sub>1</sub></span></span>
-                            <input name="m_bar_1" id="m_bar_1" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.05 />
+                            <input name="m_bar_1" id="m_bar_1" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.0 />
                             <span class="input-group-addon"><span style="text-decoration: overline">m<sub>2</sub></span></span>
-                            <input name="m_bar_2" id="m_bar_2" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.1 />
+                            <input name="m_bar_2" id="m_bar_2" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.05 />
                             <span class="input-group-addon"><span style="text-decoration: overline">m<sub>3</sub></span></span>
-                            <input name="m_bar_3" id="m_bar_3" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.35 />
+                            <input name="m_bar_3" id="m_bar_3" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.30 />
                             <span class="input-group-addon">% of test</span>
-                            <input name="pc_test" id="pc_test" type="number" class="form-control" step=1 min=0.0 max=100 value=50 />
+                            <input name="pc_test" id="pc_test" type="number" class="form-control" step=1 min=0.0 max=100 value=60 />
                         </div>
                     </div>
                     <div id="pressure_fric" class="fricDiv" hidden>
@@ -386,9 +385,9 @@
         </div>
     </div>
 
-    <div class="panel panel-default" id="iso_correction">
+    <div class="panel panel-default" id="iso_correction" hidden>
         <div class="panel-heading">
-            <h4>4.   Isothermal correction (not finished)<i style="float:right" class="fa fa-caret-down"></i></h4>
+            <h4><b>4.   Isothermal correction (not finished)</b><i style="float:right" class="fa fa-caret-down"></i></h4>
         </div>
         <div class="panel-body" hidden>
             <form class="form" id="iso_correction_form">
@@ -414,7 +413,7 @@
 
         <div class="panel panel-default" id="origin_correction">
             <div class="panel-heading">
-                <h4>5.   Yield point<i style="float:right" class="fa fa-caret-down"></i></h4>
+                <h4><b>4.   Yield calculation</b><i style="float:right" class="fa fa-caret-down"></i></h4>
             </div>
             <div class="panel-body" hidden>
                 <div class="container-fluid">
@@ -442,10 +441,10 @@
 
 
 <div id="buttonFooter" >
-        <div id="plotData" class="btn btn-md btn-primary" onclick="plotData()"><i class="fa fa-refresh"></i> Refresh Plots</div>
-        <div id="saveData" class="btn btn-md btn-primary" onclick="saveData()"><i class="fa fa-save"></i> Save data</div>
-        <div id="analysed" class="btn btn-md btn-warning">Set test as ANALYSED</div>
-        <a id="export_SS" hidden><div class="btn btn-md btn-success"><i class="fa fa-download"></i> Download final data </div></a>
+        <div id="plotData" class="btn btn-md btn-default" onclick="plotData()"><i class="fa fa-refresh"></i> Refresh Plots</div>
+        <div id="saveData" class="btn btn-md btn-default" onclick="saveData()"><i class="fa fa-save"></i> Save data</div>
+        <a id="export_SS" hidden><div class="btn btn-md btn-primary"><i class="fa fa-download"></i> Download stress-strain data </div></a>
+
 </div>
 
 

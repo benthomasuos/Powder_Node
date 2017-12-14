@@ -39,11 +39,12 @@ a.disabled {
 }
 
 .graphDiv{
+    position: relative;
     min-width: 80%;
     min-height: 400px;
-    border: solid gray 1px;
-    padding: 10px;
+    padding: -30px;
     margin: 10px;
+    border: solid grey 1px;
 
 }
 
@@ -337,4 +338,17 @@ a ~ .nav-tile {
 
 .nav-tile-purple:hover {
     background-color: #47c;
+}
+
+.graph_number{
+    position:absolute;
+    width: 60px;
+    float:left;
+    padding: 10px;
+    font-size: 2em;
+    text-align: center;
+    background-color: #fff;
+    border: solid grey 1px;
+    z-index: 999;
+
 }
