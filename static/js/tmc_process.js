@@ -164,9 +164,9 @@ function startYieldCalculation(){
 
         chart_options.data[4].dataPoints.push( { "x": x , "y": y})
 
-        currentTest.compressive_strength = Math.max(chart_options.data[1].dataPoints.map(function(d, i){
-            return d.y
-        }))
+        var stresses = Array.from( chart_options.data[1].dataPoints, d => +d.y || 0.0 )
+        console.log( stresses )
+        currentTest.compressive_strength = Math.max(stresses)
 
 
 
@@ -281,18 +281,37 @@ function getSingleTest(){
     tableBody.html("");
     pouchdb.get( currentTest , { attachments : true } )
             .then(function(doc){
-                currentTest = doc;
-                //populateTestForm(doc)
-                loadData()
+                currentTest = doc; // Load the data into the variable 'currentTest' to be used for all subsquent analysis work
                 console.log(doc)
-                tableBody.append("<tr name='"+ doc._id +"'><td>"+ doc._id  +"</td><td name='sample'>"+ doc.sample.name.user_defined +"</td><td name='temperature'>"+ doc.temperature +"</td><td name='strainrate'>"+ doc.strainrate +"</td></tr>")
+                tableBody.append("<tr name='"+ doc._id +"'><td>"+ doc._id  +"</td>\
+                <td ><input class='form-control header_input' name='sample_user' type='text' /></td>\
+                <td name='sample_musfile'>"+  doc.sample.name.musfile_defined +"</td>\
+                <td > <input class='form-control header_input' name='temperature' type='number' /></td>\
+                <td > <input class='form-control header_input' name='strainrate' type='number' /></td></tr>")
                 if(doc.yield_strength_02_mpa && doc.young_mod_gpa){
                     $('#yieldCalcMsg').html('Yield calculation already completed.<br>Click START to recalculate.<br><br><b>Youngs Modulus</b>:  ' + doc.yield_strength_02_mpa + ' GPa<br><b>Yield stress:</b>  ' + doc.young_mod_gpa + ' MPa')
                 }
 
+
+
+                $.each(compliance_json, (function(key, val){
+                    console.log(key, val)
+                    $('#stiffness').append("<option val='"+ key +"'>"+ val.name +" : "+ val.value + " " + val.units +"</option>")
+
+                    })
+                )
+                if(currentTest.compliance){
+                    $('#stiffness').val(currentTest.compliance.key)
+                }
+
+
+
+
+
                 $("#test_status").hide()
                 return doc
             }).then(function(){
+                    loadData()
                     if(currentTest.analysed == true){
                         processData(currentTest.measurements, prepareDownload)}
                     else{
@@ -330,10 +349,14 @@ function saveData(){
                  //console.log(name, value)
 
             }
-            if( name.includes("h_") || name.includes("d_") && !name.includes("load")){
+            else if( name.includes("h_") || name.includes("d_") && !name.includes("load")){
                 //console.log(name, value)
                 currentTest.sample.dimensions[name] = value;
-            }else{
+            }
+            else if (name == "sample_user"){
+                currentTest.sample.name.user_defined = value
+            }
+            else{
                 //console.log($(this).attr('name'), $(this).val())
                 localStorage[name] = value;
                 currentTest[name] = value;
@@ -399,19 +422,22 @@ function saveData(){
 function loadData(){
 
     $('input').each(function(){
-        if(!$(this).val() && $(this).attr('name')){
+        if( $(this).attr('name') && !$(this).val()){
             var name = $(this).attr('name')
             if( name.includes("h_") || name.includes("d_") && !name.includes("load")){
                 $(this).val(currentTest.sample.dimensions[name]);
                 //console.log(name + ": " + currentTest.sample.dimensions[name])
             }
-
-            else{
+            else if (name == "sample_user"){
+                $(this).val(currentTest.sample.name.user_defined);
+            }
+            else {
                 $(this).val(currentTest[name]);
             }
 
-
+            console.log($(this).attr('id'), currentTest[name])
         }
+
 
         if( currentTest.thermal_expansion ){
             //Check if the test has a saved CTE value and use that if it does
@@ -430,7 +456,14 @@ function loadData(){
             $('#deformation_temperature').val(currentTest.temperature)
         }
 
+
+
+
     })
+
+
+
+
 
 
     console.log("Loaded data")
@@ -594,6 +627,8 @@ $('#analysed').on('click', function(){
 function processData(data, callback) {
     //console.log(currentTest)
     plot_raw(data)
+    console.log($('#stiffness').find(":selected").val())
+    calcNonComplianceLoad($('#stiffness').find(":selected").val())
     plot_stroke(data)
     plot_temp(data)
     calculate_barrelling()
@@ -809,7 +844,7 @@ function calcStress(){
             return { "x": strain, "y": null, "label": "Strain"}
         }
     })
-    chart_stress.render()
+    //chart_stress.render()
 }
 
 
@@ -991,7 +1026,7 @@ function calcIsoStress(){
     })
 
 
-    chart_stress.render()
+    //chart_stress.render()
 }
 
 
@@ -1002,7 +1037,7 @@ $(".panel-heading").not('.testData').on('click', function(){
     if (panel.html().includes("Friction") || panel.html().includes("Yield")){
         scrollTo('graph_4')
     }
-    $(".panel-default").find(".panel-body")
+    $(".panel-default").not(".heading").find(".panel-body")
          .hide(200)
 
     panel.children(":hidden")
@@ -1083,7 +1118,7 @@ function plot_raw(data) {
             connectNullData: false,
             type: "line",
             showInLegend: true,
-            name: "Raw Data",
+            name: "Compliance corrected",
             color: "#333",
             toolTipContent: "Height: {x} mm, Load: {y} kN",
             dataPoints: data.map(function(d){
@@ -1101,6 +1136,27 @@ function plot_raw(data) {
             showInLegend: true,
             name: "Load corrected",
             color: "#f33",
+            toolTipContent: "Height: {x} mm, Load: {y} kN",
+            dataPoints: data.map(function(d){
+                if(!d.displacement){
+                    d.displacement = 0.0
+                    d.load = null
+                }
+                if(d.load_corr){
+                    var load = d.load_corr
+                }
+                else{
+                    var load = d.load
+                }
+                return {"x": d.displacement , "y": load , "label": "Raw" }
+            })
+        },
+        {
+            connectNullData: false,
+            type: "line",
+            showInLegend: true,
+            name: "Non-compliance corrected",
+            color: "#3f3",
             toolTipContent: "Height: {x} mm, Load: {y} kN",
             dataPoints: data.map(function(d){
                 if(!d.displacement){
@@ -1567,9 +1623,23 @@ $('input[type="radio"], input[name^="m_bar"], #pc_test ').on('change', function(
 })
 
 
+$('#stiffness').on('change', function(){
+    var type = $(this).find(":selected").val()
+
+    console.log(type)
+
+    currentTest.compliance = compliance_json[type]
+
+    var data = compliance_json[type]
+    calcNonComplianceLoad(data)
+})
+
+
+
 function scrollTo(div){
+    console.log("Scrolling to: "+ div)
     var element = $('#' + div )
-     $('html,body').animate({scrollTop: element.offset().top - 100},'slow');
+     $('html,body').animate({scrollTop: element.offset().top - 180},'fast');
      var parent = element.parent() // div.well
      parent.css("background-color", "#f33").delay(2000)
                      .queue(function(n) {
@@ -1577,4 +1647,33 @@ function scrollTo(div){
                             n();
                         })
 
+}
+
+
+function calcNonComplianceLoad(compliance_data){
+    var compliance = compliance_data.value
+    console.log("Using compliance data: " + compliance_data)
+    var non_loads = currentTest.measurements.map((d, i) => {
+        //var disp =
+        return {"x": d.displacement , "y": d.load}
+})
+
+    chart_raw.options.data[2].dataPoints = non_loads
+    chart_raw.render()
+
+}
+
+
+
+var compliance_json = {
+    "default" : {
+        "name" : "TMC default",
+        "value" : 415,
+        "units" : "kN/mm"
+     },
+     "linear_1" : {
+         "name" : "Linear 1 ",
+         "value" : 20,
+         "units" : "kN/mm"
+      }
 }

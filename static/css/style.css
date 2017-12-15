@@ -352,3 +352,26 @@ a ~ .nav-tile {
     z-index: 999;
 
 }
+
+
+.testHeader {
+    position: fixed;
+    width: 63%;
+    height: 120px;
+    margin-left: -20px;
+    float:left;
+    top: 45px;
+    z-index: 999;
+    background-color: #fff;
+    padding-top: 10px;
+    border-bottom: 1px solid #dadada
+
+
+}
+
+
+.header_input {
+    font-size: 1.2em;
+    height: 36px;
+
+}

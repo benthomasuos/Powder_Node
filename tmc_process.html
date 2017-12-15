@@ -50,7 +50,7 @@
 
           </ul>
           <ul class="nav navbar-nav navbar-right">
-              <li><a href="mailto:b.thomas@sheffield.ac.uk?subject=STAR Web app - Bug Report&body=<h3>Bug report</h3>"><i class="fa fa-envelope"></i> Report a bug/issue</a></li>
+              <li><a href="https://github.com/benthomasuos/Powder_Node/issues"><i class="fa fa-github"></i> Report a bug/issue</a></li>
             <li><a href="/account" disabled><i class="fa fa-user-circle"></i> My account</a></li>
           </ul>
         </div><!-- /.navbar-collapse -->
@@ -60,26 +60,17 @@
 
 
 
-<div class="page-header">
-    <h1>Analyse data</h1>
-</div>
-
-
-
 
 <div class="container-fluid col-md-12">
 
-        <div class="container-fluid col-md-6">
-        <div class="panel panel-primary">
-            <div class="panel-heading testData">
-                <h4>Current analysis<i style="float:right" class="fa fa-caret-up" id="hideTable"></i></h4>
-            </div>
-                <div id="test_status" class="alert alert-warning" hidden>No test data available to show</div>
+        <div class="testHeader">
+            <div id="test_status" class="alert alert-warning" hidden>No test data available to show</div>
             <div class="panel-body">
                 <table id="currentTests" class="table table-condensed">
                     <thead>
                         <th>Test ID #</th>
-                        <th>Sample</th>
+                        <th>User sample</th>
+                        <th>MUSFILE sample</th>
                         <th>Temperature (ºC)</th>
                         <th>Strain Rate (s<sup>-1</sup>)</th>
                     </thead>
@@ -88,9 +79,8 @@
                 </table>
             </div>
         </div>
-        </div>
 
-<div class="container-fluid col-md-7 col-sm-6 col-xs-12">
+<div class="container-fluid col-md-7 col-sm-6 col-xs-12" style="top:120px">
 
 
 <div class="container-fluid well">
@@ -121,7 +111,7 @@
 </div>
 
 
-    <div class="container-fluid col-md-5 col-sm-6 col-xs-12 settingsDiv" id="settingsDiv" style="float:right">
+    <div class="container-fluid col-md-5 col-sm-6 col-xs-12 settingsDiv" id="settingsDiv" style="float:right; bottom: 80px; overflow: scroll">
 
     <div class="panel panel-default" id="sampleData">
         <div class="panel-heading">
@@ -133,20 +123,27 @@
 
                 <div class="form-group" id="constants">
                     <h5>Constants</h5>
-                    <div class="input-group">
+                    <div class="input-group" hidden>
                         <span class="input-group-addon">R</span>
                         <input name="gas_constant" id="gas_constant" type="number" class="form-control" disabled/>
                         <span class="input-group-addon">J K<sup>-1</sup> mol<sup>-1</sup></span>
                     </div>
+
+                    <div class="input-group">
+                        <span class="input-group-addon">T<sub>Def</sub></span>
+                        <input name="deformation_temperature" id="deformation_temperature" type="number" class="form-control" min=0.0 />
+                        <span class="input-group-addon"><b>ºC</b></span>
+                    </div>
+
                     <div class="input-group">
                         <span class="input-group-addon">Thermal exp.</span>
                         <input name="thermal_expansion" id="thermal_expansion" type="number" class="form-control" />
                         <span class="input-group-addon"><b>% / ºC</b></span>
                     </div>
+
                     <div class="input-group">
-                        <span class="input-group-addon">T<sub>Def</sub></span>
-                        <input name="deformation_temperature" id="deformation_temperature" type="number" class="form-control" min=0.0 />
-                        <span class="input-group-addon"><b>ºC</b></span>
+                        <span class="input-group-addon">Machine stiffness</span>
+                        <select name="stiffness" id="stiffness" class="form-control"></select>
                     </div>
 
 
