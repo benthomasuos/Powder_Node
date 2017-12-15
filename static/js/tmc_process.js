@@ -62,7 +62,14 @@ pouchdb.info().then(function (info) {
         var value = $(this).val();
         load_offset_range.val(value)
         currentTest.load_offset = value;
-        calcLoadOffset()
+
+        if(currentTest.mus_params.corrected == true ){
+            calcLoadOffset(chart_raw.options.data[1].dataPoints) // Use the stiffness corrected raw data
+        }
+        else{
+            calcLoadOffset(chart_raw.options.data[0].dataPoints) // Use the non-stiffness corrected raw data
+        }
+
     })
 
     load_offset_range.on('input', function(){
@@ -70,7 +77,13 @@ pouchdb.info().then(function (info) {
         var value = $(this).val();
         load_offset.val(value)
         currentTest.load_offset = value;
-        calcLoadOffset()
+
+        if(currentTest.mus_params.corrected == true ){
+            calcLoadOffset(chart_raw.options.data[1].dataPoints) // Use the stiffness corrected raw data
+        }
+        else{
+            calcLoadOffset(chart_raw.options.data[0].dataPoints) // Use the non-stiffness corrected raw data
+        }
     })
 
 
@@ -292,19 +305,12 @@ function getSingleTest(){
                     $('#yieldCalcMsg').html('Yield calculation already completed.<br>Click START to recalculate.<br><br><b>Youngs Modulus</b>:  ' + doc.yield_strength_02_mpa + ' GPa<br><b>Yield stress:</b>  ' + doc.young_mod_gpa + ' MPa')
                 }
 
-
-
                 $.each(compliance_json, (function(key, val){
                     console.log(key, val)
-                    $('#stiffness').append("<option val='"+ key +"'>"+ val.name +" : "+ val.value + " " + val.units +"</option>")
+                    $('#stiffness').append("<option value='"+ key +"'>"+ val.name +" : "+ val.value + " " + val.units +"</option>")
 
                     })
                 )
-                if(currentTest.compliance){
-                    $('#stiffness').val(currentTest.compliance.key)
-                }
-
-
 
 
 
@@ -312,16 +318,60 @@ function getSingleTest(){
                 return doc
             }).then(function(){
                     loadData()
+
                     if(currentTest.analysed == true){
                         processData(currentTest.measurements, prepareDownload)}
                     else{
                         processData(currentTest.measurements)
                     }
+                    checkCompliance()
             }).catch(function(err){
                     console.log(err)
                     $('#test_status').show()
             })
 }
+
+
+function checkCompliance(){
+
+console.log("Checking for machine stiffness correction")
+    if(currentTest.mus_params.corrected.tmc == true){
+        console.log("Test is auto corrected for machine stiffness")
+        $('#stiffness_corr').html("Test auto-corrected for machine compliance by TMC at runtime.<br><br>Using stiffness of " + currentTest.mus_params.stiffness.value + " " + currentTest.mus_params.stiffness.units )
+        currentTest.compliance = {
+                        "default" : {
+                        "name" : "TMC default",
+                        "value" : 475,
+                        "units" : "kN/mm"
+                    }
+             }
+            console.log(currentTest.compliance)
+        $('#stiffness').val(currentTest.compliance.default.value)
+        calcNonComplianceLoad(currentTest.compliance)
+
+    }
+    else if(currentTest.mus_params.corrected.tmc == false && !currentTest.compliance){
+        console.log("Test is not corrected for machine stiffness")
+        $('#stiffness_corr').html("Test NOT auto-corrected by TMC! Please select a suitable correction factor above.")
+        $('#stiffness').val("default")
+        calcComplianceLoad(compliance_json.default)
+
+
+    }
+    else if(currentTest.mus_params.corrected.user == true && currentTest.compliance ){
+        console.log("Test is corrected for machine stiffness by user defined value")
+        $('#stiffness_corr').html("Test has been corrected for machine stiffness by the user!<br><br>Using stiffness of " + currentTest.compliance.value + " " + currentTest.compliance.units )
+        $('#stiffness').val(Object.keys(currentTest.compliance))
+        calcNonComplianceLoad(currentTest.compliance)
+
+
+    }
+
+
+
+
+}
+
 
 
 function plotData(measurements){
@@ -434,8 +484,7 @@ function loadData(){
             else {
                 $(this).val(currentTest[name]);
             }
-
-            console.log($(this).attr('id'), currentTest[name])
+            //console.log($(this).attr('id'), currentTest[name])
         }
 
 
@@ -627,8 +676,8 @@ $('#analysed').on('click', function(){
 function processData(data, callback) {
     //console.log(currentTest)
     plot_raw(data)
-    console.log($('#stiffness').find(":selected").val())
-    calcNonComplianceLoad($('#stiffness').find(":selected").val())
+    //console.log($('#stiffness').find(":selected").val())
+    calcNonComplianceLoad(currentTest.compliance)
     plot_stroke(data)
     plot_temp(data)
     calculate_barrelling()
@@ -743,11 +792,14 @@ function smoothRawData(period){
 
 
 
-function calcLoadOffset(){
+function calcLoadOffset(dataPoints){
     var delta_load = load_offset.val()
-    chart_raw.options.data[1].dataPoints = chart_raw.options.data[0].dataPoints.map(function(d){
+
+    chart_raw.options.data[1].dataPoints = dataPoints.map(function(d){
         return { "x": d.x, "y": d.y - delta_load , "label": d.label}
     })
+
+
     chart_raw.render()
     calcDispOffset()
 }
@@ -759,8 +811,8 @@ function calcLoadOffset(){
 
 
 function calcDispOffset(){
-    var dataPoints_uncorr = chart_stroke.options.data[0].dataPoints
-    var dataPoints_corr = chart_stroke.options.data[1].dataPoints
+    var dataPoints_uncorr = chart_stroke.options.data[1].dataPoints
+    var dataPoints_corr = chart_stroke.options.data[2].dataPoints
     var delta_stroke = displacement_offset.val()
     var delta_load = load_offset.val()
     // Find the maximum value of displacement in the valid portion of the test data (typically at max load but check for excessive load cell noise in the raw data (zoom in on the graph!))
@@ -1113,29 +1165,12 @@ function plot_raw(data) {
          lineThickness: 1,
          reversed:  true
      },
-        data:[
-        {
+        data:[{
             connectNullData: false,
             type: "line",
             showInLegend: true,
-            name: "Compliance corrected",
+            name: "Non-compliance corrected",
             color: "#333",
-            toolTipContent: "Height: {x} mm, Load: {y} kN",
-            dataPoints: data.map(function(d){
-                //console.log(d)
-                if(!d.displacement){
-                    d.displacement = 0.0
-                    d.load = null
-                }
-                return {"x": d.displacement , "y": d.load , "label": "Raw" }
-            })
-        },
-        {
-            connectNullData: false,
-            type: "line",
-            showInLegend: true,
-            name: "Load corrected",
-            color: "#f33",
             toolTipContent: "Height: {x} mm, Load: {y} kN",
             dataPoints: data.map(function(d){
                 if(!d.displacement){
@@ -1155,7 +1190,24 @@ function plot_raw(data) {
             connectNullData: false,
             type: "line",
             showInLegend: true,
-            name: "Non-compliance corrected",
+            name: "Compliance corrected",
+            color: "#f33",
+            toolTipContent: "Height: {x} mm, Load: {y} kN",
+            dataPoints: data.map(function(d){
+                //console.log(d)
+
+                if(!d.displacement){
+                    d.displacement = 0.0
+                    d.load = null
+                }
+                return {"x": d.displacement , "y": d.load , "label": "Compliance corrected" }
+            })
+        },
+        {
+            connectNullData: false,
+            type: "line",
+            showInLegend: true,
+            name: "Load corrected",
             color: "#3f3",
             toolTipContent: "Height: {x} mm, Load: {y} kN",
             dataPoints: data.map(function(d){
@@ -1169,9 +1221,11 @@ function plot_raw(data) {
                 else{
                     var load = d.load
                 }
-                return {"x": d.displacement , "y": load , "label": "Raw" }
+                return {"x": d.displacement , "y": load , "label": "Load corrected" }
             })
         }
+
+
 
     ]
     });
@@ -1624,13 +1678,19 @@ $('input[type="radio"], input[name^="m_bar"], #pc_test ').on('change', function(
 
 
 $('#stiffness').on('change', function(){
+
     var type = $(this).find(":selected").val()
-
-    console.log(type)
-
+    console.log("Changed to user defined stiffness correction with correction: " + type)
+    currentTest.mus_params.corrected.tmc = false;
+    currentTest.mus_params.corrected.user = true;
     currentTest.compliance = compliance_json[type]
+    console.log(compliance_json[type] )
+    checkCompliance()
+
+
 
     var data = compliance_json[type]
+    console.log(data)
     calcNonComplianceLoad(data)
 })
 
@@ -1651,14 +1711,31 @@ function scrollTo(div){
 
 
 function calcNonComplianceLoad(compliance_data){
-    var compliance = compliance_data.value
-    console.log("Using compliance data: " + compliance_data)
+    console.log("Using compliance data: ", compliance_data)
+    var compliance = compliance_data["value"]
+    console.log(compliance)
     var non_loads = currentTest.measurements.map((d, i) => {
-        //var disp =
-        return {"x": d.displacement , "y": d.load}
+        var disp = d.displacement  - ( d.load / compliance)
+
+        return {"x": disp , "y": d.load}
 })
 
-    chart_raw.options.data[2].dataPoints = non_loads
+    chart_raw.options.data[0].dataPoints = non_loads
+    chart_raw.render()
+
+}
+
+function calcComplianceLoad(compliance_data){
+    console.log("Using compliance data: ", compliance_data)
+    var compliance = compliance_data["value"]
+    console.log(compliance)
+    var non_loads = currentTest.measurements.map((d, i) => {
+        var disp = d.displacement  + ( d.load / compliance)
+
+        return {"x": disp , "y": d.load}
+})
+
+    chart_raw.options.data[1].dataPoints = non_loads
     chart_raw.render()
 
 }
@@ -1668,12 +1745,12 @@ function calcNonComplianceLoad(compliance_data){
 var compliance_json = {
     "default" : {
         "name" : "TMC default",
-        "value" : 415,
+        "value" : -475,
         "units" : "kN/mm"
      },
      "linear_1" : {
          "name" : "Linear 1 ",
-         "value" : 20,
+         "value" : -20,
          "units" : "kN/mm"
       }
 }

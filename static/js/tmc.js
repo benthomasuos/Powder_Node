@@ -614,20 +614,32 @@ function parseMusfile(data){
            testData.segments[ i-6 ] = segment
 
            var segment_pos = parseInt(segment["Position"].split(';')[0])
-           console.log("Segment position = " + segment_pos)
+           //console.log("Segment position = " + segment_pos)
 
            if(segment_pos == 6){
                var previous_segment = testData.segments[ i-7 ]
-               console.log(previous_segment)
-
-
+               //console.log(previous_segment)
                if(previous_segment["Start temperature"] == previous_segment["End temperature"] ){
                        var temperature = previous_segment["End temperature"].split(' ')[0]
-                       console.log(previous_segment["End temperature"].split(' ')[0])
+                       //console.log(previous_segment["End temperature"].split(' ')[0])
                         testData.temperature = +temperature;
                    }
                }
        }
+
+       var mus_params = sections[3].split("\n").splice(0)
+       testData.mus_params = {}
+       var corrected = parseFloat(mus_params[1].split('=')[1])
+       var stiffness = mus_params[2].split('=')[1].split("\t")
+       console.log(corrected, stiffness)
+       if( corrected < 0 ){ // Test data is already compliance corrected by TMC control system
+           testData.mus_params.corrected = { "tmc": true, "user": false }
+           testData.mus_params.stiffness = { "value": parseFloat(stiffness[1]), "units": stiffness[2]}
+       }
+       else{
+           testData.mus_params.corrected = false
+       }
+
 
        var alarms = sections[sections.length-2 ].split("\n").splice(0)
        testData.alarms = {};

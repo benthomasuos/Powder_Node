@@ -140,11 +140,20 @@
                         <input name="thermal_expansion" id="thermal_expansion" type="number" class="form-control" />
                         <span class="input-group-addon"><b>% / ºC</b></span>
                     </div>
-
+                    <div class="well">
+                        <h4>Load offset</h4>
+                        <div class="input-group">
+                            <input type="range" class="form-control"  id="load_offset_range" min="-20.0" max="20.0" step="0.001" style="width:60%"/>
+                            <input type="number" class="form-control" id="load_offset" name="load_offset" placeholder="Load offset" min="-1.0" max="1.0" step="0.001" />
+                            <span class="input-group-addon">kN</span>
+                        </div>
+                    </div>
                     <div class="input-group">
                         <span class="input-group-addon">Machine stiffness</span>
                         <select name="stiffness" id="stiffness" class="form-control"></select>
                     </div>
+
+                    <div class="well" id="stiffness_corr"></div>
 
 
 
@@ -289,7 +298,7 @@
             <form class="form" id="origin_corr_form">
 
                 <div style="display: none !important;">
-                    <h4for="sampling_period" >Data smoothing</h4>
+                    <h4 for="sampling_period" >Data smoothing</h4>
                     <div class="input-group" >
                         <input type="range" class="form-control" id="sampling_period" name="sampling_period" placeholder="Sampling period" min="1" max="100" step="1" value="1" hidden/>
                         <span id="samplingNum" class="input-group-addon" hidden>Samples</span>
@@ -297,14 +306,7 @@
                 </div>
 
 
-                <div class="well">
-                    <h4>Load offset</h4>
-                    <div class="input-group">
-                        <input type="range" class="form-control"  id="load_offset_range" min="-20.0" max="20.0" step="0.001" style="width:60%"/>
-                        <input type="number" class="form-control" id="load_offset" name="load_offset" placeholder="Load offset" min="-1.0" max="1.0" step="0.001" />
-                        <span class="input-group-addon">kN</span>
-                    </div>
-                </div>
+
 
 
 
