@@ -129,7 +129,7 @@ function getAllTests(){
 
     //  Query the test_db database
     test_db.find({
-                selector : { type :"axi"  }
+                selector : { type :{ $in : ["Axi", "Powder"]}  }
             })
             .then(function(result){
                 //console.log(result)
@@ -140,10 +140,11 @@ function getAllTests(){
                             for(i=0; i<result.docs.length; i++){
                                 var doc = result.docs[i];
                                 var test_id = doc._id
-                                //console.log(doc)
+                                console.log(doc)
                                 var row = $('<tr></tr>')
                                 row.attr("name", test_id)
                                 var id_cell = row.append( $('<td name="id"></td>').html(test_id) )
+                                var type_cell = row.append( $('<td></td>').html(doc.type) )
                                 if(doc.sample.name.user_defined){
                                     var sample_name = doc.sample.name.user_defined
                                 }else if(doc.sample.name.musfile_defined){
@@ -162,7 +163,7 @@ function getAllTests(){
                                 var analyse_cell =  $('<td></td>')
 
 
-                                analyse_cell.html("<a href='/tests/tmc/process?_id="+test_id+"'><i class='fa fa-table fa-2x'></i></a>")
+                                analyse_cell.html("<a href='/tests/tmc/process?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>")
                                 row.append( analyse_cell )
 
                                 var checkbox = $('<input class="form-control" type="checkbox" />').attr('name', test_id ).attr('id', test_id)
@@ -178,13 +179,13 @@ function getAllTests(){
                                 }
 
                                 row.append( compareCell )
-                                var edit_cell =  row.append($('<td></td>').html("<a href='/tests/tmc/edit?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>"))
+                                //var edit_cell =  row.append($('<td></td>').html("<a href='/tests/tmc/edit?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>"))
 
 
                                 var trash_cell = row.append( $('<td></td>').html("<i class='fa fa-trash fa-2x'></i>") )
                                 tableBody.append(row)
                             }
-
+                            currentTestTable.DataTable()
 
                         tableBody.find("i.fa-trash").on('click', function(){
                             var test_id = $(this).closest('tr').attr('name');
@@ -216,6 +217,12 @@ function getAllTests(){
                                 }
                             })
 
+
+
+
+
+
+
                             if(tests_to_compare.length == 2){
                                 initDeformMatrix()
                             }
@@ -229,7 +236,7 @@ function getAllTests(){
                                     var test = tests_to_compare[i];
                                     testString += "_id_"+ i+ "=" + test.id;
                                     console.log("Test data: " + test.id, test.sample, test.strainrate, test.temperature, test.analysed)
-                                    appendToMatrix(test.id, test.sample, test.strainrate, test.temperature, test.analysed)
+                                    appendToMatrix(test.id, test.sample, test.strainrate, test.temperature, test.analysed, test.yield_strength_02_mpa, test.ultimate_compressive_strength)
                                     if(i<tests_to_compare.length-1){
                                         testString += "&";
                                     }
@@ -302,6 +309,7 @@ function getSearchedTests(){
                                 var row = $('<tr></tr>')
                                 row.attr("name", test_id)
                                 var id_cell = row.append( $('<td></td>').html(test_id) )
+                                var type_cell = row.append( $('<td></td>').html(doc.type) )
                                 if(doc.sample.name.user_defined){
                                     var sample_name = doc.sample.name.user_defined
                                 }else if(doc.sample.name.musfile_defined){
@@ -332,6 +340,8 @@ function getSearchedTests(){
                                 var trash_cell = row.append( $('<td></td>').html("<i class='fa fa-trash fa-2x'></i>") )
                                 tableBody.append(row)
                             }
+
+
 
                             tableBody.find("i.fa-trash").on('click', function(){
                                 var test_id = $(this).closest('tr').attr('name');
@@ -389,23 +399,15 @@ function getSearchedTests(){
 
 
 function newTestForm(){
-    $('#dataInput').show()
-    var panel_body = $('#dataInput').find('div.panel-body').html('');
-
-
-    var dataInputForm = "<form id='testForm'><h3>Upload musfile</h3><div class='form-group'><div class='input-group col-md-12' id='typeDiv' hidden><label for='test_type'>Test type</label><select class='form-control' name='test_type'><option value='axi'>Axi Compression (Solid)</option><option value='powder'>Powder Axi Compression</option><option value='psc' disabled>Plane Strain Compression</option></select></div><div class='input-group col-md-12' id='sampleDiv' hidden><label for='sample_name'>Sample name</label><input type='test' class='form-control' name='sample_name' placeholder='Sample name'/></div><div class='form-group'><div class='input-group col-md-12' id='musfileDiv' hidden><label for='musfile'>Upload musfile</label><input type='file' class='form-control' name='musfile' placeholder='MUSfile' accept='text/*,.MUS,.mus'/></div><div class='form-group' ><div class='input-group'><div class='btn btn-md btn-default' id='newTest' onclick='newTestForm()' ><i class='fa fa-reset'></i> Reset</div><div class='btn btn-md btn-success' id='saveTest' onclick='saveTest()' hidden><i class='fa fa-save'></i> Save data</div><div class='alert' id='alert' hidden></div></div></div></form>"
-
-
-
-
-    panel_body.append(dataInputForm);
-
+    $('#dataInputForm').show()
+    $('#dataInputForm').find('input').val("")
     var testType = $('select[name="test_type"]')
 
     testType.on('change', function(){
+        $('#powderSelect').remove()
         var sampleName =  $('input[name="sample_name"]')
         switch( $(this).val() ){
-            case "axi":
+            case "Axi":
                 sampleName.show(200);
                 sampleName.on('input', function(){
                         $('#musfileDiv').show(200);
@@ -414,30 +416,12 @@ function newTestForm(){
                         })
                     })
             break;
-            case "powder":
+            case "Powder":
                 sampleName.hide();
-                var powders = getPowders();
-                console.log(powders)
-                var powderSelect = $("<select name='sample_name'></select>")
-                powderSelect.before('<label for="sample_name">Sample name</label>')
-                //testType.after()
-                for(var i=-1; i<powders.length;i++){
-                    if(i<0){
-                        powderSelect.append('<option disabled>Select powder</option>')
-                    }
-                    var powder = powders[i]
-                    var option = $('<option value="' + powder.id + '">'+ powder.name +'</option>')
-                    powderSelect.append(option)
-                }
-
-                powderSelect.on('change', function(){
-                        $('#musfileDiv').show(200)
-                        $('#musfileDiv').on('input', function(){
-                            $('#saveTest').show(200)
-                        })
-                })
+                getPowders();
             break;
-            case "psc":
+            case "PSC":
+                $('#powderSelect').remove()
                 sampleName.show()
                 sampleName.on('input', function(){
                         $('#musfileDiv').show(200)
@@ -468,14 +452,34 @@ function getPowders(){
             include_docs : true
             })
             .then(function(result){
-                console.log(result)
                 if(result.rows.length > 0){
+                    var powderSelect = $("<select name='powder_name' id='powderSelect' class='form-control'></select>")
+                    for(var i=0; i<result.rows.length;i++){
+                        if(i<0){
+                            powderSelect.append('<option disabled>Select powder</option>')
+                        }
+                        var powder = result.rows[i].doc
+                        //console.log(powder)
+                        var option = $('<option value="' + powder._id + '">'+ powder.name + " " + powder.supplier + " " + powder.psd_min  + " - " + powder.psd_max + ' µm'+'</option>')
+                        powderSelect.append(option)
+                    }
+                    powderSelect.on('change', function(){
+                            $('#musfileDiv').show(200)
+                            $('#musfileDiv').on('input', function(){
+                                $('#saveTest').show(200)
+                            })
+                    })
+
+                    $('#sampleDiv').append(powderSelect)
+
                     return result.rows
                 }
 
-            }).catch(
-                    console.log("Couldn't retrieve data from the database")
-            )
+
+            }).catch(function(err){
+                    console.log(err)
+
+            })
 
 }
 
@@ -495,8 +499,6 @@ function saveTest(){
             test = parseMusfile(data);
 
             test.created = moment().format("HH:mm:ss DD/MM/YYYY");
-
-            test.sample.name.user_defined = form.find('input[name="sample_name"]').val();
             test.type = form.find('select[name="test_type"]').val();
 
             test.tools = {
@@ -507,17 +509,28 @@ function saveTest(){
             test.musfile.file = data
 
             switch(test.type){
-                case "axi":
+                case "Axi":
                     test.hardness = {}
-                    test.sample.type = "solid"
+                    test.sample.type = "Solid"
+                    test.sample.name.user_defined = form.find('input[name="sample_name"]').val();
                 break;
-                case "powder":
-                    test.sample.type = "powder"
+                case "Powder":
+                    test.sample.type = "Powder"
+                    test.sample.id = $('#powderSelect').val()
+                    console.log($('#powderSelect'))
+                    test.sample.name.user_defined = $('#powderSelect').find(':selected').text()
                 break;
-                case "psc":
+                case "PSC":
                     test.hardness = {}
-                    test.sample.type = "solid"
+                    test.sample.type = "Solid"
+                    test.sample.name.user_defined = form.find('input[name="sample_name"]').val();
                 break;
+                default:
+                    test.sample.type = "Solid"
+                    test.sample.name.user_defined = form.find('input[name="sample_name"]').val();
+                break;
+
+
             }
 
 
@@ -528,12 +541,13 @@ function saveTest(){
                         .removeClass("alert-danger")
                         .addClass("alert-success")
                         .html("Saved test: <b> " + test._id + "</b>")
-                        .show(200)
+                        .fadeToggle(200)
                         .delay(2000)
-                        .hide(200)
+                        .fadeToggle(200)
+
+                    }).then(function(){
                         getAllTests();
-                    })
-                    .catch(function(err){
+                    }).catch(function(err){
                         console.log(err)
                         switch(err.status){
                         case 409:
@@ -547,9 +561,9 @@ function saveTest(){
                             .removeClass("alert-success")
                             .addClass("alert-danger")
                             .html(error_text)
-                            .show(200)
+                            .fadeToggle(200)
                             .delay(3000)
-                            .hide(200);
+                            .fadeToggle(200);
                     })
 
         }
@@ -614,16 +628,18 @@ function parseMusfile(data){
            testData.segments[ i-6 ] = segment
 
            var segment_pos = parseInt(segment["Position"].split(';')[0])
-           //console.log("Segment position = " + segment_pos)
-
-           if(segment_pos == 6){
-               var previous_segment = testData.segments[ i-7 ]
-               //console.log(previous_segment)
+           //console.log(segment)
+           var previous_segment = testData.segments[ i-7 ]
+           if(segment_pos == 6 && previous_segment){
+              //console.log(previous_segment)
                if(previous_segment["Start temperature"] == previous_segment["End temperature"] ){
                        var temperature = previous_segment["End temperature"].split(' ')[0]
                        //console.log(previous_segment["End temperature"].split(' ')[0])
                         testData.temperature = +temperature;
                    }
+               }
+               else{
+                   testData.temperature = 20.0
                }
        }
 
@@ -631,7 +647,7 @@ function parseMusfile(data){
        testData.mus_params = {}
        var corrected = parseFloat(mus_params[1].split('=')[1])
        var stiffness = mus_params[2].split('=')[1].split("\t")
-       console.log(corrected, stiffness)
+       //console.log(corrected, stiffness)
        if( corrected < 0 ){ // Test data is already compliance corrected by TMC control system
            testData.mus_params.corrected = { "tmc": true, "user": false }
            testData.mus_params.stiffness = { "value": parseFloat(stiffness[1]), "units": stiffness[2]}
@@ -677,9 +693,9 @@ function parseMusfile(data){
        var testdate = {};
        var datetime = rows[1].split('\t')[0] ;
        try {
-           console.log("Trying to parse date")
+           //console.log("Trying to parse date")
            datetime = moment(datetime, ['DD MMM YYYY HH:mm:ss','DD-MM-YYYY HH:mm']);
-           console.log("Date parsed successfully")
+           //console.log("Date parsed successfully")
 
        }
        catch(err){
@@ -799,7 +815,7 @@ function initDeformMatrix(){
 }
 
 
-function appendToMatrix(id, sample, strainrate, temperature, analysed){
+function appendToMatrix(id, sample, strainrate, temperature, analysed, yieldStress, ucs){
 
     if(analysed == "true"){
         var color = '#46f279';
@@ -808,16 +824,25 @@ function appendToMatrix(id, sample, strainrate, temperature, analysed){
         var color = '#e11';
     }
 
+    var yieldStress = yieldStress + " MPa" || "N/A"
+    var ucs = ucs + " MPa" || "N/A"
+
+
     var data = {
-        "x" : parseFloat(strainrate),
-        "y" : parseFloat(temperature),
-        "z" : 100,
-        "name": id,
-        "markerColor": color,
-        "markerType": 'square'
+        x : parseFloat(strainrate),
+        y : parseFloat(temperature),
+        z : 100,
+        name : id,
+        markerColor : color,
+        markerType : 'square',
+        indexLabel : yieldStress,
+        indexLabelPlacement : "inside",
+        indexLabelWrap : true,
+        indexLabelFontSize: 14
     }
     console.log(data)
     material_chart.data[0].dataPoints.push(data)
+
     material_chart.render();
 }
 

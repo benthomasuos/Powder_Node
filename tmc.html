@@ -151,11 +151,44 @@
 
 
     <div class="container-fluid col-md-3">
-        <div id="dataInput" class="panel panel-primary" hidden>
+        <div id="dataInputForm" class="panel panel-primary" hidden>
             <div class="panel-heading">
                 <h4>New Test <i style="float:right" class="fa fa-times" id="hideForm"></i></h4>
             </div>
             <div class="panel-body">
+                <form id='testForm'>
+                    <div class='form-group'>
+                        <div class='input-group col-md-12' id='typeDiv'>
+                            <label for='test_type'>Test type</label>
+                            <select class='form-control' name='test_type'>
+                                <option value='Axi'>Axi Compression (Solid)</option>
+                                <option value='Powder'>Powder Axi Compression</option>
+                                <option value='PSC' disabled>Plane Strain Compression</option>
+                            </select>
+                        </div>
+                        <div class='input-group col-md-12' id='sampleDiv'>
+                            <label for='sample_name'>Sample name</label>
+                            <input type='test' class='form-control' name='sample_name' placeholder='Sample name'/>
+                        </div>
+                        <div class='form-group'>
+                            <div class='input-group col-md-12' id='musfileDiv'>
+                                <label for='musfile'>MUSfile</label>
+                                <input type='file' class='form-control' name='musfile' placeholder='MUSfile' accept='text/*,.MUS,.mus'/>
+                            </div>
+                        </div>
+                        <div class='form-group' >
+                            <div class='btn-group btn-group-justified'>
+                                <div class='btn btn-md btn-default' id='newTest' onclick='newTestForm()' >
+                                    <i class='fa fa-refresh'></i> Reset
+                                </div>
+                                <div class='btn btn-md btn-success' id='saveTest' onclick='saveTest()' hidden>
+                                    <i class='fa fa-save'></i>   Save data
+                                </div>
+                            </div>
+                            <div class='alert' id='alert' style='width: 100%; text-align: center; font-size: 1.2em' hidden></div>
+                        </div>
+                    </form>
+
             </div>
         </div>
     </div>
@@ -175,15 +208,15 @@
         <table id="currentTests" class="table table-condensed table-hover">
             <thead>
                 <th>Test #</th>
+                <th>Type</th>
                 <th>Sample</th>
                 <th>Temperature (ºC)</th>
                 <th>Strain Rate (s<sup>-1</sup>)</th>
                 <th>Data points</th>
                 <th>Test date</th>
                 <th>Uploaded</th>
-                <th>Process</th>
+                <th>Analyse</th>
                 <th>Compare</th>
-                <th>Edit</th>
                 <th>Delete</th>
             </thead>
             <tbody>
@@ -232,6 +265,8 @@
 <script src="/js/pouchdb.find.js"></script>
 <script src="/js/papaparse.min.js" type="text/javascript"></script>
 <script src="/js/moment.js" type="text/javascript"></script>
+<script src="/js/jquery.datatables.min.js"></script>
+<script src="/js/dataTables.bootstrap.min.js"></script>
 <script src="/js/tmc.js" type="text/javascript"></script>
 </body>
 
