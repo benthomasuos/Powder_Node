@@ -159,7 +159,14 @@ function getAllTests(){
                                 var sr_cell = row.append( $('<td name="strainrate"></td>').html(+doc.strainrate) )
                                 var datapoints_cell = row.append( $('<td></td>').html(doc.measurements.length) )
                                 var testdate_cell = row.append( $('<td></td>').html( doc.testdate ) )
-                                var created_cell = row.append( $('<td></td>').html(doc.created) )
+                                if(doc.testNotes){
+                                    var notes_cell = row.append( $('<td></td>').html( "<i class='fa fa-navicon fa-2x'><span name='notes' hidden> " + doc.testNotes + "</i>" ) )
+                                }
+                                else{
+                                    var notes_cell = row.append( $('<td></td>').html(" ") )
+                                }
+
+
                                 var analyse_cell =  $('<td></td>')
 
 
@@ -235,7 +242,8 @@ function getAllTests(){
                                 for(var i=0;i<tests_to_compare.length;i++){
                                     var test = tests_to_compare[i];
                                     testString += "_id_"+ i+ "=" + test.id;
-                                    console.log("Test data: " + test.id, test.sample, test.strainrate, test.temperature, test.analysed)
+                                    console.log("Test data: " + test.id, test.sample, test.strainrate, test.temperature, test.analysed, test.yield_strength_02_mpa, test.ultimate_compressive_strength)
+
                                     appendToMatrix(test.id, test.sample, test.strainrate, test.temperature, test.analysed, test.yield_strength_02_mpa, test.ultimate_compressive_strength)
                                     if(i<tests_to_compare.length-1){
                                         testString += "&";
@@ -263,6 +271,30 @@ function getAllTests(){
                             $('#test_status').show()
 
                         }
+
+
+
+                        $('i').click( function(){
+                            var note = $(this).find('span').html()
+                            console.log(note)
+                            $('#noteModal').find('p').html(note)
+                            $('#noteModal').show()
+
+
+                        })
+
+
+                        $(window).click( function(event){
+                            console.log(event)
+                            if( event.target.nodeName == 'DIV' ){
+                                $('#noteModal').hide()
+                            }
+
+
+                        })
+
+
+
                         initialiseSearch()
 
             }).catch(
@@ -272,6 +304,11 @@ function getAllTests(){
 
 
 }
+
+
+
+
+
 
 
 function getSearchedTests(){
@@ -484,6 +521,14 @@ function getPowders(){
 }
 
 
+
+
+
+
+
+
+
+
 function saveTest(){
     var form = $('#testForm');
     var test = {}
@@ -682,7 +727,8 @@ function parseMusfile(data){
        var sample = {}
        sample.dimensions = {}
        sample.name= {}
-       sample.name.musfile_defined = testData.headers[3].split("=")[1].replace(/\s/g, "")
+       sample.name.musfile_defined
+
        sample.type = testData.headers[12].split("=")[1].replace(/\s/g, "")
        sample.material = testData.headers[13].split("=")[1].replace(/\s/g, "")
 
@@ -705,6 +751,9 @@ function parseMusfile(data){
        testData.testdate = datetime.format("HH:mm:ss DD/MM/YYYY")
 
        var test = sections[0].split('\n')
+
+       sample.name.musfile_defined = test[0].split('\t')[1]
+
        var columnHeaders = test[5].split('\t');
        //console.log(columnHeaders)
        for(i=0;i<columnHeaders.length;i++){
@@ -817,6 +866,7 @@ function initDeformMatrix(){
 
 function appendToMatrix(id, sample, strainrate, temperature, analysed, yieldStress, ucs){
 
+    console.log("Yield: ", yieldStress)
     if(analysed == "true"){
         var color = '#46f279';
     }
@@ -840,7 +890,7 @@ function appendToMatrix(id, sample, strainrate, temperature, analysed, yieldStre
         indexLabelWrap : true,
         indexLabelFontSize: 14
     }
-    console.log(data)
+    //console.log(data)
     material_chart.data[0].dataPoints.push(data)
 
     material_chart.render();
@@ -852,14 +902,19 @@ function getMaterialData(){
     var tests = material_chart.data[0].dataPoints.map(function(d){
         return d.name
     })
-    console.log(tests)
+    //console.log(tests)
     unique_strainrates = []
     unique_temperatures = []
     unique_strains = $('#strain_points').val().split('\n');
+    console.log(tests)
 
-    for(var i=0; i<tests.length; i++){
-        test_db.get(tests[i]
-        ).then(function(result){
+        test_db.allDocs({
+             keys: tests,
+             include_docs: true
+        }).then(function(result){
+            console.log(result)
+            for(var i=0; i<tests.length; i++){
+
             if(!unique_strainrates.find(result.strainrate)){
                 unique_strainrates.push(result)
             }
@@ -868,11 +923,15 @@ function getMaterialData(){
             }
             materialData.push(interpolateFlowStress(result))
 
+            }
+
+
+        }).then(function(){
 
         }).catch(function(err){
             console.log(err)
         })
-    }
+
 
 
 

@@ -2,6 +2,8 @@ var allGraphDivs = $('.graphDiv');
 var allControls = $('.controls');
 var plotAllTests = $('#plotAll');
 var currentTestTable = $('#currentTests');
+var currentPowder = "";
+
 var tableBody = currentTestTable.find("tbody");
 var graph = $('#graph');
 var graph_Parent = $('#graph_Parent');
@@ -37,8 +39,13 @@ var changesMade = false;
 //setup the in-memory database to save the uploaded flow stress data and saved fitted parameters
 
 
-var pouchdb = new PouchDB('flowstress')
-pouchdb.info().then(function (info) {
+var test_db_local = new PouchDB('flowstress')
+test_db_local.info().then(function (info) {
+  console.log(info);
+})
+
+var powder_db_local = new PouchDB('powders')
+powder_db_local.info().then(function (info) {
   console.log(info);
 })
 
@@ -47,7 +54,7 @@ pouchdb.info().then(function (info) {
         scrollTo('graph_2')
         var value = $(this).val();
         displacement_offset_range.val(value)
-        currentTest.zero_offset = value;
+        currentTest.zero_offset = parseFloat( value );
         calcDispOffset()
         changesMade = true
     })
@@ -56,7 +63,7 @@ pouchdb.info().then(function (info) {
         scrollTo('graph_2')
         var value = $(this).val();
         displacement_offset.val(value)
-        currentTest.zero_offset = value;
+        currentTest.zero_offset = parseFloat( value );
         calcDispOffset()
         changesMade = true
     })
@@ -65,8 +72,8 @@ pouchdb.info().then(function (info) {
         scrollTo('graph_1')
         var value = $(this).val();
         load_offset_range.val(value)
-        currentTest.load_offset = value;
-        calcLoadOffset(chart_raw.options.data[1].dataPoints) // Use the stiffness corrected raw data
+        currentTest.load_offset = parseFloat( value );
+        calcLoadOffset() // Use the stiffness corrected raw data
         changesMade = true
 
 
@@ -76,8 +83,8 @@ pouchdb.info().then(function (info) {
         scrollTo('graph_1')
         var value = $(this).val();
         load_offset.val(value)
-        currentTest.load_offset = value;
-        calcLoadOffset(chart_raw.options.data[1].dataPoints) // Use the stiffness corrected raw data
+        currentTest.load_offset = parseFloat( value );
+        calcLoadOffset() // Use the stiffness corrected raw data
         changesMade = true
     })
 
@@ -92,6 +99,7 @@ $(document).ready(function(){
     if(currentTest){
         console.log("Processing test: "+ currentTest)
         getSingleTest()
+
     }else{
         console.log("No test chosen")
         getAllTests()
@@ -134,8 +142,6 @@ function stopYieldCalculation(){
     processData(currentTest.measurements)
 
 }
-
-
 
 
 
@@ -287,7 +293,7 @@ function stopLinearCalculation(){
 
 function getSingleTest(){
     tableBody.html("");
-    pouchdb.get( currentTest , { attachments : true } )
+    test_db_local.get( currentTest , { attachments : true } )
             .then(function(doc){
                 currentTest = doc; // Load the data into the variable 'currentTest' to be used for all subsquent analysis work
                 console.log(doc)
@@ -311,6 +317,11 @@ function getSingleTest(){
                 $("#test_status").hide()
                 return doc
             }).then(function(){
+
+                    if(currentTest.type == "Powder"){
+                        getPowder()
+                    }
+
                     loadData()
 
                     if(currentTest.analysed == true){
@@ -326,66 +337,91 @@ function getSingleTest(){
 }
 
 
+function getPowder(){
+    powder_db_local.get( currentTest.sample.id )
+            .then(function(powder){
+                currentPowder = powder; // Load the data into the variable 'currentTest' to be used for all subsquent analysis work
+                console.log(powder)
+            }).then(function(){
+                loadPowder()
 
-
-
-function plotData(measurements){
-    processData(measurements)
-/*
-    plot_raw(measurements)
-    plot_temp(measurements)
-    plot_sr(measurements)
-    plot_stroke(measurements)
-    calculate_barrelling()
-    plot_stress()
-    */
+            }).catch(function(err){
+                    console.log(err)
+                    $('#test_status').show()
+            })
 }
 
 
+function loadPowder(){
+    $("#solid_density").val(currentPowder.density.solid)
+    $("#bulk_density").val(currentPowder.density.bulk)
+}
+
+
+/*
+$("#ram_diameter, #sample_mass").on("change", function(){
+    var area = Math.PI * ( $("#ram_diameter").val() / 2) ** 2
+    var start_vol = $("#bulk_density")
+
+})
+*/
+
 
 function saveData(){
-
-    $('input').each(function(){
-        if($(this).attr('name')){
-            var name = $(this).attr('name')
-            var value = $(this).val()
-            if($(this).attr('type') == "number"){
-                 value =  +$(this).val()
-                 //console.log(name, value)
-
-            }
-            else if( name.includes("h_") || name.includes("d_") && !name.includes("load")){
-                //console.log(name, value)
-                currentTest.sample.dimensions[name] = value;
-            }
-            else if (name == "sample_user"){
-                currentTest.sample.name.user_defined = value
-            }
-            else{
-                //console.log($(this).attr('name'), $(this).val())
-                localStorage[name] = value;
-                currentTest[name] = value;
-            }
+    $('textarea').each(function(){
+        if( $(this).attr('name')){
+            currentTest[$(this).attr('name')] = $(this).val();
         }
     })
 
 
 
+    $('input').each(function(){
+        if($(this).attr('name')){
+            var name = $(this).attr('name')
+            var value = $(this).val()
+            if($(this).attr('type') == "number" && !name.includes("h_") && !name.includes("d_")){
+                 //console.log("currentTest", name, value)
+                 currentTest[name] = parseFloat( value )
+            }
+            else if( name.includes("h_") || name.includes("d_") && !name.includes("load")){
+                //console.log("sample dimensions",name, value)
+                currentTest.sample.dimensions[name] = value;
+            }
+            else if(name.includes("load")){
+                //console.log("currentTest",name, value)
+                currentTest[name] = parseFloat( value )
+            }
+            if (name == "sample_user"){
+                currentTest.sample.name.user_defined = value
+            }
+                localStorage[name] = value;
+                currentTest[name] = value;
+
+        }
+    })
+
         var measurements = currentTest.measurements.map(function(d,i){
+            var stroke_corr = chart_stroke.options.data[2].dataPoints[i].x || null
+            var zero_corr = chart_stroke.options.data[1].dataPoints[i].x || null
             var disp_corr = chart_stroke.options.data[2].dataPoints[i].x || null
-            var load_corr = chart_raw.options.data[1].dataPoints[i].y || null
+            var load_corr = chart_raw.options.data[2].dataPoints[i].y || null
             var strainrate = chart_sr.options.data[0].dataPoints[i].y || null
-            var strain = chart_stress.options.data[2].dataPoints[i].x || null
+            var strain = chart_stress.options.data[1].dataPoints[i].x || null
+            var trueStress = chart_stress.options.data[0].dataPoints[i].y || null
             var fricStress = chart_stress.options.data[1].dataPoints[i].y || null
             var isoStress = chart_stress.options.data[2].dataPoints[i].y || null
+            d.stroke_corr = stroke_corr
+            d.zero_corr = zero_corr
             d.disp_corr = disp_corr
             d.load_corr = load_corr
-            d.strain = strain
             d.strainrate = strainrate
+            d.strain = strain
+            d.trueStress = trueStress
             d.fricStress = fricStress
             d.isoStress = isoStress
-            if(d.disp_corr && d.load_corr && d.strain && d.strainrate && d.fricStress){
-                console.log("Your test has been analysed fully. Well done!")
+            if(d.stroke_corr && d.zero_corr && d.disp_corr && d.load_corr && d.strain && d.trueStress && d.fricStress){
+                //console.log("Your test has been analysed fully. Well done!")
                 currentTest.analysed = true;
             }
 
@@ -396,10 +432,10 @@ function saveData(){
     console.log("Saved data")
     //console.log(currentTest)
 
-    pouchdb.get( currentTest._id ).then(function(doc) {
+    test_db_local.get( currentTest._id ).then(function(doc) {
             currentTest._rev = doc._rev
             //console.log(currentTest)
-            return pouchdb.put( currentTest );
+            return test_db_local.put( currentTest );
         }).then(function(response) {
             console.log(response);
         $('#saveData').html("Data saved OK").addClass('btn-success').delay(2000)
@@ -426,6 +462,11 @@ function saveData(){
 }
 
 function loadData(){
+    $('textarea').each(function(){
+        if( $(this).attr('name') && !$(this).text() ){
+            $(this).text(currentTest[$(this).attr('name')]);
+        }
+    })
 
     $('input').each(function(){
         if( $(this).attr('name') && !$(this).val()){
@@ -600,19 +641,19 @@ function calculateDimensions(){
 
     if(currentTest.sample.dimensions.av_h_initial){
         currentTest.sample.dimensions.h_hot_initial = hot_dimension(currentTest.sample.dimensions.av_h_initial, therm_ex_coeff, def_temp, 20)
-        $('#h_hot_initial').val(currentTest.sample.dimensions.h_hot_initial.toFixed(3) )
+        $('#h_hot_initial').val(currentTest.sample.dimensions.h_hot_initial.toFixed(3) || null)
     }
     if(currentTest.sample.dimensions.av_h_final){
         currentTest.sample.dimensions.h_hot_final = hot_dimension(currentTest.sample.dimensions.av_h_final, therm_ex_coeff, def_temp, 20)
-        $('#h_hot_final').val(currentTest.sample.dimensions.h_hot_final.toFixed(3) )
+        $('#h_hot_final').val(currentTest.sample.dimensions.h_hot_final.toFixed(3) || null )
     }
     if(currentTest.sample.dimensions.av_d_initial){
         currentTest.sample.dimensions.d_hot_initial = hot_dimension(currentTest.sample.dimensions.av_d_initial, therm_ex_coeff, def_temp, 20)
-        $('#d_hot_initial').val(currentTest.sample.dimensions.d_hot_initial.toFixed(3) )
+        $('#d_hot_initial').val(currentTest.sample.dimensions.d_hot_initial.toFixed(3)  || null)
     }
     if(currentTest.sample.dimensions.av_d_final){
         currentTest.sample.dimensions.d_hot_final = hot_dimension(currentTest.sample.dimensions.av_d_final, therm_ex_coeff, def_temp, 20)
-        $('#d_hot_final').val(currentTest.sample.dimensions.d_hot_final.toFixed(3) )
+        $('#d_hot_final').val(currentTest.sample.dimensions.d_hot_final.toFixed(3) || null )
     }
     if(currentTest.sample.dimensions.h_hot_initial && currentTest.sample.dimensions.d_hot_initial){
         vol_hot = currentTest.sample.dimensions.h_hot_initial * Math.PI * (currentTest.sample.dimensions.d_hot_initial/2) **2
@@ -663,6 +704,14 @@ function processData(data, callback) {
     calcStress()
     calcFricCorrStress()
     calcIsoStress()
+
+    if( currentTest.analysed == true){
+        $('#analysed_indicator').html("Test analysed")
+        $('#analysed_indicator').show()
+    }
+    else{
+        $('#analysed_indicator').hide()
+    }
 
 
     if( typeof callback == 'function'){
@@ -767,12 +816,10 @@ function smoothRawData(period){
 
 
 
-function calcLoadOffset(dataPoints){
-    var delta_load = load_offset.val()
-
-    chart_raw.options.data[2].dataPoints = dataPoints.map(function(d, i){
-        currentTest.measurements[i].load_corr = d.y - delta_load
-        return { "x": d.x, "y": d.y - delta_load , "label": d.label}
+function calcLoadOffset(){
+    chart_raw.options.data[2].dataPoints = chart_raw.options.data[1].dataPoints.map(function(d, i){
+        currentTest.measurements[i].load_corr = d.y - currentTest.load_offset
+        return { "x": d.x, "y": d.y - currentTest.load_offset , "label": d.label}
     })
 
 
@@ -787,28 +834,30 @@ function calcLoadOffset(dataPoints){
 
 
 function calcDispOffset(){
-    var dataPoints_uncorr = chart_stroke.options.data[1].dataPoints
-    var dataPoints_corr = chart_stroke.options.data[2].dataPoints
-    var delta_stroke = displacement_offset.val()
-    var delta_load = load_offset.val()
+    var dataPoints_uncorr = chart_stroke.options.data[0].dataPoints
+    // Calculate the zero offset displacements
+    var dataPoints_zero = dataPoints_uncorr.map(function(d, i){
+        var d_zero = d.x - currentTest.zero_offset
+        currentTest.measurements[i].zero_corr = d_zero
+        return { "x": d_zero, "y": d.y , "label": d.label}
+    })
     // Find the maximum value of displacement in the valid portion of the test data (typically at max load but check for excessive load cell noise in the raw data (zoom in on the graph!))
     var d_0_max = 0.0;
     var load_max = 0.0
     //console.log(dataPoints)
-    for(var i=0; i<dataPoints_corr.length;i++){
-        var this_disp = dataPoints_corr[i].x;
+    for(var i=0; i<dataPoints_zero.length;i++){
+        var this_disp = dataPoints_zero[i].x;
         //console.log(this_load)
         // If the latest load is higher than the currently stored on replace it
-        if(this_disp > d_0_max && dataPoints_corr[i].y < 0.0 ){
+        if(this_disp > d_0_max && dataPoints_zero[i].y < 0.0 ){
             d_0_max = this_disp
         }
     }
-    //console.log('d_0_max = '  +  d_0_max)
+    console.log('d_0_max = '  +  d_0_max)
     currentTest.d_0_max = d_0_max
 
-    chart_stroke.options.data[2].dataPoints = dataPoints_corr.map(function(d, i){
-
-        var d_corr = ( d.x ) * ( ( currentTest.sample.dimensions.h_hot_initial - currentTest.sample.dimensions.h_hot_final   )  / ( (d_0_max) ) )
+    chart_stroke.options.data[2].dataPoints = dataPoints_zero.map(function(d, i){
+        var d_corr = ( d.x  ) * ( ( currentTest.sample.dimensions.h_hot_initial - currentTest.sample.dimensions.h_hot_final   )  / ( (d_0_max) ) )
         currentTest.measurements[i].disp_corr = d_corr
         return { "x": d_corr, "y": d.y , "label": d.label}
     })
@@ -835,8 +884,7 @@ function calcStrain(){
 }
 
 function calcStrainRate(){
-    var heights = chart_stroke.options.data[2].dataPoints
-    chart_sr.options.data[0].dataPoints = heights.map(function(d, i){
+    chart_sr.options.data[0].dataPoints = chart_stroke.options.data[2].dataPoints.map(function(d, i){
         var height =  currentTest.sample.dimensions.h_hot_initial - d.x
         var velocity = currentTest.measurements[i].velocity_
         var strainrate = velocity / height
@@ -1071,7 +1119,13 @@ $(".panel-heading").not('.testData').on('click', function(){
          .hide(200)
 
     panel.children(":hidden")
-         .show(200)
+        .show(200)
+         if(currentTest.type == "Axi"){
+             $('div[name="Powder"]').hide()
+         }
+         else if(currentTest.type == "Powder"){
+             $('div[name="Axi"]').hide()
+         }
 
     if(changesMade){
         processData(currentTest.measurements)
@@ -1201,9 +1255,11 @@ function plot_raw(data) {
                 }
                 if(d.load_corr){
                     var load = d.load_corr
+                    console.log("using corrected load")
                 }
                 else{
                     var load = d.load
+                    console.log("using normal load")
                 }
                 return {"x": d.displacement , "y": load , "label": "Load corrected" }
             })
@@ -1290,10 +1346,22 @@ function plot_raw(data) {
                showInLegend: true,
                name: "Raw Data",
                color: "#333",
-               toolTipContent: "Height: {x} mm, Strain rate: {y} /s",
+               toolTipContent: "Displacement: {x} mm, Strain rate: {y} /s",
                dataPoints: data.map(function(d){
-
-                   return {"x": d.displacement , "y": d.strainrate, "label": "Raw" }
+                   if(!d.disp_corr){
+                       var disp = 0.0
+                       d.strainrate = null
+                   }
+                   else{
+                       var disp = d.displacement
+                   }
+                   if(d.strainrate < 0){
+                       var strainrate = null
+                   }
+                   else{
+                       var strainrate = d.strainrate
+                   }
+                   return {"x": disp , "y": strainrate, "label": "Strain rate" }
                })
            }]
        });
@@ -1368,7 +1436,9 @@ function plot_raw(data) {
             labelFontColor: "#000",
             titleFontColor: "#000",
             lineThickness: 1,
-            reversed:  true
+            reversed:  true,
+            viewportMaximum: 0.0
+
         },
            data:[
            {
@@ -1403,8 +1473,14 @@ function plot_raw(data) {
                    else{
                        var load = 0
                    }
+                   if(d.disp_corr){
+                       var zero_corr  = d.zero_corr
+                   }
+                   else{
+                       var zero_corr = currentTest.sample.dimensions.h_hot_initial - d.displacement - currentTest.zero_offset
+                   }
 
-                   return {"x": currentTest.sample.dimensions.h_hot_initial - d.displacement - currentTest.zero_offset , "y": load, "label": "Stroke-offset" }
+                   return {"x": zero_corr  , "y": load, "label": "Stroke-offset" }
                })
            },
            {
@@ -1742,11 +1818,12 @@ function calcNonComplianceLoad(compliance_data){
 function calcComplianceLoad(compliance_data){
     //console.log("Using compliance data: ", compliance_data)
     var stiffness = compliance_data.value
-    var non_loads = currentTest.measurements.map((d, i) => {
+    var loads = currentTest.measurements.map((d, i) => {
         var disp = d.displacement  + ( d.load / stiffness)
+
         return {"x": disp , "y": d.load}
         })
-    chart_raw.options.data[1].dataPoints = non_loads
+    chart_raw.options.data[1].dataPoints = loads
     chart_raw.render()
 
 }
