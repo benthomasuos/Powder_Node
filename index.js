@@ -128,10 +128,6 @@ app.get('/powders/edit',function(req, res){
 
 
 app.use(express.static("static"));
-app.use(session({ secret: "cycling cats" }));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(passport.initialize());
-app.use(passport.session());
 app.use(favicon( __dirname + '/static/images/star-icon.png'));
 
 

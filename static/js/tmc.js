@@ -96,24 +96,10 @@ function initialiseSearch(){
     }).then(function(result){
         console.log(result)
                 if(result.rows.length > 0 ){
-
-                    for(i=0; i<result.rows.length; i++){
-                            var doc = result.rows[i].doc;
-                            if(!doc.language){  // Don't include any index documents
-                                //console.log(doc);
-                                var option = $("<option></option>");
-                                option
-                                    .html(doc.sample.name.user_defined)
-                                    .val(doc.sample.name.user_defined)
-                                samples.append(option)
-                            }
-
-                            }
-
+                    populateSearch(result.rows)
                         }
                         else{
                             $('#test_status').show()
-
                         }
 
             }).catch(
@@ -121,6 +107,74 @@ function initialiseSearch(){
             )
 
 }
+
+
+
+function populateSearch(tests){
+    let samples = []
+    let temperatures = []
+    let strainrates = []
+    let test_types = []
+    let operator = []
+
+    for(i=0; i<tests.length; i++){
+            var doc = tests[i].doc;
+            if(!doc.language){  // Don't include any index documents
+                //console.log(doc);
+                if(doc.sample.name.user_defined){
+                    samples.push(doc.sample.name.user_defined)
+                }
+                else{
+                    samples.push(doc.sample.name.musfile_defined)
+                }
+                temperatures.push(parseFloat(doc.temperature))
+                strainrates.push(parseFloat(doc.strainrate))
+                test_types.push(doc.type)
+                operator.push(doc.operator)
+
+
+            //    var option = $("<option></option>");
+                //option
+                //    .html(doc.sample.name.user_defined)
+                //    .val(doc.sample.name.user_defined)
+                //samples.append(option)
+            }
+
+        }
+        samples = uniqueValues(samples)
+        temperatures = uniqueValues(temperatures)
+        strainrates = uniqueValues(strainrates)
+        test_types = uniqueValues(test_types)
+        operator = uniqueValues(operator)
+
+
+        console.log(samples)
+        console.log(temperatures)
+        console.log(strainrates)
+        console.log(test_types)
+        console.log(operator)
+
+        samples.forEach(function(d, i){
+            var option = $("<option></option>");
+                option
+                    .html(d)
+                    .val(d)
+                $('#samples').append(option)
+        })
+
+
+}
+
+function uniqueValues(SOURCE){
+    let result = [];
+
+    for (let index = 0; index < SOURCE.length; index++) {
+          let el = SOURCE[index];
+          if (result.indexOf(el) === -1) result.push(el);
+    }
+    return result
+}
+
 
 function getAllTests(){
     samples.find('option:selected').removeAttr("selected");
@@ -171,6 +225,8 @@ function getAllTests(){
 
 
                                 analyse_cell.html("<a href='/tests/tmc/process?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>")
+                                analyse_cell.css('float', 'left')
+
                                 row.append( analyse_cell )
 
                                 var checkbox = $('<input class="form-control" type="checkbox" />').attr('name', test_id ).attr('id', test_id)
@@ -178,10 +234,15 @@ function getAllTests(){
                                 if(doc.analysed == true){
                                     analyse_cell.find('i').css('color', 'green')
                                     analyse_cell.attr('name' ,'analysed_true')
+                                    var downloadLink = $("<a href='#'><i class='fa fa-download fa-2x'></i></a>")
+                                    prepareDownload(doc, downloadLink)
+                                    downloadLink.css('margin-left', '8px')
+                                    analyse_cell.append(downloadLink)
+
 
                                 }
                                 else{
-                                    analyse_cell.find('i').css('color', 'red')
+                                    analyse_cell.find('i').css('color', 'lightgray')
                                     analyse_cell.attr('name' ,'analysed_false')
                                 }
 
@@ -643,6 +704,36 @@ function removeTest(test_id){
 
 
 
+
+
+function prepareDownload(test, downloadBtn){
+    console.log("Preparing download for test " + test._id + ". Please wait...")
+    let data = []
+
+    data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), True Strain (mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
+
+    for(var i=0; i<test.measurements.length; i++){
+        var point = test.measurements[i]
+            data.push(point.disp_corr + "," + point.stroke_corr + "," + point.load_corr + "," + point.strain + "," + point.trueStress + "," + point.fricStress + "," + point.isoStress + "\r\n")
+    }
+
+    data.join()
+
+    var blob = new Blob(data, {type: "text/.txt"});
+
+    var url = URL.createObjectURL(blob);
+
+    downloadBtn.attr('href', url )
+    downloadBtn.attr('download', test._id + "_analysed_data.txt" )
+
+    console.log("Download is ready for test " + test._id)
+}
+
+
+
+
+
+
 function parseMusfile(data){
        var testData = {};
 
@@ -655,7 +746,7 @@ function parseMusfile(data){
        testData.batchinfo = sections[4].split('\n').splice(0);
        testData.conf_segs = sections[5].split('\n').splice(0);
        testData.segments = {};
-       testData.temperature = 20.0
+       //testData.temperature = 20.0
        for(i=6;i<sections.length-2;i++){
            var segment = {}
            var segment_rows = sections[i].split("]")[1].split("\n")
@@ -679,13 +770,16 @@ function parseMusfile(data){
               //console.log(previous_segment)
                if(previous_segment["Start temperature"] == previous_segment["End temperature"] ){
                        var temperature = previous_segment["End temperature"].split(' ')[0]
-                       //console.log(previous_segment["End temperature"].split(' ')[0])
+                       console.log(previous_segment["End temperature"].split(' ')[0])
                         testData.temperature = +temperature;
                    }
+                   else{
+                       console.log("Using default temperature of 20ºC")
+                       testData.temperature = 20.0
+                   }
+
                }
-               else{
-                   testData.temperature = 20.0
-               }
+
        }
 
        var mus_params = sections[3].split("\n").splice(0)

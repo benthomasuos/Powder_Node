@@ -91,14 +91,15 @@ td + i.fa-trash:hover{
 
 #buttonFooter {
 
-    background-color: #222;
+    background-color: #dadada;
     position: fixed;
     right: 0;
     bottom: 0;
     height: 50px;
     width: 40%;
+    float:right;
     padding-top: 10px;
-    padding-left: 40px;
+    padding-left: 10px;
     overflow: hidden;
     z: 900;
 }
@@ -350,13 +351,12 @@ a ~ .nav-tile {
     background-color: #fff;
     border: solid grey 1px;
     z-index: 999;
-
 }
 
 
 .testHeader {
     position: fixed;
-    width: 60%;
+    width: 57%;
     height: 120px;
     margin-left: -20px;
     float:left;
@@ -365,13 +365,10 @@ a ~ .nav-tile {
     background-color: #fff;
     padding-top: 10px;
     border-bottom: 1px solid #dadada
-
-
 }
 
 
 .header_input {
-    font-size: 1.2em;
+    font-size: 1em;
     height: 30px;
-
 }

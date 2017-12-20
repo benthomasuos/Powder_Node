@@ -28,6 +28,7 @@ var chart_3 = "";
 var chart_stress = "";
 var chart_sr = "";
 
+var currentlyScrollingTo = ""
 
 
 var currentTest = "";
@@ -178,10 +179,19 @@ function startYieldCalculation(){
 
         chart_options.data[4].dataPoints.push( { "x": x , "y": y})
 
-        var stresses = Array.from( chart_options.data[1].dataPoints, d => +d.y || 0.0 )
-        console.log( stresses )
-        currentTest.compressive_strength = Math.max(stresses)
+        var max_stress = 0.0
+        var strain_at_max_stress = 0.0
+        var stresses = chart_options.data[1].dataPoints.map( function(d, i){
+            if( d.y > max_stress ){
+                max_stress = d.y
+                strain_at_max_stress = d.x
+            }
+        })
 
+        currentTest.compressive_strength = max_stress.toFixed(1)
+        chart_options.data[5] = {type:"scatter",dataPoints: [{ x: strain_at_max_stress, y: max_stress }]}
+
+        //console.log(chart_options)
 
 
 
@@ -192,7 +202,7 @@ function startYieldCalculation(){
             currentTest.yield_strength_02_mpa = e.dataPoint.y.toFixed(2)
             chart_options.data[1].click  = null
             stopYieldCalculation()
-            $('#yieldCalcMsg').html('Yield calculation finished<br>Youngs Modulus:  ' + (m / 1000.0).toFixed(2) + ' GPa<br>Yield stress:  ' + (e.dataPoint.y).toFixed(2) + ' MPa<br>Ultimate compressive strength:  ' + currentTest.compressive_strength + ' MPa')
+            $('#yieldCalcMsg').html('Yield calculation finished<br>Youngs Modulus:  ' + (m / 1000.0).toFixed(1) + ' GPa<br>Yield stress:  ' + (e.dataPoint.y).toFixed(1) + ' MPa<br>Ultimate compressive strength:  ' + currentTest.compressive_strength + ' MPa')
         }
 
 
@@ -440,7 +450,7 @@ function saveData(){
             console.log(response);
         $('#saveData').html("Data saved OK").addClass('btn-success').delay(2000)
         .queue(function(n) {
-               $(this).html("Save Data");
+               $(this).html("<i class='fa fa-save'></i>  Save Data");
                $(this).removeClass('btn-success')
                n();
            })
@@ -745,20 +755,24 @@ function calculate_barrelling(){
 
 function prepareDownload(){
     console.log("Preparing download. Please wait...")
+    var loadDispPoints = chart_raw.options.data[2].dataPoints
+    var loadStrokePoints = chart_stroke.options.data[2].dataPoints
     var isoDataPoints = chart_stress.options.data[2].dataPoints
     var fricDataPoints = chart_stress.options.data[1].dataPoints
     var rawDataPoints = chart_stress.options.data[0].dataPoints
     //console.log(dataPoints)
     var data = []
-    data[0] = "True Strain (mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
+    data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), True Strain (mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
     //console.log("Data length = " + isoDataPoints.length + ",  " + fricDataPoints.length+ ",  " + rawDataPoints.length)
 
     for(var i=0; i<fricDataPoints.length; i++){
+        var loadDispPoint = loadDispPoints[i]
+        var loadStrokePoint = loadStrokePoints[i]
         var isoPoint = isoDataPoints[i]
         var fricPoint = fricDataPoints[i]
         var rawPoint = rawDataPoints[i]
         if(rawPoint.x && rawPoint.y >= 0.0 && fricPoint.y >= 0.0 && rawPoint.x >= 0.0){
-            data.push(rawPoint.x + "," + rawPoint.y + "," + fricPoint.y + "," + isoPoint.y + "\r\n")
+            data.push(loadDispPoint.x + "," + loadStrokePoint.x + "," + loadStrokePoint.y + "," + rawPoint.x + "," + rawPoint.y + "," + fricPoint.y + "," + isoPoint.y + "\r\n")
     //        console.log(point)
         }
     }
@@ -847,9 +861,9 @@ function calcDispOffset(){
     //console.log(dataPoints)
     for(var i=0; i<dataPoints_zero.length;i++){
         var this_disp = dataPoints_zero[i].x;
-        //console.log(this_load)
-        // If the latest load is higher than the currently stored on replace it
-        if(this_disp > d_0_max && dataPoints_zero[i].y < 0.0 ){
+
+        // If the latest load is higher than the currently stored on replace it. Double check that any wierd outlying data doesn't mess up this automatic detection
+        if(this_disp > d_0_max && this_disp < currentTest.sample.dimensions.av_h_initial &&  dataPoints_zero[i].y < 0.0 ){
             d_0_max = this_disp
         }
     }
@@ -1756,15 +1770,25 @@ $('#stiffness').on('change', function(){
 
 
 function scrollTo(div){
-    console.log("Scrolling to: "+ div)
-    var element = $('#' + div )
-     $('html,body').animate({scrollTop: element.offset().top - 180},'fast');
-     var parent = element.parent() // div.well
-     parent.css("background-color", "#f33").delay(2000)
-                     .queue(function(n) {
-                            $(this).css("background-color", "#eee");
-                            n();
-                        })
+
+    if( div != currentlyScrollingTo ){
+        console.log("Scrolling to: "+ div)
+        currentlyScrollingTo = div
+
+        var element = $('#' + div )
+         $('html,body').animate({scrollTop: element.offset().top - 180},'fast');
+         var parent = element.parent() // div.well
+         parent.css("background-color", "#f33").delay(2000)
+                         .queue(function(n) {
+                                $(this).css("background-color", "#eee");
+                                n();
+                            })
+
+    }
+    else{
+        console.log("Already there... no need to scroll further")
+    }
+
 
 }
 
