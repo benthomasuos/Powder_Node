@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" media="screen" href='/css/font-awesome.min.css'>
+    <link rel="stylesheet" media="screen" href='/css/metro-bootstrap.css'>
+    <link rel="stylesheet" href = "/css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <script src='/js/jquery2_1_4.js' type='text/javascript'></script>
+    <script src='/js/bootstrap.min.js' type='text/javascript'></script>
+
+    <title> Flow Stress Fitting - Web app</title>
+
+</head>
+<body>
+
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/"><img src="/images/mapp_logo.png" width="60px" /></a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+              <li><a href="/powders"><i class="fa fa-chart"></i>  Powders</a></li>
+              <li><a href="/tests/fast"><i class="fa fa-chart"></i>  FAST</a></li>
+              <li><a href="/tests/tmc"><i class="fa fa-chart"></i>  TMC Tests</a></li>
+              <li><a href="/tests/aspshear"><i class="fa fa-chart"></i>  ASP Shear</a></li>
+              <li><a href="/tests/orthogonal"><i class="fa fa-chart"></i>  Orthogonal Cutting</a></li>
+              <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">Conform
+                      <span class="caret"></span>
+                  </a>
+                  <ul class="dropdown-menu">
+                      <li><a href="/tests/conform">Main  <i class="fa fa-chart"></i></a></li>
+                      <li><a href="/models/conform">Process model  <i class="fa fa-gear"></i></a> </li>
+                  </ul>
+              </li>
+
+
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+              <li><a href="https://github.com/benthomasuos/Powder_Node/issues"><i class="fa fa-github"></i> Report a bug/issue</a></li>
+            <li><a href="/account" disabled><i class="fa fa-user-circle"></i> My account</a></li>
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+
+
+
+
+
+<div class="container-fluid col-md-12">
+
+        <div class="testHeader">
+            <div id="test_status" class="alert alert-warning" hidden>No test data available to show</div>
+            <div class="panel-body">
+                <table id="currentTests" class="table table-condensed">
+                    <thead>
+                        <th>Test ID #</th>
+                        <th>User sample</th>
+                        <th>MUSFILE sample</th>
+                        <th>Temperature (ºC)</th>
+                        <th>Strain Rate (s<sup>-1</sup>)</th>
+                    </thead>
+                    <tbody style="font-size: 1.2em">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+<div class="container-fluid col-md-7 col-sm-6 col-xs-12" style="top:120px">
+
+
+<div class="container-fluid well">
+    <div class="container-fluid col-md-12" id="graph_1_Parent" style="float:left;">
+        <div class="graphDiv" id="graph_1" style="height: 600px"></div>
+    </div>
+    <div class="container-fluid col-md-12" id="graph_temp_Parent" style="float:left;">
+        <div class="graphDiv" id="graph_temp" style="height: 600px"></div>
+    </div>
+    <div class="container-fluid col-md-12" id="graph_sr_Parent" style="float:left;" hidden>
+        <div class="graphDiv" id="graph_sr" style="height: 600px"></div>
+    </div>
+</div>
+
+<div class="container-fluid well">
+    <div class="container-fluid col-md-12" id="graph_2_Parent" style="float:left;">
+        <div class="graphDiv" id="graph_2" style="height: 600px"></div>
+    </div>
+</div>
+
+<div class="container-fluid well">
+    <div class="container-fluid col-md-12" id="graph_4_Parent" style="float:left;">
+        <div class="graphDiv" id="graph_4" style="height: 600px"></div>
+    </div>
+</div>
+<div class="container-fluid well" hidden>
+    <div class="container-fluid col-md-12" id="graph_density_Parent" style="float:left;">
+        <div class="graphDiv" id="graph_density" style="height: 600px"></div>
+    </div>
+</div>
+
+<div style="width:100%; height: 100px; float:left"></div>
+
+</div>
+
+
+    <div class="container-fluid col-md-5 col-sm-6 col-xs-12 settingsDiv" id="settingsDiv" style="float:right; bottom: 80px; overflow: scroll">
+        <div class="alert alert-success" id="analysed_indicator" style="text-align: center; font-size: 1.5em; position: static; top:100px;" hidden></div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4><b> Notes</b><i style="float:right" class="fa fa-navicon"></i></h4>
+            </div>
+            <div class="panel-body" hidden>
+                <textarea class="form-control" rows="5" id="testNotes" name="testNotes" style='resize: none'></textarea>
+            </div>
+        </div>
+
+
+
+
+    <div class="panel panel-default" id="testData">
+        <div class="panel-heading">
+            <h4><b>1.   Test data</b><i style="float:right" class="fa fa-caret-up"></i></h4>
+        </div>
+        <div class="panel-body">
+
+            <form class="form" id="sampleMaterial_form">
+
+                <div class="form-group" id="constants">
+                    <h5>Constants</h5>
+                    <div class="input-group" hidden>
+                        <span class="input-group-addon">R</span>
+                        <input name="gas_constant" id="gas_constant" type="number" class="form-control" disabled/>
+                        <span class="input-group-addon">J K<sup>-1</sup> mol<sup>-1</sup></span>
+                    </div>
+
+                    <div class="input-group">
+                        <span class="input-group-addon">T<sub>Def</sub></span>
+                        <input name="deformation_temperature" id="deformation_temperature" type="number" class="form-control" min=0.0 />
+                        <span class="input-group-addon"><b>ºC</b></span>
+                    </div>
+
+                    <div class="input-group">
+                        <span class="input-group-addon">Thermal exp.</span>
+                        <input name="thermal_expansion" id="thermal_expansion" type="number" class="form-control" />
+                        <span class="input-group-addon"><b>% / ºC</b></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon">Machine stiffness</span>
+                        <select name="stiffness" id="stiffness" class="form-control"></select>
+                    </div>
+
+                    <div class="well" id="stiffness_corr"></div>
+
+
+                </div>
+
+
+                <div class="form-group">
+                    <div class="well">
+                        <h4>Load offset</h4>
+                        <div class="input-group">
+                            <input type="range" class="form-control"  id="load_offset_range" min="-3.0" max="3.0" step="0.001" style="width:60%"/>
+                            <input type="number" class="form-control" id="load_offset" name="load_offset" placeholder="Load offset" min="-1.0" max="1.0" step="0.001" />
+                            <span class="input-group-addon">kN</span>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+            </form>
+
+        </div>
+    </div>
+
+
+<div class="panel panel-default" id="sampleData">
+    <div class="panel-heading">
+        <h4><b>2.   Sample data</b><i style="float:right" class="fa fa-caret-up"></i></h4>
+    </div>
+    <div class="panel-body" name="Axi" hidden>
+
+            <form class="form" id="sampleDimensions_form">
+
+                <div class="form-group" id="initialDimensions">
+                    <h4>Initial dimensions</h4>
+                    <h5>Height</h5>
+                    <div class="input-group">
+                        <span class="input-group-addon">h1</span>
+                        <input name="h_initial_1" id="h_initial_1" type="number" class="form-control" min=0.0 max=20.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                        <span class="input-group-addon">h2</span>
+                        <input name="h_initial_2" id="h_initial_2"type="number" class="form-control" min=0.0 max=20.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">h3</span>
+                        <input name="h_initial_3" id="h_initial_3" type="number" class="form-control" min=0.0 max=20.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                        <span class="input-group-addon">h4</span>
+                        <input name="h_initial_4" id="h_initial_4" type="number" class="form-control" min=0.0 max=20.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+
+
+                    <h5>Diameter</h5>
+                    <div class="input-group">
+                        <span class="input-group-addon">d1</span>
+                        <input name="d_initial_1" id="d_initial_1" type="number" class="form-control" min=0.0 max=15.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                        <span class="input-group-addon">d2</span>
+                        <input name="d_initial_2" id="d_initial_2"type="number" class="form-control" min=0.0 max=15.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">d3</span>
+                        <input name="d_initial_3" id="d_initial_3" type="number" class="form-control" min=0.0 max=15.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                        <span class="input-group-addon">d4</span>
+                        <input name="d_initial_4" id="d_initial_4" type="number" class="form-control" min=0.0 max=15.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                </div>
+                <input name="av_h_initial" id="av_h_initial" type="number" hidden/>
+                <input name="av_d_initial" id="av_d_initial" type="number" hidden/>
+
+                <div class="form-group" id="finalDimensions">
+                    <h4>Final dimensions</h4>
+                    <h5>Height</h5>
+                    <div class="input-group">
+                        <span class="input-group-addon">h5</span>
+                        <input name="h_final_5" id="h_final_5" type="number" class="form-control"  min=0.0 max=20.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                        <span class="input-group-addon">h6</span>
+                        <input name="h_final_6" id="h_final_6"type="number" class="form-control"  min=0.0 max=20.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">h7</span>
+                        <input name="h_final_7" id="h_final_7" type="number" class="form-control"  min=0.0 max=20.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                        <span class="input-group-addon">h8</span>
+                        <input name="h_final_8" id="h_final_8" type="number" class="form-control"  min=0.0 max=20.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+
+                    <h5>Diameter</h5>
+                    <div class="input-group">
+                        <span class="input-group-addon">d5</span>
+                        <input name="d_final_5" id="d_final_5" type="number" class="form-control"  min=0.0 max=15.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                        <span class="input-group-addon">d6</span>
+                        <input name="d_final_6" id="d_final_6"type="number" class="form-control"  min=0.0 max=15.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">d7</span>
+                        <input name="d_final_7" id="d_final_7" type="number" class="form-control"  min=0.0 max=15.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                        <span class="input-group-addon">d8</span>
+                        <input name="d_final_8" id="d_final_8"type="number" class="form-control"  min=0.0 max=15.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="form-group" id="hotDimensions">
+                        <h4>Hot dimensions</h4>
+                        <div class="input-group">
+                            <span class="input-group-addon">h_i</span>
+                            <input name="h_hot_initial" id="h_hot_initial" type="number" class="form-control" disabled/>
+                            <span class="input-group-addon">mm</span>
+                            <span class="input-group-addon">h_f</span>
+                            <input name="h_hot_final" id="h_hot_final"type="number" class="form-control"  disabled/>
+                            <span class="input-group-addon">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-addon">d_i</span>
+                            <input name="d_hot_initial" id="d_hot_initial" type="number" class="form-control" disabled/>
+                            <span class="input-group-addon">mm</span>
+                            <span class="input-group-addon">d_f</span>
+                            <input name="d_hot_final" id="d_hot_final"type="number" class="form-control"  disabled/>
+                            <span class="input-group-addon">mm</span>
+                        </div>
+
+                    </div>
+
+
+                    <div style="height:30px; width: 100%"></div>
+                    <div class="input-group" style="margin: auto; max-width: 300px">
+                        <span class="input-group-addon">Barrel ratio</span>
+                        <input name="barrel_ratio" id="barrel_ratio" type="number" class="form-control" style="color:#fff; font-size: 1.2em; text-align: center" disabled/>
+                        <span class="input-group-addon" id="test_validity" style="min-width:100px"></span>
+                    </div>
+                </div>
+                <input name="av_h_final" id="av_h_final" type="number" hidden/>
+                <input name="av_d_final" id="av_d_final" type="number" hidden/>
+            </form>
+
+
+
+        </div>
+
+
+
+
+    <div class="panel-body" name="Powder" hidden>
+
+            <form class="form" id="sampleDimensions_form">
+
+                <div class="form-group" >
+                    <h4>Tool dimensions</h4>
+                    <div class="input-group">
+                        <span class="input-group-addon">Ram diameter</span>
+                        <input name="ram_diameter" id="ram_diameter" type="number" class="form-control" min=0.0 max=20.0 step=0.01 value=6.5 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                </div>
+                <div class="form-group" >
+                    <h4>Sample</h4>
+                    <div class="input-group">
+                        <span class="input-group-addon">Mass</span>
+                        <input name="sample_mass" id="sample_mass" type="number" class="form-control" min=0.0 max=20.0 step=0.01 />
+                        <span class="input-group-addon">g</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Solid density</span>
+                        <input name="solid_density" id="solid_density"type="number" class="form-control" min=0.0 max=20.0 step=0.01 disabled/>
+                        <span class="input-group-addon">g cm<sup>-3</sup></span>
+                        <span class="input-group-addon">Packing density</span>
+                        <input name="bulk_density" id="bulk_density"type="number" class="form-control" min=0.0 max=20.0 step=0.01 disabled/>
+                        <span class="input-group-addon">g cm<sup>-3</sup></span>
+                    </div>
+                </div>
+                <div class="form-group" >
+                    <div class="input-group">
+                        <span class="input-group-addon">Expected initial height</span>
+                        <input name="exp_initial_height" id="exp_initial_height" type="number" class="form-control" min=0.0 max=50.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Expected final height</span>
+                        <input name="exp_final_height" id="exp_final_height" type="number" class="form-control" min=0.0 max=50.0 step=0.01 />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+
+                </div>
+
+
+
+
+            </form>
+
+
+
+        </div>
+
+
+    </div>
+
+
+
+
+    <div class="panel panel-default" id="origin_corr">
+        <div class="panel-heading">
+            <h4><b>3.   Origin correction</b><i style="float:right" class="fa fa-caret-down"></i></h4>
+        </div>
+        <div class="panel-body" hidden>
+            <form class="form" id="origin_corr_form">
+
+                <div style="display: none !important;">
+                    <h4 for="sampling_period" >Data smoothing</h4>
+                    <div class="input-group" >
+                        <input type="range" class="form-control" id="sampling_period" name="sampling_period" placeholder="Sampling period" min="1" max="100" step="1" value="1" hidden/>
+                        <span id="samplingNum" class="input-group-addon" hidden>Samples</span>
+                    </div>
+                </div>
+
+
+
+
+
+
+                <div class="well">
+                    <h4>Displacement offset</h4>
+                    <div class="container-fluid">
+                        <div style="margin-bottom: 10px;">
+                            <div id="startLinear" class="btn btn-lg btn-success ">Start</div>
+                            <div id="stopLinear" class="btn btn-lg btn-danger " disabled>Stop</div>
+                        </div>
+                        <div id="linearCalcMsg" class="well" style="background-color: #fff; min-height: 100px"></div>
+                    </div>
+
+                <div id="manualDiv" class="container-fluid">
+                    <h4>Manual displacement offset</h4>
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="displacement_offset" name="displacement_offset" placeholder="Displacement offset" min="-3.0" max="3.0" step="0.001" />
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group" style="width:100%">
+                        <input type="range" class="form-control"  id="displacement_offset_range" min="-20.0" max="20.0" step="0.001" style="width:90%"/>
+                    </div>
+                </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+
+    <div class="panel panel-default" id="fric_correction">
+        <div class="panel-heading">
+            <h4><b>4.   Friction correction</b><i style="float:right" class="fa fa-caret-down"></i></h4>
+        </div>
+        <div class="panel-body" hidden>
+            <form class="form" id="fric_correction_form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <label class="radio-inline"><input type="radio" name="optradio" box="linear_fric" >Linear</label>
+                        <label class="radio-inline"><input type="radio" name="optradio" box="bilinear_fric" checked="checked">Bilinear</label>
+                        <label class="radio-inline"><input type="radio" name="optradio" box="pressure_fric" disabled>Pressure dependant</label>
+                    </div>
+                </div>
+
+                <div class="form-group" name="friction">
+                    <div id="linear_fric" class="fricDiv" hidden>
+                        <div class="input-group">
+                            <span class="input-group-addon"><span style="text-decoration: overline">m</span></span>
+                            <input name="m_bar" id="m_bar" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.3 />
+                        </div>
+                    </div>
+
+                    <div id="bilinear_fric" class="fricDiv">
+                        <div class="input-group">
+                            <span class="input-group-addon"><span style="text-decoration: overline">m<sub>1</sub></span></span>
+                            <input name="m_bar_1" id="m_bar_1" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.0 />
+                            <span class="input-group-addon"><span style="text-decoration: overline">m<sub>2</sub></span></span>
+                            <input name="m_bar_2" id="m_bar_2" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.05 />
+                            <span class="input-group-addon"><span style="text-decoration: overline">m<sub>3</sub></span></span>
+                            <input name="m_bar_3" id="m_bar_3" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.30 />
+                            <span class="input-group-addon">% of test</span>
+                            <input name="pc_test" id="pc_test" type="number" class="form-control" step=1 min=0.0 max=100 value=60 />
+                        </div>
+                    </div>
+                    <div id="pressure_fric" class="fricDiv" hidden>
+                        <div class="input-group">
+                            <span class="input-group-addon">&mu;<sub>0</sub></span>
+                            <input name="mu_0" id="mu_0" type="number" class="form-control" step=0.01 min=0.0 max=1.0 value=0.3 />
+                        </div>
+                    </div>
+                    <div id="pc_corrected" hidden></div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="panel panel-default" id="iso_correction" hidden>
+        <div class="panel-heading">
+            <h4><b>4.   Isothermal correction (not finished)</b><i style="float:right" class="fa fa-caret-down"></i></h4>
+        </div>
+        <div class="panel-body" hidden>
+            <form class="form" id="iso_correction_form">
+                <div class="form-group" id="constants">
+                    <div class="input-group" style="width:100%">
+                        <input type="range" class="form-control"  id="iso_period" min="0.0" max="100.0" step="1" value=1 style="width:90%"/>
+                    </div>
+                    <h4>Averaging period</h4>
+                    <div id="iso_period_value"></div>
+                    <h4>Q<sub>def</sub></h4>
+                    <div class="input-group">
+                        <span class="input-group-addon">Q<sub>def</sub></span>
+                        <select class="form-control" name="q_act" id="q_act">
+                            <option value="53500">CP-Ti | 53500</option>
+                            <option value="107000">Ti-6Al-4V | 107000</option>
+                        </select>
+                        <span class="input-group-addon">J mol<sup>-1</sup></span>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+        <div class="panel panel-default" id="origin_correction">
+            <div class="panel-heading">
+                <h4><b>5.   Yield calculation</b><i style="float:right" class="fa fa-caret-down"></i></h4>
+            </div>
+            <div class="panel-body" hidden>
+                <div class="container-fluid">
+                    <div id="startYield" class="btn btn-md btn-success ">Start</div>
+                    <div id="stopYield" class="btn btn-md btn-danger " disabled>Stop</div>
+                    <div id="yieldCalcMsg" class="well"></div>
+                </div>
+
+            </div>
+        </div>
+
+
+
+
+    </div>
+
+
+
+
+
+</div>
+<div style="height:100px; width:100%">
+</div>
+
+
+
+<div id="buttonFooter" >
+        <div id="plotData" class="btn btn-md btn-default" onclick="plotData()"><i class="fa fa-refresh"></i> Refresh Plots</div>
+        <div id="saveData" class="btn btn-md btn-default" onclick="saveData()"><i class="fa fa-save"></i> Save data</div>
+        <a id="export_SS" hidden><div class="btn btn-md btn-primary"><i class="fa fa-download"></i> Download stress-strain data </div></a>
+
+</div>
+
+
+
+
+
+
+<script src="/js/moment.js" type="text/javascript"></script>
+<script src="/js/canvasjs.min.js" type="text/javascript"></script>
+<script src="//cdn.jsdelivr.net/pouchdb/6.2.0/pouchdb.min.js"></script>
+<script src="/js/papaparse.min.js" type="text/javascript"></script>
+<script src="/js/tmc_process.js" type="text/javascript"></script>
+</body>
+
+</html>

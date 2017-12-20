@@ -274,24 +274,24 @@ function getAllTests(){
 
 
 
-                        $('i').click( function(){
+                        $('.fa-navicon').click( function(){
                             var note = $(this).find('span').html()
                             console.log(note)
                             $('#noteModal').find('p').html(note)
                             $('#noteModal').show()
 
+                            $(window).click( function(event){
+                                console.log(event)
+                                if( event.target.nodeName == 'DIV' ){
+                                    $('#noteModal').hide()
+                                }
+
+                            })
 
                         })
 
 
-                        $(window).click( function(event){
-                            console.log(event)
-                            if( event.target.nodeName == 'DIV' ){
-                                $('#noteModal').hide()
-                            }
 
-
-                        })
 
 
 

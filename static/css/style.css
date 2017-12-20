@@ -356,7 +356,7 @@ a ~ .nav-tile {
 
 .testHeader {
     position: fixed;
-    width: 63%;
+    width: 60%;
     height: 120px;
     margin-left: -20px;
     float:left;
@@ -372,6 +372,6 @@ a ~ .nav-tile {
 
 .header_input {
     font-size: 1.2em;
-    height: 36px;
+    height: 30px;
 
 }

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" media="screen" href='/css/font-awesome.min.css'>
+    <link rel="stylesheet" media="screen" href='/css/metro-bootstrap.css'>
+    <link rel="stylesheet" href = "/css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <script src='/js/jquery2_1_4.js' type='text/javascript'></script>
+    <script src='/js/bootstrap.min.js' type='text/javascript'></script>
+    <script src="/js/moment.js" type="text/javascript"></script>
+
+    <title> Flow Stress Fitting - Web app</title>
+
+</head>
+<body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/"><img src="/images/mapp_logo.png" width="60px" /></a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+              <li><a href="/powders"><i class="fa fa-chart"></i>  Powders</a></li>
+              <li><a href="/tests/fast"><i class="fa fa-chart"></i>  FAST</a></li>
+              <li><a href="/tests/tmc"><i class="fa fa-chart"></i>  TMC Tests</a></li>
+              <li><a href="/tests/aspshear"><i class="fa fa-chart"></i>  ASP Shear</a></li>
+              <li><a href="/tests/orthogonal"><i class="fa fa-chart"></i>  Orthogonal Cutting</a></li>
+              <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">Conform
+                      <span class="caret"></span>
+                  </a>
+                  <ul class="dropdown-menu">
+                      <li><a href="/tests/conform">Main  <i class="fa fa-chart"></i></a></li>
+                      <li><a href="/models/conform">Process model  <i class="fa fa-gear"></i></a> </li>
+                  </ul>
+              </li>
+
+
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+              <li id="sync_status"></li>
+            <li><a href="/account" disabled><i class="fa fa-user-circle"></i> My account</a></li>
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+
+
+<div class="page_header">
+
+    <h1>Editing powder ID: <span style="padding-left: 20px;"></span></h1>
+
+    <div class="alert" id="alert"></div>
+</div>
+
+
+
+
+<div class="container-fluid col-md-12">
+
+
+    <div class="col-sm-6 col-md-2">
+        <div id="axi_tests" class="thumbnail tile tile-medium tile-belize-nole"><h3 class="tile-text">TMC Compressions</h3></div>
+    </div>
+    <div class="col-sm-6 col-md-2">
+        <div id="aspshear_tests" class="thumbnail tile tile-medium tile-alizarin"><h3 class="tile-text">ASP Shear Tests</h3></div>
+    </div>
+    <div class="col-sm-6 col-md-2">
+        <div id="fast_tests" class="thumbnail tile tile-medium tile-wisteria"><h3 class="tile-text">FAST runs</h3></div>
+    </div>
+    <div class="col-sm-6 col-md-2">
+        <div id="edem_settings" class="thumbnail tile tile-medium tile-emerald"><h3 class="tile-text">EDEM settings</h3></div>
+    </div>
+    <div class="col-sm-6 col-md-2">
+        <div id="msds_download" class="thumbnail tile tile-medium tile-wet-asphalt"><h3 class="tile-text">MSDS</h3>This will allow you to drag and drop a new MSDS or download the existing MSDS</div>
+    </div>
+    <div class="btn btn-md btn-success" onclick="savePowder()" >Save Powder</div>
+
+</div>
+
+
+
+
+
+
+
+
+
+<div class="container-fluid col-md-12">
+
+
+
+<div class="container-fluid col-md-6">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h4>General</h4>
+        </div>
+        <div class="panel-body">
+                        <form class="form" id="powderForm">
+                            <div class="form-group" name="sample">
+                                <h5>Powder</h5>
+
+                                <div class="input-group">
+                                    <div class="input-group-addon">ID</div>
+                                    <input name="sample_id" id="sample_id" type="text" class="form-control" disabled/>
+                                </div>
+                                <div class="input-group" name="name">
+                                    <div class="input-group-addon">Created</div>
+                                    <input name="created" id="created" type="text" class="form-control" disabled/>
+                                    <div class="input-group-addon">Last modified</div>
+                                    <input name="modified" id="modified" type="text" class="form-control" disabled/>
+                                </div>
+
+                                <div class="input-group" name="name">
+                                    <div class="input-group-addon">Name</div>
+                                    <input name="name" id="name" type="text" class="form-control" />
+                                </div>
+
+                                <div class="input-group">
+                                    <div class="input-group-addon">Base metal</div>
+                                    <input name="base_metal" id="base_metal" type="text" class="form-control" />
+                                </div>
+                                <div class="input-group">
+                                    <div class="input-group-addon">Alloy</div>
+                                    <input name="alloy" id="alloy" type="text" class="form-control" />
+                                </div>
+                                <div class="input-group">
+                                    <div class="input-group-addon">Supplier</div>
+                                    <input name="supplier" id="supplier" type="text" class="form-control" />
+                                </div>
+
+                            </div>
+
+                            <div class="form-group" name="musfile">
+                                <h5>Particles</h5>
+                                <div class="input-group">
+                                    <div class="input-group-addon">Morphology class</div>
+                                    <select name="morphology" id="morphology" class="form-control" >
+                                        <option value="GA">Gas atomised</option>
+                                        <option value="PREP">PREP</option>
+                                        <option value="HDH">Hydride-dehydride</option>
+                                        <option value="PS">Plasma spherodised</option>
+                                        <option value="CA">Centrifugal atomised</option>
+                                        <option value="LA">Liquid atomised</option>
+                                        <option value="OR">Oxide reduced</option>
+                                        <option value="BM">Ball milled</option>
+                                        <option value="Swarf">Swarf</option>
+
+                                    </select>
+
+                                </div>
+
+                                <div class="input-group">
+                                    <div class="input-group-addon">Surface area/Volume</div>
+                                    <input name="surface_area_ratio" id="surface_area_ratio" type="number" class="form-control"  min="0" />
+                                    <div class="input-group-addon"> mm<sup>-1</sup> </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <div class="input-group-addon">Av. particle porosity</div>
+                                    <input name="av_particle_porosity" id="av_particle_porosity" type="number" class="form-control"  min="0" />
+                                    <div class="input-group-addon">%</div>
+                                </div>
+
+                            </div>
+
+        </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<div class="container-fluid col-md-6">
+    <div id="psdForm" class="panel panel-primary">
+        <div class="panel-heading">
+            <div class="btn btn-md btn-default" id="psd_update" style="float:right" onclick="$('#psd_input').toggle(200)"><i class="fa fa-refresh"></i> Update PSD</div>
+            <h4>Particle Size Distribution</h4>
+
+        </div>
+        <div class="panel-body">
+
+            <div class="input-group" id="psd_input" hidden>
+                <span class="input-group-addon" >PSD data upload</span>
+                <input name="psd_file_input" id="psd_file_input" type="file" class="form-control" accept="text/*" />
+            </div>
+
+            <div class="input-group">
+                <div class="input-group-addon">D<sub>10</sub></div>
+                <input name="d_10" id="d_10" type="number" class="form-control"  />
+                <div class="input-group-addon"> µm </div>
+                <div class="input-group-addon">D<sub>50</sub></div>
+                <input name="d_10" id="d_50" type="number" class="form-control"  />
+                <div class="input-group-addon"> µm </div>
+                <div class="input-group-addon">D<sub>90</sub></div>
+                <input name="d_10" id="d_90" type="number" class="form-control"  />
+                <div class="input-group-addon"> µm </div>
+            </div>
+
+            <div class="form-group">
+                <h5>Graph</h5>
+                <div id="psd_graph" style="width:100%;height:320px"></div>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+</div>
+
+
+
+
+<div class="container-fluid col-md-12">
+<div class="container-fluid col-md-6">
+    <div id="newPowderForm" class="panel panel-primary">
+        <div class="panel-heading">
+            <h4>Flow Data</h4>
+            <h3></h3>
+        </div>
+        <div class="panel-body">
+                        <form class="form" id="powderForm">
+                            <div class="form-group" name="sample">
+                                <h5>Hall flow</h5>
+                                <div class="input-group" name="name">
+                                    <span class="input-group-addon">Time</span>
+                                    <input name="hall_flow_time" id="hall_flow_time" type="number" min="0" class="form-control" />
+                                    <span class="input-group-addon">s</span>
+                                    <span class="input-group-addon">Orifice ø</span>
+                                    <input name="hall_flow_orifice" id="hall_flow_orifice" type="number" min="0" class="form-control" />
+                                    <span class="input-group-addon">mm</span>
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-addon">Powder mass</span>
+                                    <input name="hall_flow_mass" id="hall_flow_mass" type="number" min="0" class="form-control" />
+                                    <span class="input-group-addon">g</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <h5>Angle of Repose</h5>
+                                <div class="input-group">
+                                    <span class="input-group-addon">Static</span>
+                                    <input name="AoR_static" id="AoR_static" type="number" class="form-control"  />
+                                    <span class="input-group-addon"> º </span>
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-addon">Dynamic</span>
+                                    <input name="AoR_dynamic" id="AoR_dynamic" type="number" class="form-control"  />
+                                    <span class="input-group-addon"> º </span>
+                                </div>
+                                <div class="input-group" id="static_aor_image_upload">
+                                    <span class="input-group-addon" >AoR image upload</span>
+                                    <input class="form-control" name="static_aor_imageUpload" id="static_aor_imageUpload" type="file" accept="image/*" />
+                                </div>
+
+                                <div id="static_aor_image_display">
+                                </div>
+                            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid col-md-6">
+    <div id="newPowderForm" class="panel panel-primary">
+        <div class="panel-heading">
+            <h4>Density Data</h4>
+            <h3></h3>
+        </div>
+        <div class="panel-body">
+                        <form class="form" id="powderForm">
+                            <div class="form-group" name="sample">
+                                <h5>Density</h5>
+                                <div class="input-group" name="name">
+                                    <span class="input-group-addon">Solid density</span>
+                                    <input name="solid_density" id="solid_density" type="number" min="0" class="form-control" />
+                                    <span class="input-group-addon">g cm<sup>-3</sup></span>
+                                </div>
+                                <div class="input-group" name="name">
+                                    <span class="input-group-addon">Bulk density</span>
+                                    <input name="bulk_density" id="bulk_density" type="number" min="0" class="form-control" />
+                                    <span class="input-group-addon">g cm<sup>-3</sup></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <h5>Tap density</h5>
+                                <div class="input-group">
+                                    <span class="input-group-addon">Carr index</span>
+                                    <input name="carr_index" id="carr_index" type="number" class="form-control"  />
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-addon">Hausner ratio</span>
+                                    <input name="hausner_ratio" id="hausner_ratio" type="number" class="form-control"  />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <h5>Graph</h5>
+                                <div id="tapDensity_graph" style="width:100%;height:320px">
+                                </div>
+                            </div>
+        </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+</div>
+
+
+<div class="container-fluid col-md-12">
+
+    <div class="container-fluid col-md-12">
+        <div id="newPowderForm" class="panel panel-primary">
+            <div class="panel-heading">
+                <h4>Chemistry</h4>
+                <h3></h3>
+            </div>
+            <div class="panel-body">
+                <div id="chemistryDisplay">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+
+<div class="container-fluid col-md-12">
+<div class="container-fluid col-md-6">
+    <div id="dataInput" class="panel panel-primary">
+        <div class="panel-heading">
+            <h4>Upload images</h4>
+        </div>
+        <div class="panel-body">
+            <form id="imagesForm">
+                <div class="form-group">
+                    <input class="form-control" name="imageUpload" id="imageUpload" type="file" accept="image/*" multiple/>
+                </div>
+            </form>
+            <div class="well" id="uploadImagesPreview" >
+
+            </div>
+            <div class="container-fluid col-md-6">
+                <div class="btn-group">
+                    <div id="resetForm" class="btn btn-md btn-primary" onclick="resetImagePreview()">Reset</div>
+                    <div id="uploadImages" class="btn btn-md btn-success" >Upload images</div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<div class="container-fluid col-md-6">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h4>Images</h4>
+        </div>
+        <div class="panel-body">
+            <div class="well" id="powderImages" >
+
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+<div class="container-fluid col-md-12">
+
+</div>
+
+
+
+
+
+<script src="//cdn.jsdelivr.net/pouchdb/6.2.0/pouchdb.min.js" type='text/javascript'></script>
+<script src="/js/pouchdb.find.js" type='text/javascript'></script>
+
+<script src="/js/jquery.canvasjs.min.js" type='text/javascript'></script>
+<script src="/js/powder_edit.js" type="text/javascript"></script>
+</body>
+
+</html>

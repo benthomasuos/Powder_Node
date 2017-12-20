@@ -4,11 +4,14 @@
   "description": "Web app to fit constituative equations to stress-strain data generated form the University of Sheffield Thermomechanical Compression Machine",
   "main": "index.js",
   "scripts": {
+    "start": "index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Ben M Thomas",
   "license": "MIT",
   "dependencies": {
-    "body-parser": "^1.17.2"
+    "express": "^4.16.0",
+    "body-parser": "^1.17.2",
+    "express-favicon": "^2.0.0"
   }
 }

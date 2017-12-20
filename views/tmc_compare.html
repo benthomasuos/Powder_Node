@@ -1,0 +1,241 @@
+<!DOCTYPE html >
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" media="screen" href='/css/font-awesome.min.css'>
+    <link rel="stylesheet" media="screen" href='/css/metro-bootstrap.css'>
+    <link rel="stylesheet" href = "/css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <script src='/js/jquery2_1_4.js' type='text/javascript'></script>
+    <script src='/js/bootstrap.min.js' type='text/javascript'></script>
+
+    <title> Flow Stress Fitting - Web app</title>
+
+</head>
+<body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/"><img src="/images/mapp_logo.png" width="60px" /></a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+              <li><a href="/powders"><i class="fa fa-chart"></i>  Powders</a></li>
+              <li><a href="/tests/fast"><i class="fa fa-chart"></i>  FAST</a></li>
+              <li><a href="/tests/tmc"><i class="fa fa-chart"></i>  TMC Tests</a></li>
+              <li><a href="/tests/aspshear"><i class="fa fa-chart"></i>  ASP Shear</a></li>
+              <li><a href="/tests/orthogonal"><i class="fa fa-chart"></i>  Orthogonal Cutting</a></li>
+              <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">Conform
+                      <span class="caret"></span>
+                  </a>
+                  <ul class="dropdown-menu">
+                      <li><a href="/tests/conform">Main  <i class="fa fa-chart"></i></a></li>
+                      <li><a href="/models/conform">Process model  <i class="fa fa-gear"></i></a> </li>
+                  </ul>
+              </li>
+
+
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+              <li><a href="mailto:b.thomas@sheffield.ac.uk?subject=STAR Web app - Bug Report&body=<h3>Bug report</h3>"><i class="fa fa-envelope"></i> Report a bug/issue</a></li>
+            <li><a href="/account" disabled><i class="fa fa-user-circle"></i> My account</a></li>
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+
+
+
+<div class="container-fluid col-md-12">
+
+<div class="container-fluid col-md-6">
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h4>Current tests -- (Click on row to plot individual test)<i style="float:right" class="fa fa-caret-up" id="hideTable"></i></h4>
+    </div>
+        <div id="test_status" class="alert alert-warning">No test data available to show</div>
+    <div class="panel-body">
+        <table id="currentTests" class="table table-condensed table-striped">
+            <thead>
+                <th>Test #</th>
+                <th>Sample</th>
+                <th>Temperature (ºC)</th>
+                <th>Strain Rate (s<sup>-1</sup>)</th>
+                <th>Test date</th>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <div class="container col-md-12">
+            <div class="btn btn-md btn-primary" id="plotAll" onclick="plotAllExpTests()">Plot all</div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+
+<div class="container-fluid col-md-12">
+
+        <div class="container-fluid col-md-12" id="graph_LS_Parent">
+                <div class="graphDiv" id="graphLS" style="height: 600px" ></div>
+        </div>
+        <div class="container-fluid col-md-12" id="graph_TS_Parent">
+                <div class="graphDiv" id="graphTS" style="height: 600px" ></div>
+        </div>
+
+        <div class="container-fluid col-md-12" id="graph_VS_Parent">
+                <div class="graphDiv" id="graphVS" style="height: 600px" ></div>
+        </div>
+
+        <div class="container-fluid col-md-12" id="graph_SRS_Parent">
+                <div class="graphDiv" id="graphSRS" style="height: 600px" ></div>
+        </div>
+
+        <div class="container-fluid col-md-12"id="graph_SS_Parent">
+                <div class="graphDiv" id="graphSS" style="height: 800px"></div>
+        </div>
+
+</div>
+
+
+
+
+<div class="container-fluid col-md-12">
+<div class="container-fluid col-md-4">
+        <h4>Choose constituative model</h4>
+        <select id="const_Eq" class="form-control">
+            <option value="none" disabled selected>Select an equation</option>
+            <option value="NH">Norton-Hoff</option>
+            <option value="JC">Johnson-Cook</option>
+            <option value="BB">Bates-Brooks</option>
+            <option value="ZA">Zerilli-Armstrong</option>
+            <option value="SCGL">Steinberg–Cochran–Guinan–Lund</option>
+            <option value="MTS">Mechanical threshold stress</option>
+            <option value="PTW">Preston–Tonks–Wallace</option>
+        </select>
+    </div>
+
+    <div class="container-fluid col-md-8">
+        <div id="NH_controls" class="container-fluid col-md-12 controls" hidden>
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h4>Norton - Hoff</h4>
+                </div>
+                <div class="panel-body">
+
+                    <div class="container-fluid col-md-6">
+
+                    <div class="input-group">
+                        <span class="input-group-addon">K</span><input type="range"  class="form-control" id="NH_K_slider"  min="0.0" max="2000" step="10" value=400 /><span id="NH_K_value" class="input-group-addon value"></span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">n</span><input type="range"  class="form-control" id="NH_n_slider"  min="0.0" max="0.5" step="0.001" value=0.17 /><span id="NH_n_value" class="input-group-addon value"></span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">m</span><input type="range"  class="form-control" id="NH_m_slider"  min="0.0" max="0.5" step="0.001" value=0.03 /><span id="NH_m_value" class="input-group-addon value"></span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">&beta;</span><input type="range"  class="form-control" id="NH_beta_slider"  min="0.0" max="1000" step="1" value=800 /><span id="NH_beta_value" class="input-group-addon value"></span>
+                    </div>
+                    <div class="btn btn-md btn-danger" onclick="removeNHPlots()">Remove all lines</div>
+                    </div>
+
+                    <div class="container-fluid col-md-3">
+                    <h4>Strain Rates</h4>
+                    <select class="form-control" id="NH_strainrate" size=7 multiple>
+                    <option value="0.01">0.01 /s</sup></option>
+                    <option value="0.1" selected>0.1 /s</option>
+                    <option value="1">1 /s</option>
+                    <option value="10">10 /s</option>
+                    <option value="50">50 /s</option>
+                    </select>
+                    </div>
+
+                    <div class="container-fluid col-md-3">
+                    <h4>Temperatures</h4>
+                    <select class="form-control" id="NH_temperature" size=7 multiple>
+                    <option value="73">-200 ºC</option>
+                    <option value="123">-150 ºC</option>
+                    <option value="173">-100 ºC</option>
+                    <option value="223">-50 ºC</option>
+                    <option value="293" selected>20 ºC</option>
+                    <option value="373">100 ºC</option>
+                    <option value="473">200 ºC</option>
+                    <option value="573">300 ºC</option>
+                    <option value="673">400 ºC</option>
+                    <option value="773">500 ºC</option>
+                    <option value="873">600 ºC</option>
+                    <option value="973">700 ºC</option>
+                    <option value="1073">800 ºC</option>
+                    <option value="1173">900 ºC</option>
+                    <option value="1273">1000 ºC</option>
+                    <option value="1373">1100 ºC</option>
+                    <option value="1473">1200 ºC</option>
+                    <option value="1573">1300 ºC</option>
+                    <option value="1673">1400 ºC</option>
+                    <option value="1773">1500 ºC</option>
+                    <option value="1873">1600 ºC</option>
+                    </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="JC_controls" class="container-fluid col-md-12 controls" hidden>
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h4>Johnson - Cook</h4>
+                </div>
+                <div class="panel-body">
+
+                </div>
+            </div>
+        </div>
+
+        <div id="BB_controls" class="container-fluid col-md-12 controls" hidden>
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h4>Bates - Brooks</h4>
+                </div>
+                <div class="panel-body">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+<div id="push" class="container-fluid col-md-12" >
+</div>
+<div id="footer">
+    <p class="muted">STAR Group</p>
+    <p class="muted">Flow stress manipulation app</p>
+</div>
+
+
+<script src="/js/canvasjs.min.js" type="text/javascript"></script>
+<script src="//cdn.jsdelivr.net/pouchdb/6.2.0/pouchdb.min.js"></script>
+<script src="/js/pouchdb.find.js"></script>
+<script src="/js/papaparse.min.js" type="text/javascript"></script>
+<script src="/js/tmc_compare.js" type="text/javascript"></script>
+</body>
+
+</html>

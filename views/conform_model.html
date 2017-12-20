@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="stylesheet" media="screen" href='/css/font-awesome.min.css'>
+    <link rel="stylesheet" media="screen" href='/css/metro-bootstrap.css'>
+    <link rel="stylesheet" href = "/css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <script src='/js/jquery2_1_4.js' type='text/javascript'></script>
+    <script src='/js/bootstrap.min.js' type='text/javascript'></script>
+
+    <title> Flow Stress Fitting - Web app</title>
+
+</head>
+<body style="padding-bottom: 440px;">
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/"><img src="/images/mapp_logo.png" width="60px" /></a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+              <li><a href="/powders"><i class="fa fa-chart"></i>  Powders</a></li>
+              <li><a href="/tests/fast"><i class="fa fa-chart"></i>  FAST</a></li>
+              <li><a href="/tests/tmc"><i class="fa fa-chart"></i>  TMC Tests</a></li>
+              <li><a href="/tests/aspshear"><i class="fa fa-chart"></i>  ASP Shear</a></li>
+              <li><a href="/tests/orthogonal"><i class="fa fa-chart"></i>  Orthogonal Cutting</a></li>
+              <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">Conform
+                      <span class="caret"></span>
+                  </a>
+                  <ul class="dropdown-menu">
+                      <li><a href="/tests/conform">Main  <i class="fa fa-chart"></i></a></li>
+                      <li><a href="/models/conform">Process model  <i class="fa fa-gear"></i></a> </li>
+                  </ul>
+              </li>
+
+
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="/account" disabled><i class="fa fa-user-circle"></i> My account</a></li>
+          </ul>
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
+
+
+
+
+<div class="page-header">
+    <h1>Conform process model</h1>
+</div>
+
+
+
+<div class="container-fluid col-md-12">
+    <div class="container-fluid well col-md-12">
+        <div class="container-fluid well col-lg-6 col-md-4 col-sm-6 ">
+
+                    <h3>Die Chamber</h3>
+                    <div class="form-group">
+                        <h4>Port dimensions</h4>
+                        <div class="input-group">
+                            <span class="input-group-addon">Width</span>
+                            <input class="form-control" name="port_width" id="port_width" type="number" min=0 max=50 step=0.01 value=10 />
+                            <div class="tooltip"></div>
+                            <span class="input-group-addon">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-addon">Height</span>
+                            <input class="form-control" name="port_height" id="port_height" type="number" min=0 max=50 step=0.01 value=10 />
+                            <div class="tooltip"></div>
+                            <span class="input-group-addon">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-addon">Area</span>
+                            <input class="form-control" name="port_area" id="port_area" type="number" disabled/>
+                            <div class="tooltip"></div>
+                            <span class="input-group-addon">mm<sup>2</sup></span>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-addon">Aspect ratio</span>
+                            <input class="form-control" name="port_aspect_ratio" id="port_aspect_ratio" type="number" disabled/>
+                            <div class="tooltip"></div>
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <h4>Other</h4>
+                        <div class="input-group">
+                            <span class="input-group-addon">Flash gap</span>
+                            <input class="form-control" name="flash_gap" id="flash_gap" type="number" min=0 max=5 step=0.01 value=1.0 />
+                            <div class="tooltip"></div>
+                            <span class="input-group-addon">mm</span>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-addon">Friction</span>
+                            <input class="form-control" name="feedplate_friction" id="feedplate_friction" type="number" min=0 max=1 step=0.01 value=0.7 />
+                            <div class="tooltip"></div>
+                        </div>
+                    </div>
+
+                </div>
+            <div class="container-fluid col-lg-6 col-md-8 col-sm-6 tool_drawing" id="port_drawing">
+                <h1>Port Drawing</h1>
+            </div>
+
+    </div>
+
+
+    <div class="container-fluid well col-md-12">
+            <div class="container-fluid well col-lg-6 col-md-4 col-sm-6 ">
+                <h3>Die</h3>
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon">Diameter</span>
+                        <input class="form-control" name="die_diameter" id="die_diameter" type="number" min=0 max=50 step=0.01 value=8 />
+                        <div class="tooltip"></div>
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Area</span>
+                        <input class="form-control" name="die_area" id="die_area" type="number" min=0 max=20 step=0.01 value=10 />
+                        <div class="tooltip"></div>
+                        <span class="input-group-addon">mm<sup>-2</sup></span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Dead zone angle</span>
+                        <input class="form-control" name="deadzone_angle" id="deadzone_angle" type="number" min=0 max=90 step=1 value=70 />
+                        <div class="tooltip"></div>
+                        <span class="input-group-addon">º</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Die land length</span>
+                        <input class="form-control" name="die_land" id="die_land" type="number" disabled/>
+                        <div class="tooltip"></div>
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Friction</span>
+                        <input class="form-control" name="die_friction" id="die_friction" type="number" disabled/>
+                        <div class="tooltip"></div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="container-fluid col-lg-6 col-md-8 col-sm-6 tool_drawing" id="die_drawing">
+                <h1>Die Drawing</h1>
+            </div>
+
+
+
+
+
+    </div>
+
+
+    <div class="container-fluid well col-md-12">
+            <div class="container-fluid well col-lg-6 col-md-4 col-sm-6 ">
+                <h3>Wheel</h3>
+                <div class="form-group">
+                    <div class="form-group">
+                        <h4>Wheel dimensions</h4>
+                        <div class="input-group">
+                            <span class="input-group-addon">Outer radius</span>
+                            <input class="form-control" name="wheel_radius" id="wheel_radius" type="number" min=0 max=5 step=0.01 value=1.0 />
+                            <div class="tooltip"></div>
+                            <span class="input-group-addon">mm</span>
+                        </div>
+                    </div>
+
+                    <h4>Groove dimensions</h4>
+                    <div class="input-group">
+                        <span class="input-group-addon">Width</span>
+                        <input class="form-control" name="groove_width" id="groove_width" type="number" min=0 max=50 step=0.01 value=10 />
+                        <div class="tooltip"></div>
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Depth</span>
+                        <input class="form-control" name="groove_depth" id="groove_depth" type="number" min=0 max=50 step=0.01 value=10 />
+                        <div class="tooltip"></div>
+                        <span class="input-group-addon">mm</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Area</span>
+                        <input class="form-control" name="groove_area" id="groove_area" type="number" disabled/>
+                        <div class="tooltip"></div>
+                        <span class="input-group-addon">mm<sup>2</sup></span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Aspect ratio</span>
+                        <input class="form-control" name="groove_aspect_ratio" id="groove_aspect_ratio" type="number" disabled/>
+                        <div class="tooltip"></div>
+                        <span class="input-group-addon"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <h4>Other</h4>
+                    <div class="input-group">
+                        <span class="input-group-addon">Friction</span>
+                        <input class="form-control" name="wheel_friction" id="wheel_friction" type="number" min=0 max=1 step=0.01 value=0.7 />
+                        <div class="tooltip"></div>
+                        <span class="input-group-addon"></span>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div class="container-fluid col-lg-6 col-md-8 col-sm-6 tool_drawing" id="groove_drawing">
+                <h1>Groove Drawing</h1>
+            </div>
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <div class="container-fluid well col-md-12">
+                    <div class="container-fluid well col-lg-6 col-md-4 col-sm-6 ">
+                <h3>Process</h3>
+                <div class="form-group">
+                    <h4>Other</h4>
+                    <div class="input-group">
+                        <span class="input-group-addon">Wheel speed</span>
+                        <input class="form-control" name="wheel_speed" id="wheel_speed" type="number" min=0 max=40 step=0.5 value=6.0 />
+                        <div class="tooltip"></div>
+                        <span class="input-group-addon">RPM</span>
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-addon">Wheel slip ratio</span>
+                        <input class="form-control" name="wheel_slip_ratio" id="wheel_slip_ratio" type="number" min=0 max=1 step=0.01 value=0.5 />
+                        <div class="tooltip"></div>
+                        <span class="input-group-addon">Slip / Grip</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <<div class="container-fluid well col-md-12">
+                <div class="container-fluid well col-lg-6 col-md-4 col-sm-6 ">
+            <h3>Material data</h3>
+            <div class="form-group">
+                <h4>Flow stress - Norton Hoff</h4>
+                <div class="input-group">
+                    <span class="input-group-addon">K</span>
+                    <input class="form-control" name="nh_K" id="nh_K" type="number" />
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon">n</span>
+                    <input class="form-control" name="nh_n" id="nh_n" type="number" />
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon">m</span>
+                    <input class="form-control" name="nh_" id="nh_" type="number" />
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon">&beta;</span>
+                    <input class="form-control" name="nh_beta" id="nh_beta" type="number" />
+                </div>
+            </div>
+            <div class="form-group">
+                <h4>Powder compaction</h4>
+
+                <div class="input-group">
+                    <span class="input-group-addon">Bulk density</span>
+                    <input class="form-control" name="bulk_density" id="bulk_density" type="number" />
+                    <span class="input-group-btn"><div class="btn btn-md btn-primary" id="load_powder">Load real powder...</div></span>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon">A</span>
+                    <input class="form-control" name="pow_compact_A" id="pow_compact_A" type="number" />
+                </div>
+                <div class="input-group">
+                    <span class="input-group-addon">B</span>
+                    <input class="form-control" name="pow_compact_B" id="pow_compact_B" type="number" />
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid col-lg-6 col-md-8 col-sm-6 tool_drawing" id="groove_drawing">
+            <h1>Material data graphs</h1>
+            <div class="container-fluid" id="flow_stress_graph"></div>
+            <div class="container-fluid" id="powder_compression_graph"></div>
+        </div>
+
+    </div>
+
+
+    </div>
+
+
+
+
+    <div class="container-fluid col-lg-6 col-md-8 col-sm-6">
+        <h3>Results drawings</h3>
+    </div>
+
+
+
+
+
+<div class="container-fluid footer col-md-12 col-xs-12 " id="results_box">
+    <h2>Results</h2>
+        <div class="form-group col-md-4 col-xs-6">
+            <div class="input-group">
+                <span class="input-group-addon">Extrusion ratio</span>
+                <div class="form-control" id="ex_ratio"></div>
+                <div class="tooltip"></div>
+            </div>
+            <div class="input-group">
+                <span class="input-group-addon">Required extrusion pressure</span>
+                <div class="form-control" id="ex_pressure"></div>
+                <div class="tooltip"></div>
+            </div>
+            <div class="input-group">
+                <span class="input-group-addon">Minimum required grip length</span>
+                <div class="form-control" id="min_grip_length"></div>
+                <div class="tooltip"></div>
+            </div>
+            <div class="input-group">
+                <span class="input-group-addon">Minimum angle of grip length</span>
+                <div class="form-control" id="min_grip_angle"></div>
+                <div class="tooltip"></div>
+            </div>
+        </div>
+        <div class="form-group col-md-4 col-xs-6">
+            <div class="input-group">
+                <span class="input-group-addon">Wheel torque (min)</span>
+                <div class="form-control" id="min_wheel_torque"></div>
+                <div class="tooltip"></div>
+            </div>
+            <div class="input-group">
+                <span class="input-group-addon">Motor power (min)</span>
+                <div class="form-control" id="ex_ratio"></div>
+                <div class="tooltip"></div>
+            </div>
+            <div class="input-group">
+                <span class="input-group-addon">Abutment load</span>
+                <div class="form-control" id="abut_load"></div>
+                <div class="tooltip"></div>
+            </div>
+            <div class="input-group">
+                <span class="input-group-addon">Abutment pressure</span>
+                <div class="form-control" id="abut_pressure"></div>
+                <div class="tooltip"></div>
+            </div>
+        </div>
+        <div class="form-group col-md-4 col-xs-6">
+            <div class="input-group">
+                <span class="input-group-addon">Pressure surplus</span>
+                <div class="form-control" id="pressure_surplus"></div>
+                <div class="tooltip"></div>
+                <div class="form-control" id="pressure_surplus_pc"></div>
+                <div class="tooltip"></div>
+            </div>
+            <div class="input-group">
+                <span class="input-group-addon">Powder feed rate</span>
+                <div class="form-control" id="powder_feed_rate"></div>
+                <div class="tooltip"></div>
+            </div>
+            <div class="input-group">
+                <span class="input-group-addon">Extrusion speed</span>
+                <div class="form-control" id="ex_speed"></div>
+                <div class="tooltip"></div>
+            </div>
+        </div>
+
+</div>
+
+
+
+
+
+<script src="/js/everpolate.min.js" type="text/javascript"></script>
+<script src="/js/canvasjs.min.js" type="text/javascript"></script>
+<script src="//cdn.jsdelivr.net/pouchdb/6.2.0/pouchdb.min.js"></script>
+<script src="/js/conform_model.js" type="text/javascript"></script>
+</body>
+
+</html>
