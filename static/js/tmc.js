@@ -13,6 +13,12 @@ var sr_max = $("#sr_max")
 var material_chart = "";
 var local_powders = ""
 var remote_powders = ""
+var tests_ids_compare = []
+var data_to_compare = []
+var interpolatedData = []
+var chart = "";
+
+var dataMatrix = []
 var materialData = []
 var unique_strains = []
 var unique_strainrates = []
@@ -96,7 +102,7 @@ function initialiseSearch(){
     }).then(function(result){
         console.log(result)
                 if(result.rows.length > 0 ){
-                    populateSearch(result.rows)
+                    //populateSearch(result.rows)
                         }
                         else{
                             $('#test_status').show()
@@ -194,7 +200,7 @@ function getAllTests(){
                             for(i=0; i<result.docs.length; i++){
                                 var doc = result.docs[i];
                                 var test_id = doc._id
-                                console.log(doc)
+                                //console.log(doc)
                                 var row = $('<tr></tr>')
                                 row.attr("name", test_id)
                                 var id_cell = row.append( $('<td name="id"></td>').html(test_id) )
@@ -224,28 +230,31 @@ function getAllTests(){
                                 var analyse_cell =  $('<td></td>')
 
 
-                                analyse_cell.html("<a href='/tests/tmc/process?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>")
-                                analyse_cell.css('float', 'left')
+                                analyse_icon = $("<a href='/tests/tmc/process?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>")
+                                analyse_icon.css('float', 'left')
 
-                                row.append( analyse_cell )
 
-                                var checkbox = $('<input class="form-control" type="checkbox" />').attr('name', test_id ).attr('id', test_id)
-                                var compareCell = $('<td></td>').append(checkbox)
+
+
                                 if(doc.analysed == true){
-                                    analyse_cell.find('i').css('color', 'green')
-                                    analyse_cell.attr('name' ,'analysed_true')
+                                    analyse_icon.find('i').css('color', 'green')
+                                    analyse_icon.attr('name' ,'analysed_true')
                                     var downloadLink = $("<a href='#'><i class='fa fa-download fa-2x'></i></a>")
                                     prepareDownload(doc, downloadLink)
                                     downloadLink.css('margin-left', '8px')
-                                    analyse_cell.append(downloadLink)
-
+                                    analyse_cell.append( analyse_icon )
+                                    analyse_cell.append( downloadLink )
 
                                 }
                                 else{
-                                    analyse_cell.find('i').css('color', 'lightgray')
-                                    analyse_cell.attr('name' ,'analysed_false')
+                                    analyse_icon.find('i').css('color', 'lightgray')
+                                    analyse_icon.attr('name' ,'analysed_false')
+                                    analyse_cell.append( analyse_icon )
                                 }
+                                row.append( analyse_cell )
 
+                                var checkbox = $('<input class="form-control" type="checkbox" />').attr('name', test_id ).attr('id', test_id)
+                                var compareCell = $('<td></td>').append( checkbox )
                                 row.append( compareCell )
                                 //var edit_cell =  row.append($('<td></td>').html("<a href='/tests/tmc/edit?_id="+test_id+"'><i class='fa fa-edit fa-2x'></i></a>"))
 
@@ -253,7 +262,13 @@ function getAllTests(){
                                 var trash_cell = row.append( $('<td></td>').html("<i class='fa fa-trash fa-2x'></i>") )
                                 tableBody.append(row)
                             }
-                            currentTestTable.DataTable()
+
+                        var datatable  = currentTestTable.DataTable()
+                        console.log(datatable)
+                        applyCheckboxEvent()
+                        datatable.on('draw', function(){
+                            applyCheckboxEvent()
+                        })
 
                         tableBody.find("i.fa-trash").on('click', function(){
                             var test_id = $(this).closest('tr').attr('name');
@@ -265,64 +280,7 @@ function getAllTests(){
                             }
                         })
 
-                        tableBody.find('input[type="checkbox"]').on('change', function(){
-                            var tests_to_compare = [];
-                            tableBody.find('input[type="checkbox"]').each(function(){
-                                if( $(this)[0].checked ){
-                                    var row = $(this).parent().parent();
-                                    var analysed = row.find('td[name*="analysed_"]').attr('name').split('_')[1]
-                                    console.log(analysed)
 
-                                    console.log(row)
-                                    tests_to_compare.push( {
-                                        "id" : row.find('td[name="id"]').html(),
-                                        "sample" : row.find('td[name="sample"]').html() ,
-                                        "strainrate" : row.find('td[name="strainrate"]').html(),
-                                        "temperature" : row.find('td[name="temperature"]').html(),
-                                        "analysed" : analysed
-                                    });
-
-                                }
-                            })
-
-
-
-
-
-
-
-                            if(tests_to_compare.length == 2){
-                                initDeformMatrix()
-                            }
-                            else if(tests_to_compare.length < 2){
-                                $('#materialMatrix').hide(200);
-                            }
-
-                            if( tests_to_compare.length >= 2 ){
-                                var testString = ""
-                                for(var i=0;i<tests_to_compare.length;i++){
-                                    var test = tests_to_compare[i];
-                                    testString += "_id_"+ i+ "=" + test.id;
-                                    console.log("Test data: " + test.id, test.sample, test.strainrate, test.temperature, test.analysed, test.yield_strength_02_mpa, test.ultimate_compressive_strength)
-
-                                    appendToMatrix(test.id, test.sample, test.strainrate, test.temperature, test.analysed, test.yield_strength_02_mpa, test.ultimate_compressive_strength)
-                                    if(i<tests_to_compare.length-1){
-                                        testString += "&";
-                                    }
-                                }
-                                console.log(testString)
-                                $('#compareTests').html("<a href='/tests/tmc/compare?"+ testString +"'><div class='btn btn-md btn-primary'>Compare tests</div>")
-                                var downloadMatBtn = $("<a class='btn btn-success btn-md' id ='downloadMat'><i class='fa fa-download'></i> DEFORM Material</a>")
-                                $('#compareTests').append(downloadMatBtn);
-
-
-                                //console.log("Tests to compare: " + tests_to_compare);
-                            }
-                            else{
-                                $('#compareTests').html("")
-                                console.log("Need two or more tests to compare" );
-                            }
-                        })
 
 
 
@@ -368,6 +326,76 @@ function getAllTests(){
 
 
 
+
+function applyCheckboxEvent(){
+    $('input[type="checkbox"]').off('change')
+
+    $('input[type="checkbox"]').on('change', function(){
+        tests_to_compare = []
+        console.log($(this))
+        var test_id = $(this).attr('id')
+        var row = currentTestTable.find('tr[name="' + test_id + '"]');
+        if( $(this)[0].checked ){
+            tests_ids_compare.push( test_id )
+            console.log("Test " + test_id + " added to compare IDs list")
+            console.log("Comparing " + tests_ids_compare.length + " tests after test added to list")
+            tests_ids_compare.forEach(function(test, i){
+                //console.log(d, i)
+                //row.css('color', '#fff')
+                row.css('background-color', '#ccc')
+                test_db.get(
+                    test
+                ).then(function(result){
+                        //console.log(result)
+                                data_to_compare.push( result );
+                                if(tests_ids_compare.length == 2){
+                                    initDeformMatrix()
+                                }
+                                else if(tests_ids_compare.length < 2){
+                                    console.log("Need two or more tests to compare" );
+                                    if(material_chart){
+                                        material_chart.destroy()
+                                        material_chart = null
+                                    }
+                                    //$('#materialMatrix').hide();
+                                }
+                                if( tests_ids_compare.length >= 2 ){
+                                    //console.log(tests_ids_compare.length)
+                                    //console.log(tests_to_compare.length)
+
+                                    appendToMatrix(result)
+
+                                    material_chart.render()
+                                    console.log("Length = " + tests_ids_compare.length)
+
+                                }
+                                else{
+                                    console.log("Need two or more tests to compare" );
+                                }
+
+
+                        })
+                        .catch(function(err){
+                            console.log(err)
+                        })
+
+            }) // end of forEach loop
+
+        } // end of IF statement
+        else{
+            var id_index = tests_ids_compare.indexOf(test_id);
+            if ( id_index > -1) {
+                tests_ids_compare.splice(id_index, 1);
+                console.log("Test " + test_id + " removed from compare IDs list")
+                console.log("Comparing " + tests_ids_compare.length + " tests after test is removed")
+            }
+                row.css('background-color', '#fff')
+            }
+    })
+
+
+
+}
 
 
 
@@ -710,11 +738,11 @@ function prepareDownload(test, downloadBtn){
     console.log("Preparing download for test " + test._id + ". Please wait...")
     let data = []
 
-    data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), True Strain (mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
+    data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), Temperature (ºC) True Strain (mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
 
     for(var i=0; i<test.measurements.length; i++){
         var point = test.measurements[i]
-            data.push(point.disp_corr + "," + point.stroke_corr + "," + point.load_corr + "," + point.strain + "," + point.trueStress + "," + point.fricStress + "," + point.isoStress + "\r\n")
+            data.push(point.disp_corr + "," + point.stroke_corr + "," + point.load_corr + ","+ point.sample_temp_2_centre + "," + point.strain + "," + point.trueStress + "," + point.fricStress + "," + point.isoStress + "\r\n")
     }
 
     data.join()
@@ -920,6 +948,8 @@ function parseMusfile(data){
 
 
 function initDeformMatrix(){
+    //plotStressGraphs()
+    console.log("Initialising DEFORM matrix")
     $('#matrix').html('')
     $('#materialMatrix').show(200);
     material_chart = new CanvasJS.Chart("matrix",
@@ -958,69 +988,117 @@ function initDeformMatrix(){
 }
 
 
-function appendToMatrix(id, sample, strainrate, temperature, analysed, yieldStress, ucs){
+function appendToMatrix(test){
 
-    console.log("Yield: ", yieldStress)
-    if(analysed == "true"){
+    if(test.analysed == true){
         var color = '#46f279';
     }
     else{
         var color = '#e11';
     }
 
-    var yieldStress = yieldStress + " MPa" || "N/A"
-    var ucs = ucs + " MPa" || "N/A"
 
+    if(test.sample.name.user_defined) {
+        material_chart.options.title.text = test.sample.name.user_defined
+    }
+    else{
+        material_chart.options.title.text =  test.sample.name.musfile_defined
+    }
 
     var data = {
-        x : parseFloat(strainrate),
-        y : parseFloat(temperature),
+        x : parseFloat(test.strainrate),
+        y : parseFloat(test.temperature),
         z : 100,
-        name : id,
+        name : test._id + " : " + test.temperature + "ºC  " + test.strainrate + " s-1" ,
         markerColor : color,
         markerType : 'square',
-        indexLabel : yieldStress,
+        indexLabel : test.yield_strength_02_mpa + " MPa",
         indexLabelPlacement : "inside",
         indexLabelWrap : true,
         indexLabelFontSize: 14
     }
-    //console.log(data)
-    material_chart.data[0].dataPoints.push(data)
 
-    material_chart.render();
+    material_chart.data[0].dataPoints.push(data)
+    //console.log(data)
+
+
 }
 
 
 
 function getMaterialData(){
-    var tests = material_chart.data[0].dataPoints.map(function(d){
-        return d.name
-    })
     //console.log(tests)
-    unique_strainrates = []
-    unique_temperatures = []
+    var all_strainrates = []
+    var all_temperatures = []
     unique_strains = $('#strain_points').val().split('\n');
-    console.log(tests)
+    interpolatedData = []
+
+    data_to_compare.forEach(function(d, i){
+        all_strainrates.push (parseFloat(d.strainrate) )
+        all_temperatures.push( parseFloat(d.temperature) )
+    })
+
+    unique_strainrates = uniqueValues(all_strainrates)
+    unique_temperatures = uniqueValues(all_temperatures)
+    console.log( unique_strainrates )
+    console.log( unique_temperatures )
+
+    unique_strainrates.sort(function(a, b){return a - b});
+    unique_temperatures.sort(function(a, b){return a - b});
+    console.log( unique_strainrates )
+    console.log( unique_temperatures )
+
+
+    dataMatrix = []
+
+    for(var i=0; i < unique_strainrates.length; i++){
+
+        for(var j=0; j < unique_temperatures.length; j++){
+            dataMatrix.push( { strainrate :  unique_strainrates[i],
+                                 temperature : unique_temperatures[j],
+                                 flowstress : []
+             })
+
+        }
+    }
+    console.log(dataMatrix)
+
 
         test_db.allDocs({
-             keys: tests,
+             keys: tests_ids_compare,
              include_docs: true
         }).then(function(result){
             console.log(result)
-            for(var i=0; i<tests.length; i++){
+            if(result.rows.length > 0){
+                result.rows.forEach(function(test, i){
 
-            if(!unique_strainrates.find(result.strainrate)){
-                unique_strainrates.push(result)
-            }
-            if(!unique_temperatures.find(result.temperatures)){
-                unique_temperatures.push(result)
-            }
-            materialData.push(interpolateFlowStress(result))
+                    if(test.doc.analysed){
+                    dataMatrix.forEach(function(d, index){
+                        console.log(dataMatrix[index])
+                        if( d.temperature == test.doc.temperature && d.strainrate == test.doc.strainrate ){
+                            dataMatrix[index].flowstress = interpolateFlowStress(test.doc)
+                        }
+                    })
+
+                    //interpolatedData.push(int_data)
+
+                    }
+                    else{
+                        console.log("Test " + test.doc._id + " has not been analysed fully and will be skipped during the flow stress interpolation" )
+                    }
+                    //console.log(dataMatrix)
+                })
+
 
             }
-
 
         }).then(function(){
+            console.log(tests_ids_compare.length + " tests sent for interpolation.")
+            console.log("All data successfully interpolated at strain values of: " + unique_strains)
+            console.log("Unique strainrates : "  + unique_strainrates )
+            console.log("Unique temperatures : "  + unique_temperatures )
+            console.log("Interpolated data : " , dataMatrix )
+            makeDEFORMFlowStress(dataMatrix)
 
         }).catch(function(err){
             console.log(err)
@@ -1053,30 +1131,18 @@ function interpolateFlowStress(test){
             }
         }
 
-    //console.log("Stress strain data to interpolate" )
-
-    // Linear interpolation setup occurs here
-
-    //console.log("Strains = " + strains)
-    //console.log("Stresses = " + stresses)
-
     //Interpolation using Everpolate.js
     var flowstress = evaluateLinear(unique_strains, strains, stresses)
 
-    // Save interpolated data to an object
-    var interpolatedData = {
-            "strainrate" : test.strainrate,
-            "temperature" : test.temperature,
-            "flowstress" : flowstress
-
-    }
-    console.log(interpolatedData)
-    return interpolatedData
+    return flowstress
 }
 
 
-function makeDEFORMFlowStress(){
+function makeDEFORMFlowStress(data){
+    console.log("Using interpolated data : " , dataMatrix )
+    dataMatrix.forEach(function(){
 
+    })
 
 
 }
@@ -1085,7 +1151,76 @@ function makeDEFORMFlowStress(){
 
 
 
+function plotStressGraphs(){
 
+        //console.log('Plotting load displacement graph');
+         chart = new CanvasJS.Chart("chartCompare",
+        {
+            animationEnabled: false,
+            zoomEnabled: true,
+            zoomType: "xy",
+            exportEnabled: true,
+            exportFileName: "Stress - Strain comparison",
+            toolTip: {
+                    enabled: true,
+                    shared: true
+            },
+            title: {
+                text: "Test comparison",
+                fontColor: "#000",
+                fontfamily: "Arial",
+                fontSize: 20,
+                padding: 8
+            },
+            legend: { fontSize: 14,
+                       horizontalAlign: "right", // left, center ,right
+                       verticalAlign: "top",  // top, center, bottom
+                        cursor: "pointer",
+                        itemclick: function (e) {
+                            //console.log("legend click: " + e.dataPointIndex);
+                            //console.log(e);
+                            if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                                e.dataSeries.visible = false;
+                            } else {
+                                e.dataSeries.visible = true;
+                            }
+
+                            e.chart.render();
+                }
+            },
+        axisX:{
+                title: "True strain (mm/mm)",
+                fontColor: "#000",
+                fontfamily: "Arial",
+                titleFontSize: 20,
+                labelFontSize: 12,
+                lineColor: "#000",
+                tickColor: "#000",
+                labelFontColor: "#000",
+                titleFontColor: "#000",
+                lineThickness: 1,
+                reversed:  true
+        },
+        axisY:
+           {
+             title: "True Fric Corrected Stress (MPa)",
+             fontfamily: "Arial",
+             titleFontSize: 20,
+             labelFontSize: 12,
+             lineColor: "#000",
+             tickColor: "#000",
+             labelFontColor: "#000",
+             titleFontColor: "#000",
+             lineThickness: 1,
+             reversed:  true
+         }
+        });
+
+        chart.render();
+
+
+
+}
 
 
 
@@ -1137,49 +1272,73 @@ function findIntervalLeftBorderIndex(point, intervals) {
 
 
 
-/*
-function makeDEFORMFlowStress(num_strain){
 
-    var header = "# DEFORM Function data output
-#
-# Function Data (Y): Flow Stress
-# Axis 1       (X1): Strain
-# Axis 2       (X2): Strain Rate
-# Axis 3       (X3): Temperature
-#
-# File Format :
-#
-# 0(Reserved)          0(Reserved)          3(Function dimension)
-# No. of X1 values,    No. of X2 values,    No. of X3 values
-# X1_1  ,...,  X1_n
-# X2_1  ,...,  X2_n
-# X3_1  ,...,  X3_n
-# Y(1,1,1)  Y(2,1,1)  ...  Y(l,1,1)
-# Y(1,2,1)  Y(2,2,1)  ...  Y(l,2,1)
-# ...       ...       ...  ...
-# Y(1,m,1)  Y(2,m,1)  ...  Y(l,m,1)
-#
-# Y(1,1,2)  Y(2,1,2)  ...  Y(l,1,2)
-# Y(1,2,2)  Y(2,2,2)  ...  Y(l,2,2)
-# ...       ...       ...  ...
-# Y(1,m,2)  Y(2,m,2)  ...  Y(l,m,2)
-#
-# ...
-#
-# Y(1,1,n)  Y(2,1,n)  ...  Y(l,1,n)
-# Y(1,2,n)  Y(2,2,n)  ...  Y(l,2,n)
-# ...       ...      ...  ...
-# Y(1,m,n)  Y(2,m,n)  ...  Y(l,m,n)
-#
-#
-# There cannot be any comments after this line"
+function makeDEFORMFlowStress(data){
 
-
-
-
+    /*
+    # DEFORM Function data output
+    #
+    # Function Data (Y): Flow Stress
+    # Axis 1       (X1): Strain
+    # Axis 2       (X2): Strain Rate
+    # Axis 3       (X3): Temperature
+    #
+    # File Format :
+    #
+    # 0(Reserved)          0(Reserved)          3(Function dimension)
+    # No. of X1 values,    No. of X2 values,    No. of X3 values
+    # X1_1  ,...,  X1_n
+    # X2_1  ,...,  X2_n
+    # X3_1  ,...,  X3_n
+    # Y(1,1,1)  Y(2,1,1)  ...  Y(l,1,1)
+    # Y(1,2,1)  Y(2,2,1)  ...  Y(l,2,1)
+    # ...       ...       ...  ...
+    # Y(1,m,1)  Y(2,m,1)  ...  Y(l,m,1)
+    #\
+    # Y(1,1,2)  Y(2,1,2)  ...  Y(l,1,2)
+    # Y(1,2,2)  Y(2,2,2)  ...  Y(l,2,2)
+    # ...       ...       ...  ...
+    # Y(1,m,2)  Y(2,m,2)  ...  Y(l,m,2)
+    #
+    # ...
+    #
+    # Y(1,1,n)  Y(2,1,n)  ...  Y(l,1,n)
+    # Y(1,2,n)  Y(2,2,n)  ...  Y(l,2,n)
+    # ...       ...      ...  ...
+    # Y(1,m,n)  Y(2,m,n)  ...  Y(l,m,n)
+    #
+    #
+    # There cannot be any comments after this line
+    */
 
 
+    var dataString = "0    0   3\r\n" + unique_strains.length + "\t" + unique_strainrates.length + "\t" +unique_temperatures.length + "\r\n"
+    dataString = dataString.concat("\r\n")
+    unique_strains.forEach(function(d, i){
+        dataString = dataString.concat( d + "\t")
+    })
+    dataString = dataString.concat("\r\n")
 
+    unique_strainrates.forEach(function(d, i){
+        dataString = dataString.concat( d + "\t")
+    })
+    dataString = dataString.concat("\r\n")
 
+    unique_temperatures.forEach(function(d, i){
+        dataString = dataString.concat( d + "\t")
+    })
+    dataString = dataString.concat("\r\n")
+
+    dataMatrix.forEach(function(d, i){
+        d.flowstress.forEach(function(d){
+            dataString = dataString.concat( d.toFixed(2) + "\t")
+            console.log(dataString)
+        })
+        dataString = dataString.concat("\r\n")
+    })
+    dataString = dataString.concat("\r\n")
+
+    console.log(dataString)
+
+    return dataString
 }
-*/

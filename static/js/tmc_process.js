@@ -754,27 +754,15 @@ function calculate_barrelling(){
 
 
 function prepareDownload(){
-    console.log("Preparing download. Please wait...")
-    var loadDispPoints = chart_raw.options.data[2].dataPoints
-    var loadStrokePoints = chart_stroke.options.data[2].dataPoints
-    var isoDataPoints = chart_stress.options.data[2].dataPoints
-    var fricDataPoints = chart_stress.options.data[1].dataPoints
-    var rawDataPoints = chart_stress.options.data[0].dataPoints
-    //console.log(dataPoints)
-    var data = []
-    data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), True Strain (mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
-    //console.log("Data length = " + isoDataPoints.length + ",  " + fricDataPoints.length+ ",  " + rawDataPoints.length)
 
-    for(var i=0; i<fricDataPoints.length; i++){
-        var loadDispPoint = loadDispPoints[i]
-        var loadStrokePoint = loadStrokePoints[i]
-        var isoPoint = isoDataPoints[i]
-        var fricPoint = fricDataPoints[i]
-        var rawPoint = rawDataPoints[i]
-        if(rawPoint.x && rawPoint.y >= 0.0 && fricPoint.y >= 0.0 && rawPoint.x >= 0.0){
-            data.push(loadDispPoint.x + "," + loadStrokePoint.x + "," + loadStrokePoint.y + "," + rawPoint.x + "," + rawPoint.y + "," + fricPoint.y + "," + isoPoint.y + "\r\n")
-    //        console.log(point)
-        }
+    var test = currentTest
+    console.log("Preparing download for test " + test._id + ". Please wait...")
+    let data = []
+    data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), Temperature (ºC) True Strain (mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
+
+    for(var i=0; i<test.measurements.length; i++){
+        var point = test.measurements[i]
+            data.push(point.disp_corr + "," + point.stroke_corr + "," + point.load_corr + ","+ point.sample_temp_2_centre + "," + point.strain + "," + point.trueStress + "," + point.fricStress + "," + point.isoStress + "\r\n")
     }
 
     data.join()

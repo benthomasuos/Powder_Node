@@ -372,3 +372,9 @@ a ~ .nav-tile {
     font-size: 1em;
     height: 30px;
 }
+
+td > .fa-navicon:hover {
+    color: #ccc;
+    cursor: pointer ;
+
+}
