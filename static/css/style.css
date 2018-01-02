@@ -49,11 +49,12 @@ a.disabled {
 }
 
 .controls{
+    max-width: 220px;
+    float:right;
 }
 
 #tests{
     float:right;
-
 }
 
 td + i.fa-trash:hover{
@@ -374,7 +375,19 @@ a ~ .nav-tile {
 }
 
 td > .fa-navicon:hover {
-    color: #ccc;
+    color: #aaa;
     cursor: pointer ;
+
+}
+
+td > .fa-trash:hover{
+    color: #aaa;
+    cursor: pointer
+
+}
+
+td > .fa-edit:hover{
+    color: #333;
+    cursor: pointer
 
 }

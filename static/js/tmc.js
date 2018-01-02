@@ -267,18 +267,11 @@ function getAllTests(){
                         console.log(datatable)
                         applyCheckboxEvent()
                         datatable.on('draw', function(){
+                            tableEvents()
                             applyCheckboxEvent()
+                            initialiseSearch()
                         })
 
-                        tableBody.find("i.fa-trash").on('click', function(){
-                            var test_id = $(this).closest('tr').attr('name');
-                            console.log("Deleting test " + test_id)
-                            var response = confirm("Are you sure you want to delete test: " + test_id)
-                            //var response = true
-                            if( response == true){
-                                removeTest(test_id);
-                            }
-                        })
 
 
 
@@ -311,9 +304,6 @@ function getAllTests(){
 
 
 
-
-
-
                         initialiseSearch()
 
             }).catch(
@@ -331,6 +321,7 @@ function applyCheckboxEvent(){
     $('input[type="checkbox"]').off('change')
 
     $('input[type="checkbox"]').on('change', function(){
+        var thisCheckbox = $(this)
         tests_to_compare = []
         console.log($(this))
         var test_id = $(this).attr('id')
@@ -363,7 +354,7 @@ function applyCheckboxEvent(){
                                     //console.log(tests_ids_compare.length)
                                     //console.log(tests_to_compare.length)
 
-                                    appendToMatrix(result)
+                                    appendToMatrix(result, thisCheckbox)
 
                                     material_chart.render()
                                     console.log("Length = " + tests_ids_compare.length)
@@ -467,16 +458,9 @@ function getSearchedTests(){
                                 tableBody.append(row)
                             }
 
+                            tableEvents()
 
 
-                            tableBody.find("i.fa-trash").on('click', function(){
-                                var test_id = $(this).closest('tr').attr('name');
-                                console.log("Deleting test " + test_id)
-                                var response = confirm("Are you sure you want to delete test: "+ test_id)
-                                if( response == true){
-                                    removeTest(test_id);
-                                }
-                            })
 
                         tableBody.find('input[type="checkbox"]').on('change', function(){
                             var tests_to_compare = [];
@@ -522,6 +506,19 @@ function getSearchedTests(){
 
 }
 
+
+function tableEvents(){
+
+    tableBody.find("i.fa-trash").on('click', function(){
+        var test_id = $(this).closest('tr').attr('name');
+        console.log("Deleting test " + test_id)
+        var response = confirm("Are you sure you want to delete test: "+ test_id)
+        if( response == true){
+            removeTest(test_id);
+        }
+    })
+
+}
 
 
 function newTestForm(){
@@ -735,7 +732,7 @@ function removeTest(test_id){
 
 
 function prepareDownload(test, downloadBtn){
-    console.log("Preparing download for test " + test._id + ". Please wait...")
+    //console.log("Preparing download for test " + test._id + ". Please wait...")
     let data = []
 
     data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), Temperature (ºC) True Strain (mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
@@ -754,7 +751,7 @@ function prepareDownload(test, downloadBtn){
     downloadBtn.attr('href', url )
     downloadBtn.attr('download', test._id + "_analysed_data.txt" )
 
-    console.log("Download is ready for test " + test._id)
+    //console.log("Download is ready for test " + test._id)
 }
 
 
@@ -943,34 +940,64 @@ function parseMusfile(data){
 
 
 
+function checkDEFORMTests(numTests){
 
+    var totalUniqueTests = parseFloat(unique_strainrates.length) * parseFloat(unique_temperatures.length);
+    console.log("Test check", totalUniqueTests, numTests)
+    if (numTests == totalUniqueTests){
+        return true;
+    }
+    else {
+        return false;
+    }
+}
 
 
 
 function initDeformMatrix(){
-    //plotStressGraphs()
-    console.log("Initialising DEFORM matrix")
-    $('#matrix').html('')
-    $('#materialMatrix').show(200);
-    material_chart = new CanvasJS.Chart("matrix",
+    initStressGraphs()
+    console.log("Initialising DEFORM matrix");
+    $('#matrix').html('');
+    $('#materialMatrix').show();
+    material_chart = new CanvasJS.Chart( "matrix",
         {
           title:{
-           text: "Material data"
+           text: "Material data",
+           fontColor: "#000",
+           fontfamily: "Arial",
+           fontSize: 20,
+           padding: 8
           },
-          width: 500,
-          height: 500,
           axisX: {
               title: "Strain rate (/s)",
               logarithmic:  true,
               crosshair: {
 			               enabled: true
-		                     }
+                       },
+         fontColor: "#000",
+         fontfamily: "Arial",
+         titleFontSize: 20,
+         labelFontSize: 12,
+         lineColor: "#000",
+         tickColor: "#000",
+         labelFontColor: "#000",
+         titleFontColor: "#000",
+         lineThickness: 1
           },
           axisY: {
               title : "Temperature (ºC)",
               crosshair: {
 			               enabled: true
-		      }
+		      },
+              fontColor: "#000",
+              fontfamily: "Arial",
+              titleFontSize: 20,
+              labelFontSize: 12,
+              lineColor: "#000",
+              tickColor: "#000",
+              labelFontColor: "#000",
+              titleFontColor: "#000",
+              lineThickness: 1
           },
           toolTip:{
                content:"Test: {name}" ,
@@ -988,38 +1015,46 @@ function initDeformMatrix(){
 }
 
 
-function appendToMatrix(test){
-
+function appendToMatrix(test, checkbox){
+    var color = '#46f279';
     if(test.analysed == true){
-        var color = '#46f279';
+        color = '#46f279';
+
+        if(test.sample.name.user_defined) {
+            material_chart.options.title.text = test.sample.name.user_defined
+        }
+        else{
+            material_chart.options.title.text =  test.sample.name.musfile_defined
+        }
+
+        var data = {
+            x : parseFloat(test.strainrate),
+            y : parseFloat(test.temperature),
+            z : 100,
+            name : test._id + " : " + test.temperature + "ºC  " + test.strainrate + " s-1" ,
+            markerColor : color,
+            markerType : 'square',
+            indexLabel : test.yield_strength_02_mpa + " MPa",
+            indexLabelPlacement : "inside",
+            indexLabelWrap : true,
+            indexLabelFontSize: 14
+        }
+
+        material_chart.data[0].dataPoints.push(data)
+        //console.log(data)
+
+
+
+
     }
     else{
-        var color = '#e11';
+        console.log(checkbox)
+        checkbox.attr('checked', false)
+        //alert("Test analysis hasn't been completed so data cannot be added to the DEFORM flow stress matrix. Please analyse the test fully")
+        console.log("Test analysis hasn't been completed so data cannot be added to the DEFORM flow stress matrix. Please analyse the test fully")
     }
 
 
-    if(test.sample.name.user_defined) {
-        material_chart.options.title.text = test.sample.name.user_defined
-    }
-    else{
-        material_chart.options.title.text =  test.sample.name.musfile_defined
-    }
-
-    var data = {
-        x : parseFloat(test.strainrate),
-        y : parseFloat(test.temperature),
-        z : 100,
-        name : test._id + " : " + test.temperature + "ºC  " + test.strainrate + " s-1" ,
-        markerColor : color,
-        markerType : 'square',
-        indexLabel : test.yield_strength_02_mpa + " MPa",
-        indexLabelPlacement : "inside",
-        indexLabelWrap : true,
-        indexLabelFontSize: 14
-    }
-
-    material_chart.data[0].dataPoints.push(data)
-    //console.log(data)
 
 
 }
@@ -1028,6 +1063,7 @@ function appendToMatrix(test){
 
 function getMaterialData(){
     //console.log(tests)
+    initStressGraphs()
     var all_strainrates = []
     var all_temperatures = []
     unique_strains = $('#strain_points').val().split('\n');
@@ -1061,7 +1097,7 @@ function getMaterialData(){
 
         }
     }
-    console.log(dataMatrix)
+    //console.log(dataMatrix)
 
 
         test_db.allDocs({
@@ -1071,17 +1107,32 @@ function getMaterialData(){
             console.log(result)
             if(result.rows.length > 0){
                 result.rows.forEach(function(test, i){
-
                     if(test.doc.analysed){
-                    dataMatrix.forEach(function(d, index){
-                        console.log(dataMatrix[index])
-                        if( d.temperature == test.doc.temperature && d.strainrate == test.doc.strainrate ){
-                            dataMatrix[index].flowstress = interpolateFlowStress(test.doc)
-                        }
-                    })
-
-                    //interpolatedData.push(int_data)
-
+                        var actualFlowStress = test.doc.measurements.map(function( d, i ){
+                            if( d.strain != null && d.fricStress > 1.0 ){
+                                //console.log(d.strain, d.fricStress)
+                                return { x : d.strain, y : d.fricStress }
+                            }
+                            else{
+                                return { x : 0.0, y : null }
+                            }
+                        })
+                        //console.log("Plotting actual flow stress for test " + test.id)
+                        //console.log("Actual flow stress" , actualFlowStress)
+                        plotDEFORMFlowStress(actualFlowStress, test.doc.temperature + " " + test.doc.strainrate)
+                        dataMatrix.forEach(function(d, index){
+                            //console.log(dataMatrix[index])
+                            if( d.temperature == test.doc.temperature && d.strainrate == test.doc.strainrate ){
+                                var data = interpolateFlowStress(test.doc)
+                                dataMatrix[index].flowstress = data
+                                var plotData = data.map(function(d,i){
+                                    //console.log(parseFloat(unique_strains[i]) , d)
+                                    return { x : parseFloat(unique_strains[i]) , y : d }
+                                })
+                                //console.log("Plotting interpolated data", plotData)
+                                plotDEFORMFlowStress( plotData, test.doc.temperature + " " + test.doc.strainrate + " DEFORM")
+                            }
+                        })
                     }
                     else{
                         console.log("Test " + test.doc._id + " has not been analysed fully and will be skipped during the flow stress interpolation" )
@@ -1093,12 +1144,23 @@ function getMaterialData(){
             }
 
         }).then(function(){
-            console.log(tests_ids_compare.length + " tests sent for interpolation.")
-            console.log("All data successfully interpolated at strain values of: " + unique_strains)
-            console.log("Unique strainrates : "  + unique_strainrates )
-            console.log("Unique temperatures : "  + unique_temperatures )
-            console.log("Interpolated data : " , dataMatrix )
-            makeDEFORMFlowStress(dataMatrix)
+
+            if( checkDEFORMTests( tests_ids_compare.length ) ){
+                console.log(tests_ids_compare.length + " tests sent for interpolation.")
+                console.log("All data successfully interpolated at strain values of: " + unique_strains)
+                console.log("Unique strainrates : "  + unique_strainrates )
+                console.log("Unique temperatures : "  + unique_temperatures )
+                console.log("Interpolated data : " , dataMatrix )
+
+                makeDEFORMFlowStress( dataMatrix )
+
+            }
+            else{
+                console.log("Not enough unique tests to cover the whole test matrix. A valid DEFORM flow stress model cannot be created.")
+                makeDEFORMFlowStress( dataMatrix )
+
+            }
+
 
         }).catch(function(err){
             console.log(err)
@@ -1110,48 +1172,51 @@ function getMaterialData(){
 }
 
 
-function generateMaterialData( strains, strainrates, temperatures, flowStressData){
-
-
-
-}
-
 
 
 function interpolateFlowStress(test){
     console.log("Interpolating data for test: " + test._id)
 
-    var strains = []
-    var stresses = []
-    for(var i=0; i<test.measurements.length; i++){
-        var dataPoint = test.measurements[i]
-        if(dataPoint.strain > 0.0 && dataPoint.fricStress > 0.0){
-            strains.push( parseFloat(dataPoint.strain) )
-            stresses.push( parseFloat(dataPoint.fricStress) )
-            }
-        }
-
     //Interpolation using Everpolate.js
-    var flowstress = evaluateLinear(unique_strains, strains, stresses)
+    var flowstress = evaluateLinear(unique_strains, test)
 
     return flowstress
 }
 
 
-function makeDEFORMFlowStress(data){
-    console.log("Using interpolated data : " , dataMatrix )
-    dataMatrix.forEach(function(){
-
+function plotDEFORMFlowStress(data, name){
+    //console.log(data)
+    chart.options.data.push({
+        dataPoints: data,
+        connectNullData: false,
+        type: "line",
+        showInLegend: true,
+        name: name,
+        toolTipContent: "Strain: {x}, FricCorrStress: {y} MPa",
     })
-
+    console.log(chart)
+    chart.render()
 
 }
 
 
+function prepFlowStressDownload(dataString, downloadBtn){
+    console.log("Preparing download for material. Please wait...")
+    downloadBtn.attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(dataString) )
+    downloadBtn.attr('download', "flowStress.txt" )
+    console.log(downloadBtn)
+    console.log("Download is ready.")
+    downloadBtn.show()
+    downloadBtn.find('div').css("box-shadow", "#3f3 0px 0px 4px 4px").delay(2000)
+                    .queue(function(n) {
+                           $(this).css("box-shadow", "none");
+                           n();
+                       })
+}
 
 
 
-function plotStressGraphs(){
+function initStressGraphs(){
 
         //console.log('Plotting load displacement graph');
          chart = new CanvasJS.Chart("chartCompare",
@@ -1174,7 +1239,7 @@ function plotStressGraphs(){
             },
             legend: { fontSize: 14,
                        horizontalAlign: "right", // left, center ,right
-                       verticalAlign: "top",  // top, center, bottom
+                       verticalAlign: "center",  // top, center, bottom
                         cursor: "pointer",
                         itemclick: function (e) {
                             //console.log("legend click: " + e.dataPointIndex);
@@ -1198,8 +1263,7 @@ function plotStressGraphs(){
                 tickColor: "#000",
                 labelFontColor: "#000",
                 titleFontColor: "#000",
-                lineThickness: 1,
-                reversed:  true
+                lineThickness: 0
         },
         axisY:
            {
@@ -1211,9 +1275,9 @@ function plotStressGraphs(){
              tickColor: "#000",
              labelFontColor: "#000",
              titleFontColor: "#000",
-             lineThickness: 1,
-             reversed:  true
-         }
+             lineThickness: 0
+         },
+         data : []
         });
 
         chart.render();
@@ -1226,24 +1290,53 @@ function plotStressGraphs(){
 
 
 // Modified from Everpolate.js / linear.js - https://github.com/BorisChumichev/everpolate
-function evaluateLinear (pointsToEvaluate, functionValuesX, functionValuesY) {
-        //console.log(pointsToEvaluate)
-        //console.log(functionValuesX)
-        //console.log(functionValuesY)
-      var results = []
-      pointsToEvaluate.forEach(function (point) {
-        var index = findIntervalLeftBorderIndex(point, functionValuesX)
-        if (index == functionValuesX.length - 1)
-          index--
-        results.push(linearInterpolation(point, functionValuesX[index], functionValuesY[index]
-          , functionValuesX[index + 1], functionValuesY[index + 1]))
+function evaluateLinear (points, test) {
+
+    var pointsToEvaluate = points
+
+      var functionValuesX = []
+      var functionValuesY = []
+
+      test.measurements.map(function(d, i){
+          functionValuesX.push( parseFloat(d.strain) )
+          functionValuesY.push( parseFloat(d.fricStress) )
       })
+
+
+      console.log(functionValuesX, functionValuesY)
+
+
+      var results = []
+      pointsToEvaluate.forEach(function (point, i) {
+          if ( i != 0 && i < pointsToEvaluate.length - 1 ){ // miss out first and last strain points
+                var index = findIntervalLeftBorderIndex(point, functionValuesX)
+                if (index == functionValuesX.length - 1)
+                  index--
+                  console.log(point, functionValuesX[index], functionValuesY[index]
+                    , functionValuesX[index + 1], functionValuesY[index + 1] )
+                results.push(linearInterpolation(point, functionValuesX[index], functionValuesY[index]
+                  , functionValuesX[index + 1], functionValuesY[index + 1]))
+              }
+      })
+      console.log(results)
+      //extrapolate from the second and third data points to find the stress at zero strain
+      var zero_value = linearInterpolation(0.0, parseFloat( pointsToEvaluate[1]), results[0], parseFloat(pointsToEvaluate[2]), results[1])
+      results.unshift(zero_value)
+      var dataLength = pointsToEvaluate.length
+
+      // Extrapolate from the last and last-but-one data points to find the stress at the final strain point.
+      // This final strain value should be beyond the range of the measured data (ie 2.0-5.0)
+      var final_value = linearInterpolation(pointsToEvaluate[dataLength - 1] , parseFloat( pointsToEvaluate[dataLength - 3 ]), results[results.length - 2 ], parseFloat(pointsToEvaluate[dataLength - 2 ]), results[results.length - 1 ])
+      results.push(final_value)
+      console.log(results)
       return results
 }
 
 // Modified from Everpolate.js / linear.js  - https://github.com/BorisChumichev/everpolate
 function linearInterpolation (x, x0, y0, x1, y1) {
+      //console.log(x, x0,x1,y0,y1)
       var a = (y1 - y0) / (x1 - x0)
+      //console.log("Gradient = " + a)
       var b = -a * x0 + y0
       return a * x + b
 }
@@ -1332,13 +1425,14 @@ function makeDEFORMFlowStress(data){
     dataMatrix.forEach(function(d, i){
         d.flowstress.forEach(function(d){
             dataString = dataString.concat( d.toFixed(2) + "\t")
-            console.log(dataString)
+            //console.log(dataString)
         })
         dataString = dataString.concat("\r\n")
     })
     dataString = dataString.concat("\r\n")
 
-    console.log(dataString)
+    console.log(typeof dataString)
+    prepFlowStressDownload(dataString, $('#downloadFlowStress') )
 
     return dataString
 }

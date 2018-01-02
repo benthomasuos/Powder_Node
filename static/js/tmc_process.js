@@ -628,7 +628,7 @@ $("input[name^='d_final_']").on('change', function(){
 
 
 function hot_dimension(dimension, cte, temp, ref_temp){
-    var size = dimension + (cte * dimension * ( temp - ref_temp))
+    var size = parseFloat(dimension) + (cte * dimension * ( temp - ref_temp))
     //console.log(size)
     return size
 }
