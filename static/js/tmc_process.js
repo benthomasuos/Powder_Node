@@ -758,7 +758,7 @@ function prepareDownload(){
     var test = currentTest
     console.log("Preparing download for test " + test._id + ". Please wait...")
     let data = []
-    data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), Temperature (ºC) True Strain (mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
+    data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), Temperature (ºC), True Strain (mm/mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
 
     for(var i=0; i<test.measurements.length; i++){
         var point = test.measurements[i]
@@ -877,11 +877,18 @@ function calcDispOffset(){
 function calcStrain(){
     var heights = chart_stroke.options.data[2].dataPoints
     heights.map(function(d, i){
-        var strain = -Math.log(parseFloat(currentTest.sample.dimensions.h_hot_initial - d.x ) / currentTest.sample.dimensions.h_hot_initial )
-        currentTest.measurements[i].strain = strain
-        if(isNaN(strain)){
+        var stroke = d.x
+        if(stroke < 0.0 ){
+            stroke = 0.0
+        }
+        console.log( -Math.log( (parseFloat(currentTest.sample.dimensions.h_hot_initial) - stroke) / parseFloat(currentTest.sample.dimensions.h_hot_initial) )  )
+
+        var strain = -Math.log( (parseFloat(currentTest.sample.dimensions.h_hot_initial) - stroke) / parseFloat(currentTest.sample.dimensions.h_hot_initial) )
+        if(isNaN(strain) || strain === -0 ){
+            console.log("NaN strain found in test " + currentTest._id + " at point # " + i)
             strain = 0.0
         }
+        currentTest.measurements[i].strain = strain
     })
 }
 

@@ -265,8 +265,10 @@ function getAllTests(){
 
                         var datatable  = currentTestTable.DataTable()
                         console.log(datatable)
+                        tableEvents()
                         applyCheckboxEvent()
                         datatable.on('draw', function(){
+                            console.log("State loaded")
                             tableEvents()
                             applyCheckboxEvent()
                             initialiseSearch()
@@ -1109,12 +1111,12 @@ function getMaterialData(){
                 result.rows.forEach(function(test, i){
                     if(test.doc.analysed){
                         var actualFlowStress = test.doc.measurements.map(function( d, i ){
-                            if( d.strain != null && d.fricStress > 1.0 ){
+                            if( d.strain != null && d.strain < 2.0 ){
                                 //console.log(d.strain, d.fricStress)
                                 return { x : d.strain, y : d.fricStress }
                             }
                             else{
-                                return { x : 0.0, y : null }
+                                return { x : 0.0, y : d.fricStress }
                             }
                         })
                         //console.log("Plotting actual flow stress for test " + test.id)
@@ -1298,6 +1300,7 @@ function evaluateLinear (points, test) {
       var functionValuesY = []
 
       test.measurements.map(function(d, i){
+          console.log("Evaluate linear result: "+ d.strain, d.fricStress)
           functionValuesX.push( parseFloat(d.strain) )
           functionValuesY.push( parseFloat(d.fricStress) )
       })

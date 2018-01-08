@@ -264,8 +264,7 @@ td + i.fa-trash:hover{
 }
 
 .nav-tile{
-    font-weight: 300;
-    min-width: 48%;
+    min-width: 32%;
     padding: 10px;
     margin: 4px;
     min-height: 100px;
@@ -276,6 +275,19 @@ td + i.fa-trash:hover{
     float: left;
 
 }
+
+.nav-tile > h1 {
+    position:relative;
+
+}
+
+.nav-tile > i {
+    position:relative;
+
+}
+
+
+
 a ~ .nav-tile {
     text-decoration: none;
 }
@@ -283,7 +295,7 @@ a ~ .nav-tile {
 .nav-tile-red {
     color: #fff;
     background-color: #FF4500;
-    border: #FF4500 outset 4pt;
+    border: #FF4500 solid 4pt;
 }
 
 .nav-tile-red:hover {
@@ -293,7 +305,7 @@ a ~ .nav-tile {
 .nav-tile-skyblue {
     color: #fff;
     background-color: #00C1FE;
-    box-shadow: #ff9e59 4px 4px;
+    border: #00C1FE solid 4pt;
 }
 
 .nav-tile-skyblue:hover {
@@ -302,19 +314,19 @@ a ~ .nav-tile {
 
 .nav-tile-lightgreen {
     color: #fff;
-    background-color: #ADFF2F ;
-    border: #ADFF2F  outset 4pt;
+    background-color: #7c0 ;
+    border: #7c0  solid 4pt;
 }
 
 .nav-tile-lightgreen:hover {
-    background-color: #7c0;
+    background-color: #5a0;
 }
 
 
 .nav-tile-coral {
     color: #fff;
     background-color: #FF7F50;
-    border: #FF7F50 outset 4pt;
+    border: #FF7F50 solid 4pt;
 }
 
 .nav-tile-coral:hover {
