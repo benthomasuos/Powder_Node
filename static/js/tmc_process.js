@@ -411,33 +411,36 @@ function saveData(){
         }
     })
 
-        var measurements = currentTest.measurements.map(function(d,i){
-            var stroke_corr = chart_stroke.options.data[2].dataPoints[i].x || null
-            var zero_corr = chart_stroke.options.data[1].dataPoints[i].x || null
-            var disp_corr = chart_stroke.options.data[2].dataPoints[i].x || null
-            var load_corr = chart_raw.options.data[2].dataPoints[i].y || null
-            var strainrate = chart_sr.options.data[0].dataPoints[i].y || null
-            var strain = chart_stress.options.data[1].dataPoints[i].x || null
-            var trueStress = chart_stress.options.data[0].dataPoints[i].y || null
-            var fricStress = chart_stress.options.data[1].dataPoints[i].y || null
-            var isoStress = chart_stress.options.data[2].dataPoints[i].y || null
-            d.stroke_corr = stroke_corr
-            d.zero_corr = zero_corr
-            d.disp_corr = disp_corr
-            d.load_corr = load_corr
-            d.strainrate = strainrate
-            d.strain = strain
-            d.trueStress = trueStress
-            d.fricStress = fricStress
-            d.isoStress = isoStress
-            if(d.stroke_corr && d.zero_corr && d.disp_corr && d.load_corr && d.strain && d.trueStress && d.fricStress){
-                //console.log("Your test has been analysed fully. Well done!")
-                currentTest.analysed = true;
+         var measurements = []
+         for(var i=0; i< currentTest.measurements.length; i++){
+             if(chart_stress.options.data[1].dataPoints[i]){
+                     var d = currentTest.measurements[i]
+                    var stroke_corr = chart_stroke.options.data[2].dataPoints[i].x || null
+                    var zero_corr = chart_stroke.options.data[1].dataPoints[i].x || null
+                    var disp_corr = chart_stroke.options.data[2].dataPoints[i].x || null
+                    var load_corr = chart_raw.options.data[2].dataPoints[i].y || null
+                    var strainrate = chart_sr.options.data[0].dataPoints[i].y || null
+                    var strain = chart_stress.options.data[1].dataPoints[i].x || null
+                    var trueStress = chart_stress.options.data[0].dataPoints[i].y || null
+                    var fricStress = chart_stress.options.data[1].dataPoints[i].y || null
+                    var isoStress = chart_stress.options.data[2].dataPoints[i].y || null
+                    d.stroke_corr = stroke_corr
+                    d.zero_corr = zero_corr
+                    d.disp_corr = disp_corr
+                    d.load_corr = load_corr
+                    d.strainrate = strainrate
+                    d.strain = strain
+                    d.trueStress = trueStress
+                    d.fricStress = fricStress
+                    d.isoStress = isoStress
+                    if(d.stroke_corr && d.zero_corr && d.disp_corr && d.load_corr && d.strain && d.trueStress && d.fricStress){
+                        //console.log("Your test has been analysed fully. Well done!")
+                        currentTest.analysed = true;
+                    }
+                        measurements.push(d)
             }
-
-            return d
-
-        })
+    }
+    currentTest.final_measurements = measurements
 
     console.log("Saved data")
     //console.log(currentTest)
@@ -759,14 +762,18 @@ function prepareDownload(){
     console.log("Preparing download for test " + test._id + ". Please wait...")
     let data = []
     data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), Temperature (ºC), True Strain (mm/mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
+    if(test.final_measurements){
+        for(var i=0; i<test.final_measurements.length; i++){
+            var point = test.final_measurements[i]
+                data.push(point.disp_corr + "," + point.stroke_corr + "," + point.load_corr + ","+ point.sample_temp_2_centre + "," + point.strain + "," + point.trueStress + "," + point.fricStress + "," + point.isoStress + "\r\n")
+            }
 
-    for(var i=0; i<test.measurements.length; i++){
-        var point = test.measurements[i]
-            data.push(point.disp_corr + "," + point.stroke_corr + "," + point.load_corr + ","+ point.sample_temp_2_centre + "," + point.strain + "," + point.trueStress + "," + point.fricStress + "," + point.isoStress + "\r\n")
+        data.join()
     }
-
-    data.join()
-
+    else{
+        data[1] = "No data available. Test not analysed."
+        data.join()
+    }
     var blob = new Blob(data, {type: "text/.txt"});
     var url = URL.createObjectURL(blob);
     export_SS.attr('href', url )
@@ -955,26 +962,26 @@ function calcFricCorrStress(){
     //console.log(heights, stresses, radii)
 
     var friction_type = $('input[name="optradio"]:checked').attr('box')
-    console.log("Friction type = " + friction_type)
+    //console.log("Friction type = " + friction_type)
 
     switch(friction_type){
         case "linear_fric":
-        console.log("Using linear friction correction")
+        //console.log("Using linear friction correction")
             linearFric(heights, radii, stresses)
             chart_stress.render()
             break
         case "bilinear_fric":
-            console.log("Using bilinear friction correction")
+            //console.log("Using bilinear friction correction")
             bilinearFric(heights, radii, stresses)
             chart_stress.render()
             break
         case "pressure_fric":
-            console.log("Using pressure dependant friction correction")
+            //console.log("Using pressure dependant friction correction")
             pressureFric(heights, radii, stresses)
             chart_stress.render()
             break
         default:
-            console.log("No friction correction")
+            //console.log("No friction correction")
             chart_stress.render()
         break
     }
@@ -1007,7 +1014,7 @@ function linearFric(heights, radii, stresses){
         var strain = stresses[i].x
         return { "x": strain, "y": stress_fric_corr, "label": "Fric Corr Stress 1"}
     })
-    console.log("Finished friction correction")
+    //console.log("Finished friction correction")
     //$('#pc_corrected').hide()
 }
 
@@ -1039,7 +1046,7 @@ function bilinearFric(heights, radii, stresses){
     var data = []
     var newHeights = []
     var newRadii = []
-    console.log(stresses)
+    //console.log(stresses)
     for(var i=0; i< heights.length;i++){
         if(stresses[i].x > 0){
             data.push( { "x": stresses[i].x, "y": stresses[i].y} )
@@ -1047,11 +1054,11 @@ function bilinearFric(heights, radii, stresses){
             newHeights.push(heights[i])
         }
     }
-    console.log(data.length)
-    console.log(newRadii.length)
-    console.log(newHeights.length)
+    //console.log(data.length)
+    //console.log(newRadii.length)
+    //console.log(newHeights.length)
 
-    console.log("Number of points = " + data.length)
+    //console.log("Number of points = " + data.length)
     chart_stress.options.data[1].dataPoints = data.map(function(d, i){
         var percent = ( i * 100 / data.length)
 
@@ -1073,12 +1080,12 @@ function bilinearFric(heights, radii, stresses){
             //console.log("Using m_bar = " + m_bar.toFixed(3) + ": % of test corrected = " + ( i * 100 / data.length).toFixed(1) + " %" )
         }
         var factor = 1 / ( 1 + ( ( 2 * m_bar  * newRadii[i] )  / ( newHeights[i].x  * Math.sqrt(3) * 3  ) ))
-        console.log(newHeights[i] ,factor)
+
         var stress_fric_corr = d.y * factor
         var strain = d.x
         return { "x": strain, "y": stress_fric_corr, "label": "Fric Corr Stress 1"}
     })
-    console.log("Finished friction correction")
+    //console.log("Finished friction correction")
 
 }
 
@@ -1766,17 +1773,17 @@ $('input[type="radio"], input[name^="m_bar"], #pc_test ').on('change', function(
 $('#stiffness').on('change', function(){
 
     var type = $(this).find(":selected").val()
-    console.log("Changed to user defined stiffness correction with correction: " + type)
+    //console.log("Changed to user defined stiffness correction with correction: " + type)
     currentTest.mus_params.corrected.tmc = false;
     currentTest.mus_params.corrected.user = true;
     currentTest.compliance = compliance_json[type]
-    console.log(compliance_json[type] )
+    //console.log(compliance_json[type] )
     checkCompliance()
 
 
 
     var data = compliance_json[type]
-    console.log(data)
+    //console.log(data)
     calcNonComplianceLoad(data)
 })
 
@@ -1785,7 +1792,7 @@ $('#stiffness').on('change', function(){
 function scrollTo(div){
 
     if( div != currentlyScrollingTo ){
-        console.log("Scrolling to: "+ div)
+        //console.log("Scrolling to: "+ div)
         currentlyScrollingTo = div
 
         var element = $('#' + div )
@@ -1799,7 +1806,7 @@ function scrollTo(div){
 
     }
     else{
-        console.log("Already there... no need to scroll further")
+        //console.log("Already there... no need to scroll further")
     }
 
 
@@ -1807,7 +1814,7 @@ function scrollTo(div){
 
 function checkCompliance(){
 
-console.log("Checking for machine stiffness correction")
+    //console.log("Checking for machine stiffness correction")
     if(currentTest.mus_params.corrected.tmc == true){
         //console.log("Test is auto corrected for machine stiffness")
         $('#stiffness_corr').html("Test auto-corrected for machine compliance by TMC at runtime.<br><br>Using stiffness of " + currentTest.mus_params.stiffness.value + " " + currentTest.mus_params.stiffness.units )
