@@ -881,11 +881,11 @@ function calcStrain(){
         if(stroke < 0.0 ){
             stroke = 0.0
         }
-        console.log( -Math.log( (parseFloat(currentTest.sample.dimensions.h_hot_initial) - stroke) / parseFloat(currentTest.sample.dimensions.h_hot_initial) )  )
+        //console.log( -Math.log( (parseFloat(currentTest.sample.dimensions.h_hot_initial) - stroke) / parseFloat(currentTest.sample.dimensions.h_hot_initial) )  )
 
         var strain = -Math.log( (parseFloat(currentTest.sample.dimensions.h_hot_initial) - stroke) / parseFloat(currentTest.sample.dimensions.h_hot_initial) )
         if(isNaN(strain) || strain === -0 ){
-            console.log("NaN strain found in test " + currentTest._id + " at point # " + i)
+            //console.log("NaN strain found in test " + currentTest._id + " at point # " + i)
             strain = 0.0
         }
         currentTest.measurements[i].strain = strain
@@ -989,7 +989,7 @@ function calcFricCorrStress(){
 
 
 function linearFric(heights, radii, stresses){
-    $('#pc_corrected').html('0.0 %')
+    //$('#pc_corrected').html('0.0 %')
     $('#pc_corrected').show()
     var m_bar = $('#m_bar').val()
 
@@ -1001,14 +1001,14 @@ function linearFric(heights, radii, stresses){
     chart_stress.options.data[1].dataPoints = heights.map(function(d, i){
         var percent = ( i * 100 / heights.length)
         //console.log("% of test corrected = " + percent.toFixed(1) + " %")
-        $('#pc_corrected').html(percent.toFixed(1) + " %")
+        $('#pc_corrected').val(percent)
         var factor = 1 / ( 1 + ( ( 2 * m_bar  * radii[i] )  / ( d.x  * Math.sqrt(3) * 3  ) ))
         var stress_fric_corr = stresses[i].y * factor
         var strain = stresses[i].x
         return { "x": strain, "y": stress_fric_corr, "label": "Fric Corr Stress 1"}
     })
     console.log("Finished friction correction")
-    $('#pc_corrected').hide()
+    //$('#pc_corrected').hide()
 }
 
 
@@ -1021,7 +1021,7 @@ function linearFric(heights, radii, stresses){
 
 
 function bilinearFric(heights, radii, stresses){
-    $('#pc_corrected').html('0.0 %')
+    $('#pc_corrected').val(0)
     $('#pc_corrected').show()
     var m_bar_1 = $('#m_bar_1').val()
     var m_bar_2 = $('#m_bar_2').val()
@@ -1035,33 +1035,51 @@ function bilinearFric(heights, radii, stresses){
         "m_bar_3" : m_bar_3,
         "pc_test" : pc_test
     }
-    chart_stress.options.data[1].dataPoints = heights.map(function(d, i){
-        var percent = ( i * 100 / heights.length)
+
+    var data = []
+    var newHeights = []
+    var newRadii = []
+    console.log(stresses)
+    for(var i=0; i< heights.length;i++){
+        if(stresses[i].x > 0){
+            data.push( { "x": stresses[i].x, "y": stresses[i].y} )
+            newRadii.push(radii[i])
+            newHeights.push(heights[i])
+        }
+    }
+    console.log(data.length)
+    console.log(newRadii.length)
+    console.log(newHeights.length)
+
+    console.log("Number of points = " + data.length)
+    chart_stress.options.data[1].dataPoints = data.map(function(d, i){
+        var percent = ( i * 100 / data.length)
+
         //console.log("% of test corrected = " + percent.toFixed(1) + " %")
 
         //$('#pc_corrected').html(percent.toFixed(1) + " %")
+        $('#pc_corrected').val(percent)
         var gradient_1 = parseFloat( (m_bar_2 - m_bar_1)/( pc_test ) )
         var intercept_1 = parseFloat (m_bar_1 )
         var gradient_2 = parseFloat( (m_bar_3 - m_bar_2)/( 100 - pc_test ) )
         var intercept_2 = parseFloat( m_bar_2 - (gradient_2 * pc_test) )
 
         if(percent <= pc_test ){
-
             var m_bar = (gradient_1 * percent) + intercept_1;
-            //console.log("Using m_bar = " + m_bar.toFixed(3) + ": % of test corrected = " + ( i * 100 / heights.length).toFixed(1) + " %" )
+            //console.log("Using m_bar = " + m_bar.toFixed(3) + ": % of test corrected = " + ( i * 100 / data.length).toFixed(1) + " %" )
         }
         else{
             var m_bar = (gradient_2 * percent) + intercept_2
-            //console.log("Using m_bar = " + m_bar.toFixed(3) + ": % of test corrected = " + ( i * 100 / heights.length).toFixed(1) + " %" )
+            //console.log("Using m_bar = " + m_bar.toFixed(3) + ": % of test corrected = " + ( i * 100 / data.length).toFixed(1) + " %" )
         }
-        var factor = 1 / ( 1 + ( ( 2 * m_bar  * radii[i] )  / ( d.x  * Math.sqrt(3) * 3  ) ))
-        var stress_fric_corr = stresses[i].y * factor
-        var strain = stresses[i].x
+        var factor = 1 / ( 1 + ( ( 2 * m_bar  * newRadii[i] )  / ( newHeights[i].x  * Math.sqrt(3) * 3  ) ))
+        console.log(newHeights[i] ,factor)
+        var stress_fric_corr = d.y * factor
+        var strain = d.x
         return { "x": strain, "y": stress_fric_corr, "label": "Fric Corr Stress 1"}
     })
     console.log("Finished friction correction")
 
-    $('#pc_corrected').hide()
 }
 
 
@@ -1264,11 +1282,11 @@ function plot_raw(data) {
                 }
                 if(d.load_corr){
                     var load = d.load_corr
-                    console.log("using corrected load")
+                    //console.log("using corrected load")
                 }
                 else{
                     var load = d.load
-                    console.log("using normal load")
+                    //console.log("using normal load")
                 }
                 return {"x": d.displacement , "y": load , "label": "Load corrected" }
             })
