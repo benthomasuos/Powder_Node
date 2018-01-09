@@ -199,6 +199,7 @@ function getAllTests(){
                             $('#test_status').hide()
                             for(i=0; i<result.docs.length; i++){
                                 var doc = result.docs[i];
+
                                 var test_id = doc._id
                                 //console.log(doc)
                                 var row = $('<tr></tr>')

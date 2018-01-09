@@ -44,11 +44,15 @@ var test_db_local = new PouchDB('flowstress')
 test_db_local.info().then(function (info) {
   console.log(info);
 })
-
+console.log(test_db_local)
 var powder_db_local = new PouchDB('powders')
 powder_db_local.info().then(function (info) {
   console.log(info);
 })
+
+
+
+
 
 
     displacement_offset.on('input', function(){
@@ -327,6 +331,15 @@ function getSingleTest(){
                 $("#test_status").hide()
                 return doc
             }).then(function(){
+                    return test_db_local.allDocs()
+            }).then(function(tests){
+                    console.log(tests)
+                for(var i=0; i< tests.rows.length; i++){
+                    console.log(tests.rows[i].id, currentTest._id, i)
+                    if(tests.rows[i].id == currentTest._id){
+                        nextButtons(tests.rows, i)
+                    }
+                }
 
                     if(currentTest.type == "Powder"){
                         getPowder()
@@ -413,36 +426,38 @@ function saveData(){
 
          var measurements = []
          var j = 0
+         console.log(chart_stress.options.data[0].dataPoints.length)
+         console.log(chart_stress.options.data[1].dataPoints.length)
+
          for(var i=0; i< currentTest.measurements.length; i++){
-             if(chart_stress.options.data[1].dataPoints[i]){
                     var d = currentTest.measurements[i]
-                    var stroke_corr = chart_stroke.options.data[2].dataPoints[i].x || null
-                    var zero_corr = chart_stroke.options.data[1].dataPoints[i].x || null
-                    var disp_corr = chart_stroke.options.data[2].dataPoints[i].x || null
-                    var load_corr = chart_raw.options.data[2].dataPoints[i].y || null
-                    var strainrate = chart_sr.options.data[0].dataPoints[i].y || null
-                    var strain = chart_stress.options.data[1].dataPoints[j].x || null
-                    var trueStress = chart_stress.options.data[0].dataPoints[i].y || null
-                    var fricStress = chart_stress.options.data[1].dataPoints[i].y || null
-                    var isoStress = chart_stress.options.data[2].dataPoints[i].y || null
-                    d.stroke_corr = stroke_corr
-                    d.zero_corr = zero_corr
-                    d.disp_corr = disp_corr
-                    d.load_corr = load_corr
-                    d.strainrate = strainrate
-                    d.strain = strain
-                    d.trueStress = trueStress
-                    d.fricStress = fricStress
-                    d.isoStress = isoStress
+                    d.stroke_corr = chart_stroke.options.data[2].dataPoints[i].x || null
+                    d.zero_corr = chart_stroke.options.data[1].dataPoints[i].x || null
+                    d.disp_corr = chart_stroke.options.data[2].dataPoints[i].x || null
+                    d.load_corr = chart_raw.options.data[2].dataPoints[i].y || null
+                    d.strainrate = chart_sr.options.data[0].dataPoints[i].y || null
+
+                    d.strain = chart_stress.options.data[0].dataPoints[i].x || null
+
+                    if(d.strain > 0.0 ){
+                        d.fricStress = chart_stress.options.data[1].dataPoints[j].y
+                        j++
+
+                    }
+                    else{
+                        d.fricStress = 0.0
+                    }
+
+                    d.trueStress = chart_stress.options.data[0].dataPoints[i].y || null
+
                     if(d.stroke_corr && d.zero_corr && d.disp_corr && d.load_corr && d.strain && d.trueStress && d.fricStress){
                         //console.log("Your test has been analysed fully. Well done!")
                         currentTest.analysed = true;
                     }
                         measurements.push(d)
-                    j++
-            }
     }
-    currentTest.final_measurements = measurements
+
+    currentTest.measurements = measurements
 
     console.log("Saved data")
     //console.log(currentTest)
@@ -630,6 +645,28 @@ $("input[name^='d_final_']").on('change', function(){
 
 
 
+function nextButtons(tests, index){
+    console.log(tests, index)
+    console.log("Adding extra test to buttons")
+    var this_test = tests[index]
+    if(tests[ index - 1 ] && !tests[ index - 1 ].id.includes("_design") ){
+        $('#previousTest').attr('href','/tests/tmc/process?_id=' + tests[ index - 1 ].id)
+    }
+    else{
+        $('#previousTest').attr('href','')
+        $('#previousTest').attr('disabled', 'disabled')
+    }
+    if(tests[ index + 1 ] && !tests[ index + 1 ].id.includes("_design") ){
+        $('#nextTest').attr('href','/tests/tmc/process?_id=' + tests[ index + 1 ].id)
+    }
+    else{
+        $('#nextTest').attr('href','')
+        $('#nextTest').attr('disabled', 'disabled')
+    }
+
+
+}
+
 
 
 function hot_dimension(dimension, cte, temp, ref_temp){
@@ -764,18 +801,19 @@ function prepareDownload(){
     console.log("Preparing download for test " + test._id + ". Please wait...")
     let data = []
     data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), Temperature (ºC), True Strain (mm/mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
-    if(test.final_measurements){
-        for(var i=0; i<test.final_measurements.length; i++){
-            var point = test.final_measurements[i]
-                data.push(point.disp_corr + "," + point.stroke_corr + "," + point.load_corr + ","+ point.sample_temp_2_centre + "," + point.strain + "," + point.trueStress + "," + point.fricStress + "," + point.isoStress + "\r\n")
+
+        for(var i=0; i<test.measurements.length; i++){
+            var point = test.measurements[i]
+
+                if(point.strain > 0){
+                    data.push(point.disp_corr + "," + point.stroke_corr + "," + point.load_corr + ","+ point.sample_temp_2_centre + "," + point.strain + "," + point.trueStress + "," + point.fricStress + "," + point.isoStress + "\r\n")
+                }
+
+
             }
 
         data.join()
-    }
-    else{
-        data[1] = "No data available. Test not analysed."
-        data.join()
-    }
+
     var blob = new Blob(data, {type: "text/.txt"});
     var url = URL.createObjectURL(blob);
     export_SS.attr('href', url )
@@ -1800,9 +1838,9 @@ function scrollTo(div){
         var element = $('#' + div )
          $('html,body').animate({scrollTop: element.offset().top - 180},'fast');
          var parent = element.parent() // div.well
-         parent.css("background-color", "#f33").delay(2000)
+         parent.css("border", "#f33 solid 4px").delay(2000)
                          .queue(function(n) {
-                                $(this).css("background-color", "#eee");
+                                $(this).css("border", "none");
                                 n();
                             })
 
