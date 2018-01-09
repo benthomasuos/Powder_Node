@@ -412,15 +412,16 @@ function saveData(){
     })
 
          var measurements = []
+         var j = 0
          for(var i=0; i< currentTest.measurements.length; i++){
              if(chart_stress.options.data[1].dataPoints[i]){
-                     var d = currentTest.measurements[i]
+                    var d = currentTest.measurements[i]
                     var stroke_corr = chart_stroke.options.data[2].dataPoints[i].x || null
                     var zero_corr = chart_stroke.options.data[1].dataPoints[i].x || null
                     var disp_corr = chart_stroke.options.data[2].dataPoints[i].x || null
                     var load_corr = chart_raw.options.data[2].dataPoints[i].y || null
                     var strainrate = chart_sr.options.data[0].dataPoints[i].y || null
-                    var strain = chart_stress.options.data[1].dataPoints[i].x || null
+                    var strain = chart_stress.options.data[1].dataPoints[j].x || null
                     var trueStress = chart_stress.options.data[0].dataPoints[i].y || null
                     var fricStress = chart_stress.options.data[1].dataPoints[i].y || null
                     var isoStress = chart_stress.options.data[2].dataPoints[i].y || null
@@ -438,6 +439,7 @@ function saveData(){
                         currentTest.analysed = true;
                     }
                         measurements.push(d)
+                    j++
             }
     }
     currentTest.final_measurements = measurements
