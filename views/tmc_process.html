@@ -200,6 +200,8 @@
         <h4><b>2.   Sample data</b><i style="float:right" class="fa fa-caret-up"></i></h4>
     </div>
     <div class="panel-body" name="Axi" hidden>
+        <div class="btn btn-primary" id='defaultDimensions'>Default dimensions</div>
+        <textarea class="form-control" rows="3" cols="6" id="sampDimensions" name="sampDimensions" style='resize: none'></textarea>
 
             <form class="form" id="sampleDimensions_form">
 
@@ -403,8 +405,8 @@
                     <h4>Displacement offset</h4>
                     <div class="container-fluid">
                         <div style="margin-bottom: 10px;">
-                            <div id="startLinear" class="btn btn-lg btn-success ">Start</div>
-                            <div id="stopLinear" class="btn btn-lg btn-danger " disabled>Stop</div>
+                            <div id="startLinear" class="btn btn-lg btn-success">Start</div>
+                            <div id="stopLinear" class="btn btn-lg btn-danger" disabled>Stop</div>
                         </div>
                         <div id="linearCalcMsg" class="well" style="background-color: #fff; min-height: 100px"></div>
                     </div>
@@ -416,7 +418,7 @@
                         <span class="input-group-addon">mm</span>
                     </div>
                     <div class="input-group" style="width:100%">
-                        <input type="range" class="form-control"  id="displacement_offset_range" min="-20.0" max="20.0" step="0.001" style="width:90%"/>
+                        <input type="range" class="form-control"  id="displacement_offset_range" min="-2.0" max="2.0" step="0.001" style="width:90%"/>
                     </div>
                 </div>
                 </div>

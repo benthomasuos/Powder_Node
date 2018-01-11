@@ -439,7 +439,7 @@ function saveData(){
 
                     d.strain = chart_stress.options.data[0].dataPoints[i].x || null
 
-                    if(d.strain > 0.0 ){
+                    if(d.strain > 0.0 && chart_stress.options.data[1].dataPoints[j]){
                         d.fricStress = chart_stress.options.data[1].dataPoints[j].y
                         j++
 
@@ -490,6 +490,80 @@ function saveData(){
 
 
 }
+
+$('#defaultDimensions').on('click', function(){
+    populateSampleDimensions()
+
+})
+
+
+$('#sampDimensions').on('input', function(){
+    var data = $(this).val()
+    populateSampleDimensions(data, type)
+
+})
+
+function populateSampleDimensions(text){
+    var e = jQuery.Event("");
+    console.log(e)
+
+    if(!text){
+        $('#h_initial_1').val(11.1)
+        $('#h_initial_2').val(11.1)
+        $('#h_initial_3').val(11.1)
+        $('#h_initial_4').val(11.1)
+
+        $('#d_initial_1').val(7.4)
+        $('#d_initial_2').val(7.4)
+        $('#d_initial_3').val(7.4)
+        $('#d_initial_4').val(7.4)
+
+
+        $('#h_final_5').val(5.6)
+        $('#h_final_6').val(5.6)
+        $('#h_final_7').val(5.6)
+        $('#h_final_8').val(5.6)
+
+        $('#d_final_5').val(10.3)
+        $('#d_final_6').val(10.3)
+        $('#d_final_7').val(10.3)
+        $('#d_final_8').val(10.3)
+
+    }
+    else{
+        var values = text.split('\t')
+        //console.log(values)
+
+        $('#h_initial_1').val(values[1])
+        $('#h_initial_2').val(values[2])
+        $('#h_initial_3').val(values[3])
+        $('#h_initial_4').val(values[4])
+
+        $('#d_initial_1').val(values[6])
+        $('#d_initial_2').val(values[7])
+        $('#d_initial_3').val(values[8])
+        $('#d_initial_4').val(values[9])
+
+        $('#h_final_1').val(values[19])
+        $('#h_final_2').val(values[20])
+        $('#h_final_3').val(values[21])
+        $('#h_final_4').val(values[22])
+
+        $('#d_final_1').val(values[24])
+        $('#d_final_2').val(values[25])
+        $('#d_final_3').val(values[26])
+        $('#d_final_4').val(values[27])
+    }
+
+        $('#h_initial_4').trigger('change')
+        $('#d_initial_4').trigger('change')
+        $('#h_final_8').trigger('change')
+        $('#d_final_8').trigger('change')
+
+
+}
+
+
 
 function loadData(){
     $('textarea').each(function(){
@@ -931,7 +1005,7 @@ function calcStrain(){
         //console.log( -Math.log( (parseFloat(currentTest.sample.dimensions.h_hot_initial) - stroke) / parseFloat(currentTest.sample.dimensions.h_hot_initial) )  )
 
         var strain = -Math.log( (parseFloat(currentTest.sample.dimensions.h_hot_initial) - stroke) / parseFloat(currentTest.sample.dimensions.h_hot_initial) )
-        if(isNaN(strain) || strain === -0 ){
+        if(isNaN(strain) ){
             //console.log("NaN strain found in test " + currentTest._id + " at point # " + i)
             strain = 0.0
         }
@@ -951,37 +1025,72 @@ function calcStrainRate(){
 }
 
 
+function average(values){
+    return getSum(values)/values.length
+}
+
+function getSum(total, num){
+    return total + number
+}
+
 
 
 function calcStress(){
     var area_0 = Math.PI * ((parseFloat(currentTest.sample.dimensions.d_hot_initial)/2)**2)
 
+
+
+
+    var currentStress = 0
+
     var strokes = chart_stroke.options.data[2].dataPoints
     var max_strain = 0.0
-    chart_stress.options.data[0].dataPoints = strokes.map(function(d, i){
+    chart_stress.options.data[0].dataPoints = []
+
+    for(var i=0; i< strokes.length;i++){
         var strain = currentTest.measurements[i].strain
         if(strain > max_strain){
             max_strain = strain
         }
         //console.log(strain)
-        var h_i_hot = currentTest.sample.dimensions.h_hot_initial - d.x
+        var h_i_hot = currentTest.sample.dimensions.h_hot_initial - strokes[i].x
         //console.log(h_i_hot)
         var d_i_hot = Math.sqrt(( 4 * currentTest.sample.dimensions.vol_hot ) / ( Math.PI * h_i_hot))
         //console.log(d_i_hot)
         var area_i_hot = Math.PI * ( ( d_i_hot / 2 ) ** 2 )
-        var stress = - ( d.y / area_i_hot ) * 1000.0
+        var stress = - ( strokes[i].y / area_i_hot ) * 1000.0
 
-        if( strain >= 0.0 && strain <= max_strain ){
-            return { "x": strain, "y": stress, "label": "Strain"}
-        }
-        else{
-            return { "x": strain, "y": null, "label": "Strain"}
-        }
-    })
+        //console.log(currentStress/stress)
+        //if(  currentStress/stress < 0.97 || currentStress/stress > 1.03 && stress > 0.0){
+
+            if(strain > 0.1 && stress < 0.5  ){
+                stress = null
+                //break;
+            }
+            //    console.log("Failure detected at point " + i)
+            //    stress = null
+            //}
+        //}
+
+        //if( strain >= 0.0 && strain <= max_strain ){
+            chart_stress.options.data[0].dataPoints.push({ "x": strain, "y": stress, "label": "Strain"})
+        //}
+        //else{
+        //    chart_stress.options.data[0].dataPoints.push({ "x": strain, "y": null, "label": "Strain"})
+        //}
+        currentStress = - ( strokes[i].y / area_i_hot ) * 1000.0
+    }
     //chart_stress.render()
 }
 
 
+
+function stopRKey(evt) {
+  var evt = (evt) ? evt : ((event) ? event : null);
+  var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+  if ((evt.keyCode == 13) && (node.type=="text") || (evt.keyCode == 13) && (node.type=="number") )  {return false;}
+}
+document.onkeypress = stopRKey;
 
 
 
@@ -1088,7 +1197,7 @@ function bilinearFric(heights, radii, stresses){
     var newRadii = []
     //console.log(stresses)
     for(var i=0; i< heights.length;i++){
-        if(stresses[i].x > 0){
+        if(stresses[i].x > 0 && stresses[i].y > 2){
             data.push( { "x": stresses[i].x, "y": stresses[i].y} )
             newRadii.push(radii[i])
             newHeights.push(heights[i])

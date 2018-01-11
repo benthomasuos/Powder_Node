@@ -614,7 +614,10 @@ function getPowders(){
 
 
 
+function saveMultipleTests(files){
 
+
+}
 
 
 
@@ -622,95 +625,104 @@ function saveTest(){
     var form = $('#testForm');
     var test = {}
     var label = form.find("#alert")
-    var musfile = form.find('input[name="musfile"]')[0].files[0];
-    if(musfile){
-        var reader = new FileReader();
-        reader.readAsText(musfile);
-        var data = "";
-        reader.onloadend = function(event){
-            data = event.target.result
-            console.log(typeof(data))
-            test = parseMusfile(data);
+    var musfiles = form.find('input[name="musfile"]')[0].files;
+    var num_files = form.find('input[name="musfile"]')[0].files.length
 
-            test.created = moment().format("HH:mm:ss DD/MM/YYYY");
-            test.type = form.find('select[name="test_type"]').val();
+    if(musfiles){
+        for(var i=0; i< musfiles.length; i++){
+            label.stop()
+                    var reader = new FileReader();
+                    reader.readAsText(musfiles[i]);
+                    var data = "";
+                    reader.onloadend = function(event){
+                        data = event.target.result
+                        console.log(typeof(data))
+                        test = parseMusfile(data);
 
-            test.tools = {
-                "top": {},
-                "middle": {},
-                "bottom": {}
-            }
-            test.musfile.file = data
+                        test.created = moment().format("HH:mm:ss DD/MM/YYYY");
+                        test.type = form.find('select[name="test_type"]').val();
 
-            switch(test.type){
-                case "Axi":
-                    test.hardness = {}
-                    test.sample.type = "Solid"
-                    test.sample.name.user_defined = form.find('input[name="sample_name"]').val();
-                break;
-                case "Powder":
-                    test.sample.type = "Powder"
-                    test.sample.id = $('#powderSelect').val()
-                    console.log($('#powderSelect'))
-                    test.sample.name.user_defined = $('#powderSelect').find(':selected').text()
-                break;
-                case "PSC":
-                    test.hardness = {}
-                    test.sample.type = "Solid"
-                    test.sample.name.user_defined = form.find('input[name="sample_name"]').val();
-                break;
-                default:
-                    test.sample.type = "Solid"
-                    test.sample.name.user_defined = form.find('input[name="sample_name"]').val();
-                break;
+                        test.tools = {
+                            "top": {},
+                            "middle": {},
+                            "bottom": {}
+                        }
+                        test.musfile.file = data
 
-
-            }
-
-
-            test_db.put( test )
-                .then(function(result){
-                    console.log(result)
-                    label
-                        .removeClass("alert-danger")
-                        .addClass("alert-success")
-                        .html("Saved test: <b> " + test._id + "</b>")
-                        .fadeToggle(200)
-                        .delay(2000)
-                        .fadeToggle(200)
-
-                    }).then(function(){
-                        getAllTests();
-                    }).catch(function(err){
-                        console.log(err)
-                        switch(err.status){
-                        case 409:
-                            var error_text = "You have already uploaded this test. Try another file."
+                        switch(test.type){
+                            case "Axi":
+                                test.hardness = {}
+                                test.sample.type = "Solid"
+                                test.sample.name.user_defined = form.find('input[name="sample_name"]').val();
                             break;
-                        default:
-                            var error_text = "Error: " + err.message
+                            case "Powder":
+                                test.sample.type = "Powder"
+                                test.sample.id = $('#powderSelect').val()
+                                console.log($('#powderSelect'))
+                                test.sample.name.user_defined = $('#powderSelect').find(':selected').text()
+                            break;
+                            case "PSC":
+                                test.hardness = {}
+                                test.sample.type = "Solid"
+                                test.sample.name.user_defined = form.find('input[name="sample_name"]').val();
+                            break;
+                            default:
+                                test.sample.type = "Solid"
+                                test.sample.name.user_defined = form.find('input[name="sample_name"]').val();
+                            break;
+
+
                         }
 
-                        label
-                            .removeClass("alert-success")
-                            .addClass("alert-danger")
-                            .html(error_text)
-                            .fadeToggle(200)
-                            .delay(3000)
-                            .fadeToggle(200);
-                    })
+                        test_db.put( test )
+                            .then(function(result){
+                                //console.log(result)
 
-        }
-    }
-    else{
-        label
-            .removeClass("alert-success")
-            .addClass("alert-danger")
-            .html("Data missing")
-            .show(200)
-            .delay(2000)
-            .hide(200);
-    }
+                                label
+                                    .removeClass("alert-danger")
+                                    .addClass("alert-success")
+                                    .html("Saved test: <b> " + result.id + "</b>")
+                                    .fadeIn(200)
+
+                                }).catch(function(err){
+                                    console.log(err)
+                                    switch(err.status){
+                                    case 409:
+                                        var error_text = "You have already uploaded a data file for test " + err.id + ". Try another file."
+                                        break;
+                                    default:
+                                        var error_text = "Error: " + err.message
+                                    }
+                                    label
+                                        .removeClass("alert-success")
+                                        .addClass("alert-danger")
+                                        .html(error_text)
+                                        .fadeIn(200)
+
+                                })
+
+                    }
+                }
+
+            console.log(musfiles.length, i)
+            if( i == musfiles.length - 1 ){
+
+                label.fadeOut(200)
+                getAllTests()
+                label.hide()
+
+
+            }
+                }
+                else{
+                    label
+                        .removeClass("alert-success")
+                        .addClass("alert-danger")
+                        .html("No Musfile(s) to upload")
+                        .show(200)
+                        .delay(2000)
+                        .hide(200);
+                }
 
 }
 
@@ -1300,10 +1312,11 @@ function evaluateLinear (points, test) {
       var functionValuesX = []
       var functionValuesY = []
 
+      console.log(test.measurements)
       test.measurements.map(function(d, i){
-          console.log("Evaluate linear result: "+ d.strain, d.fricStress)
-          functionValuesX.push( parseFloat(d.strain) )
-          functionValuesY.push( parseFloat(d.fricStress) )
+          //console.log("Evaluate linear result: "+ d.strain, d.fricStress)
+          functionValuesX.push( d.strain )
+          functionValuesY.push( d.fricStress )
       })
 
 
@@ -1312,6 +1325,7 @@ function evaluateLinear (points, test) {
 
       var results = []
       pointsToEvaluate.forEach(function (point, i) {
+          console.log(point)
           if ( i != 0 && i < pointsToEvaluate.length - 1 ){ // miss out first and last strain points
                 var index = findIntervalLeftBorderIndex(point, functionValuesX)
                 if (index == functionValuesX.length - 1)
