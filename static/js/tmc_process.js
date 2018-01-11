@@ -499,7 +499,7 @@ $('#defaultDimensions').on('click', function(){
 
 $('#sampDimensions').on('input', function(){
     var data = $(this).val()
-    populateSampleDimensions(data, type)
+    populateSampleDimensions(data)
 
 })
 
