@@ -28,7 +28,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/"><img src="/images/mapp_logo.png" width="60px" /></a>
+          <a class="navbar-brand" href="/"><img src="/images/star_icon.png" /></a>
         </div>
 
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -66,11 +66,12 @@
 </div>
 
 
-
-<div class="container col-md-3">
-    <div class="btn-group btn-group-justified">
-        <div class="btn btn-lg btn-default" id="searchBoxToggle"><i class="fa fa-search"></i>   Search</div>
-        <div class="btn btn-lg btn-success" id="addNewTest_btn"><i class="fa fa-plus" id="hideTable"></i>  New Test</div>
+<div class="container-fluid col-md-12">
+    <div class="container col-md-3">
+        <div class="btn-group btn-group-justified">
+            <div class="btn btn-lg btn-default" id="searchBoxToggle"><i class="fa fa-search"></i>   Search</div>
+            <div class="btn btn-lg btn-success" id="addNewTest_btn"><i class="fa fa-plus" id="hideTable"></i>  New Test</div>
+        </div>
     </div>
 </div>
 
@@ -149,7 +150,7 @@
 
 
 
-    <div class="container-fluid col-md-3">
+<div class="container-fluid col-md-3">
         <div id="dataInputForm" class="panel panel-primary" hidden>
             <div class="panel-heading">
                 <h4>New Test <i style="float:right" class="fa fa-times" id="hideForm"></i></h4>
@@ -191,8 +192,8 @@
             </div>
         </div>
     </div>
-
 </div>
+
 
 
 <div class="container-fluid col-md-12">
@@ -224,6 +225,8 @@
         <div id="compareTests" style="float:right"></div>
     </div>
 </div>
+
+    <div style="float: right" class="btn btn-lg btn-success" id="searchBoxToggle" onclick="exportTests()"><i class="fa fa-export"></i>   Export test data</div>
 </div>
 
 <div id="materialMatrix" class="container-fluid col-md-12 well" hidden>

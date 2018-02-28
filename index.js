@@ -131,7 +131,9 @@ app.use(express.static("static"));
 app.use(favicon( __dirname + '/static/images/star-icon.png'));
 
 
-
+app.use(function (req, res, next) {
+  res.status(404).sendFile(__dirname + "/views/404.html")
+})
 
 
 app.listen(3000, function(){

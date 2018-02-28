@@ -403,3 +403,41 @@ td > .fa-edit:hover{
     cursor: pointer
 
 }
+
+
+
+
+
+
+
+
+
+.panel-primary > .panel-heading{
+    background-color: #34C2FF;
+    border: solid 1px #34C2FF;
+    border-radius: 6px 6px 0 0;
+}
+.panel-primary{
+    border: solid 1px #34C2FF;
+    border-radius: 6px;
+}
+
+.panel > i {
+    color:  #34C2FF;
+}
+
+.alert-warning{
+    border-top: solid 2px #fff ;
+    background-color: #34C2FF;
+}
+
+.jumbotron {
+    height: 100px;
+    padding: 20px
+}
+
+.jumbotron > h1{
+    margin: auto;
+    text-align: center;
+
+}

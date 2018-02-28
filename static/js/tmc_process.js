@@ -262,12 +262,13 @@ function startLinearCalculation(){
                 color: '#229',
                 type: 'line',
                 dataPoints: [   {"x":0, "y":0},
-                                {"x":0.5  , "y": ((m * 0.5) + intercept)   }  ]
+                                {"x":0.5  , "y": ((m * 0.6) + intercept)   }  ]
             };
+            chart_options.data[3].visible = true;
             chart_stroke.render()
 
-            if(confirm("Are you happy with the fitted line?")){
-                chart_stroke.options.data[1].visible = true;
+            if( confirm("Are you happy with the fitted line?") ){
+                chart_options.data[1].visible = true;
 
 
                 chart_stroke.render()
@@ -865,6 +866,7 @@ function calculate_barrelling(){
                 $('#test_validity').html('Invalid test')
             }
         }
+        //drawSample()
     //console.log("Barrelling ratio = " + barrel_ratio)
 }
 
@@ -914,7 +916,25 @@ $('#sampling_period').on("change", function(){
 
 
 
+function drawSample(){
+    const cntxt = document.getElementById('sampleDrawing').getContext('2d')
+    var scale = 10
+    var initial = {x: 10, y: 10 }
+    cntxt.strokeRect(initial.x, initial.y , currentTest.sample.dimensions.d_hot_initial * scale , currentTest.sample.dimensions.h_hot_initial * scale )
 
+    var final = {x: initial.x + currentTest.sample.dimensions.d_hot_initial * scale , y: initial.y + currentTest.sample.dimensions.h_hot_initial * scale }
+    cntxt.beginPath();
+    cntxt.moveTo(final.x, final.y )
+
+
+    cntxt.lineTo(final.x + 20 * scale, final.y + 200  )
+    cntxt.arc()
+
+
+    cntxt.closePath()
+    cntxt.stroke()
+
+}
 
 
 

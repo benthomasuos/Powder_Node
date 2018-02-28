@@ -264,7 +264,7 @@ function getAllTests(){
                                 tableBody.append(row)
                             }
 
-                        var datatable  = currentTestTable.DataTable()
+                        var datatable = currentTestTable.DataTable()
                         console.log(datatable)
                         tableEvents()
                         applyCheckboxEvent()
@@ -336,7 +336,7 @@ function applyCheckboxEvent(){
             tests_ids_compare.forEach(function(test, i){
                 //console.log(d, i)
                 //row.css('color', '#fff')
-                row.css('background-color', '#ccc')
+                row.css('background-color', 'rgba(40, 190, 255, 0.2)')
                 test_db.get(
                     test
                 ).then(function(result){
@@ -391,7 +391,18 @@ function applyCheckboxEvent(){
 
 }
 
+function exportTests(){
+    const exportDataString = ""
+    const exportFileName = "exported_tests.json"
+    var testToExport =  currentTestTable.find('input[type="checkbox"]')
+    console.log(currentTestTable.DataTable().rows())
 
+}
+
+function importTests(){
+
+
+}
 
 
 function getSearchedTests(){

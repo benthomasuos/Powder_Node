@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-gb">
+<html>
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,9 +10,10 @@
     <link rel="stylesheet" href = "/css/style.css">
     <link rel="manifest" href="manifest.json">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
     <script src='/js/bootstrap.min.js' type='text/javascript'></script>
 
-    <title> Flow Stress Fitting - Web app</title>
+    <title> TMC Analysis</title>
 
 </head>
 <body>
@@ -50,7 +51,8 @@
 
           </ul>
           <ul class="nav navbar-nav navbar-right">
-              <li><a href="/login" id="loginButton"><i class="fa fa-user-circle"></i> Login</a></li>
+              <li><a href="https://github.com/benthomasuos/Powder_Node/issues"><i class="fa fa-github"></i> Report a bug/issue</a></li>
+            <li><a href="/account" disabled><i class="fa fa-user-circle"></i> My account</a></li>
           </ul>
         </div><!-- /.navbar-collapse -->
       </div><!-- /.container-fluid -->
@@ -59,75 +61,14 @@
 
 
 
-
 <div class="jumbotron">
-    <h1>STAR Group - Database</h1>
+    <h1>You found a 404! Congratulations!</h1>
+</div>
+<div class="well">
+    <h3>Either you tried to access a page that isn't there or I have left a link active that is yet to be implemented. Either way, use the menu bar at the top to select a different part of the site or use your browsers BACK button to get back to where you were.</h3>
 </div>
 
 
-
-
-<div class="container-fluid col-md-12">
-
-    <a href="/powders">
-        <div class="nav-tile nav-tile-lightgreen">
-            <i class="fa fa-sliders fa-3x"></i>
-            <h1>Powders</h1>
-        </div>
-    </a>
-
-    <a href="/tests/tmc">
-        <div class="nav-tile nav-tile-red">
-            <i class="fa fa-compress fa-3x"></i>
-            <h1>TMC Compression</h1>
-        </div>
-    </a>
-    <a href="/tests/aspshear">
-        <div class="nav-tile nav-tile-skyblue">
-            <i class="fa fa-sliders fa-3x"></i>
-            <h1>ASP Powder Shear</h1>
-        </div>
-    </a>
-    <a href="/tests/orthogonal">
-        <div class="nav-tile nav-tile-skyblue">
-            <i class="fa fa-sliders fa-3x"></i>
-            <h1>Orthogonal cutting</h1>
-        </div>
-    </a>
-    <a href="/tests/fast">
-        <div class="nav-tile nav-tile-skyblue ">
-            <i class="fa fa-sliders fa-3x"></i>
-            <h1>FAST</h1>
-        </div>
-    </a>
-    <a href="/tests/conform">
-        <div class="nav-tile nav-tile-skyblue">
-            <i class="fa fa-sliders fa-3x"></i>
-            <h1>Conform</h1>
-        </div>
-    </a>
-
-</div>
-
-
-
-
-<div class="wrapper" id="loginModal" hidden>
-    <form class="form-signin">
-      <h2 class="form-signin-heading">Please login</h2>
-      <input type="text" class="form-control" name="username" placeholder="Email Address" required="" autofocus="" />
-      <input type="password" class="form-control" name="password" placeholder="Password" required=""/>
-      <label class="checkbox">
-        <input type="checkbox" value="remember-me" id="rememberMe" name="rememberMe"> Remember me
-      </label>
-      <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
-    </form>
-  </div>
-
-
-
-
-<script src="/js/home.js"></script>
 </body>
 
 </html>
