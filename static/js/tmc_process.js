@@ -389,6 +389,12 @@ $("#ram_diameter, #sample_mass").on("change", function(){
 
 })
 */
+function hackData(){
+    currentTest.analysed = true
+    var audio = document.getElementById('alarm')
+    audio.src = '/sounds/siren.mp3'
+    audio.play()
+}
 
 
 function saveData(){
