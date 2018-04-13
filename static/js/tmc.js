@@ -1113,11 +1113,11 @@ function getMaterialData(){
 
     dataMatrix = []
 
-    for(var i=0; i < unique_strainrates.length; i++){
+    for(var i=0; i < unique_temperatures.length; i++){
 
-        for(var j=0; j < unique_temperatures.length; j++){
-            dataMatrix.push( { strainrate :  unique_strainrates[i],
-                                 temperature : unique_temperatures[j],
+        for(var j=0; j < unique_strainrates.length; j++){
+            dataMatrix.push( { strainrate :  unique_strainrates[j],
+                                 temperature : unique_temperatures[i],
                                  flowstress : []
              })
 
@@ -1408,7 +1408,7 @@ function makeDEFORMFlowStress(data){
     # File Format :
     #
     # 0(Reserved)          0(Reserved)          3(Function dimension)
-    # No. of X1 values,    No. of X2 values,    No. of X3 values
+    # No. of X1(Strain) values,    No. of X2(Strain rate) values,    No. of X3 (Temperature) values
     # X1_1  ,...,  X1_n
     # X2_1  ,...,  X2_n
     # X3_1  ,...,  X3_n
@@ -1435,26 +1435,35 @@ function makeDEFORMFlowStress(data){
 
 
     var dataString = "0    0   3\r\n" + unique_strains.length + "\t" + unique_strainrates.length + "\t" +unique_temperatures.length + "\r\n"
+
     dataString = dataString.concat("\r\n")
     unique_strains.forEach(function(d, i){
+
         dataString = dataString.concat( d + "\t")
     })
     dataString = dataString.concat("\r\n")
+    console.log(unique_strains)
+
 
     unique_strainrates.forEach(function(d, i){
         dataString = dataString.concat( d + "\t")
     })
     dataString = dataString.concat("\r\n")
+    console.log(unique_strainrates)
+
+
 
     unique_temperatures.forEach(function(d, i){
         dataString = dataString.concat( d + "\t")
     })
     dataString = dataString.concat("\r\n")
+    console.log(unique_strains)
 
+
+    console.log(dataMatrix)
     dataMatrix.forEach(function(d, i){
         d.flowstress.forEach(function(d){
             dataString = dataString.concat( d.toFixed(2) + "\t")
-            //console.log(dataString)
         })
         dataString = dataString.concat("\r\n")
     })
