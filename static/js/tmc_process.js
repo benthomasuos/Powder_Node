@@ -991,9 +991,9 @@ function calcDispOffset(){
     //console.log(dataPoints)
     for(var i=0; i<dataPoints_zero.length;i++){
         var this_disp = dataPoints_zero[i].x;
-
+        //var load_max = dataPoints_zero[i].y;
         // If the latest load is higher than the currently stored on replace it. Double check that any wierd outlying data doesn't mess up this automatic detection
-        if(this_disp > d_0_max && this_disp < currentTest.sample.dimensions.av_h_initial &&  dataPoints_zero[i].y < 0.0 ){
+        if(this_disp > d_0_max && this_disp < (currentTest.sample.dimensions.av_h_initial - currentTest.sample.dimensions.av_h_final) &&  dataPoints_zero[i].y < 0.0 ){
             d_0_max = this_disp
         }
     }
