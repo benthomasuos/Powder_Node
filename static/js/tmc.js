@@ -761,7 +761,7 @@ function prepareDownload(test, downloadBtn){
     //console.log("Preparing download for test " + test._id + ". Please wait...")
     let data = []
 
-    data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), Temperature (ºC) True Strain (mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
+    data[0] = "Displacement (mm), Corrected Stroke (mm), Corrected Load (kN), Temperature (ºC), True Strain (mm), True Stress (MPa), True Friction Corrected Stress (MPa), True Isothermal Stress (MPa)\r\n"
 
     for(var i=0; i<test.measurements.length; i++){
         var point = test.measurements[i]
